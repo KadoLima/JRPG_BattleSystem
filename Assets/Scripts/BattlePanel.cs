@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class BattlePanel : MonoBehaviour
 {
@@ -18,6 +19,9 @@ public class BattlePanel : MonoBehaviour
 
     private void OnEnable()
     {
+        transform.localScale = Vector3.zero;
+        transform.DOScale(1, .2f).SetEase(Ease.OutBack);
+
         SetFirstSelected();
     }
 

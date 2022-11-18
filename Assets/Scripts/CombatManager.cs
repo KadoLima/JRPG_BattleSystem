@@ -68,18 +68,17 @@ public class CombatManager : MonoBehaviour
             _rndEnemy = enemiesOnField[_forceEnemyIndex];
         else _rndEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
 
-        ActionType _actionToExecute;
 
-        if (Random.value > _rndEnemy.ChanceToUseSkill)
-        {
-            _actionToExecute = ActionType.NORMAL_ATTACK;
-        }
-        else
-        {
-            _actionToExecute = ActionType.SKILL_1;
-        }
+        //if (Random.value > _rndEnemy.ChanceToUseSkill)
+        //{
+        //    _actionToExecute = ActionType.NORMAL_ATTACK;
+        //}
+        //else
+        //{
+        //    _actionToExecute = ActionType.SKILL;
+        //}
 
-        _rndEnemy.StartAction(_actionToExecute, _rndEnemy.GetRandomPlayer());
+        //_rndEnemy.ExecuteActionOn(_rndEnemy.GetRandomPlayer());
     }
 
     public void SetTargetedEnemyByIndex(int index)

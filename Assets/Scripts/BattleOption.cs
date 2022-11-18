@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class BattleOption : MonoBehaviour
 {
@@ -21,4 +22,5 @@ public class BattleOption : MonoBehaviour
             return;
         }
     }
+
 }

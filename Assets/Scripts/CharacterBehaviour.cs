@@ -7,7 +7,7 @@ using System;
 public enum ActionType
 {
     NORMAL_ATTACK,
-    SKILL_1,
+    SKILL,
     ITEM
 }
 
@@ -22,6 +22,8 @@ public struct AnimationCycle
 public struct CombatAction
 {
     public ActionType actionType;
+    public string actionName;
+    public string description;
     public bool goToTarget;
     public float damageMultiplier;
     public AnimationCycle animationCycle;
@@ -53,7 +55,8 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] string idleAnimation;
     [SerializeField] string deadAnimation;
     [SerializeField] CombatAction normalAttack;
-    [SerializeField] CombatAction skill_1;
+    [SerializeField] CombatAction[] skills;
+    public CombatAction[] Skills => skills;
 
     protected CharacterUIController UIController;
 
@@ -98,9 +101,21 @@ public class CharacterBehaviour : MonoBehaviour
         //Debug.LogWarning(this.gameObject + "IS: " + CurrentBattlePhase);
     }
 
-    public void StartPickingTarget()
+    public void UseNormalAttack()
     {
+        currentAction = normalAttack;
         ChangeBattleState(BattleState.PICKING_TARGET);
+    }
+
+    public void UseSkill(int skillIndex)
+    {
+        currentAction = skills[skillIndex];
+        ChangeBattleState(BattleState.PICKING_TARGET);
+    }
+
+    public void ShowSkillDesc(int skillIndex)
+    {
+        UIController.UpdateSkillDescText(skills[skillIndex].description);
     }
 
     private void PickingTargetCycle()
@@ -109,29 +124,31 @@ public class CharacterBehaviour : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
             {
-                StartAction(ActionType.NORMAL_ATTACK, CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
+                ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
             }
 
-            else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.Backspace))
+            else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) || 
+                     Input.GetKeyDown(KeyCode.Backspace) || 
+                     Input.GetKeyDown(KeyCode.Escape))
             {
                 ChangeBattleState(BattleState.READY);
             }
         }
     }
 
-    public void StartAction(ActionType actionType, CharacterBehaviour enemy)
+    public void ExecuteActionOn(CharacterBehaviour enemy, int skillIndex = 0)
     {
         currentEnemy = enemy;
 
-        switch (actionType)
-        {
-            case ActionType.NORMAL_ATTACK:
-                currentAction = normalAttack;
-                break;
-            case ActionType.SKILL_1:
-                currentAction = skill_1;
-                break;
-        }
+        //switch (actionType)
+        //{
+        //    case ActionType.NORMAL_ATTACK:
+        //        currentAction = normalAttack;
+        //        break;
+        //    case ActionType.SKILL:
+        //        currentAction = skills[skillIndex];
+        //        break;
+        //}
         StartCoroutine(ActionCoroutine(enemy));
         ChangeBattleState(BattleState.EXECUTING_ACTION);
     }
@@ -142,7 +159,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         CombatManager.instance.HideAllEnemyPointers();
 
-        if (currentAction.actionType != ActionType.NORMAL_ATTACK && currentAction.actionType != ActionType.ITEM)
+        if (currentAction.actionType == ActionType.SKILL)
             ScreenEffects.instance.ShowDarkScreen();
 
         if (currentAction.goToTarget)
@@ -293,11 +310,13 @@ public class CharacterBehaviour : MonoBehaviour
 
             if (GetComponent<EnemyBehaviour>())
             {
-                UIController.HideCanvas(5);
+                UIController.HideCanvas(5,.5f);
                 combatEffects.DieEffect();
                 CombatManager.instance.enemiesOnField.Remove(this.GetComponent<EnemyBehaviour>());
                 return;
             }
         }
     }
+
+
 }

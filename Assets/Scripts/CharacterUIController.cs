@@ -11,8 +11,10 @@ public class CharacterUIController : MonoBehaviour
     [SerializeField] CanvasGroup myCanvasGroup;
     [SerializeField] GameObject pointer;
     [SerializeField] BattlePanel battlePanel;
+    [SerializeField] Transform techsPanel;
     [SerializeField] TextMeshProUGUI hpText;
     [SerializeField] TextMeshProUGUI floatingText;
+    [SerializeField] TextMeshProUGUI skillDescText;
     float originalFloatingTextY;
     [field: SerializeField] public Image cooldownBar { get; private set; }
 
@@ -32,6 +34,13 @@ public class CharacterUIController : MonoBehaviour
 
         RefreshHP(characterBehaviour.CurrentHP, characterBehaviour.CurrentHP);
 
+        ResetFloatingText();
+
+        SetSkillNames();
+    }
+
+    private void ResetFloatingText()
+    {
         floatingText.text = "";
 
         originalFloatingTextY = floatingText.rectTransform.anchoredPosition.y;
@@ -42,9 +51,9 @@ public class CharacterUIController : MonoBehaviour
         StartCoroutine(ShowMyCanvasCoroutine());
     }
 
-    public void HideCanvas(float speed=10)
+    public void HideCanvas(float speed=10, float delay=0)
     {
-        StartCoroutine(HideMyCanvasCoroutine(speed));
+        StartCoroutine(HideMyCanvasCoroutine(speed,delay));
     }
 
     IEnumerator ShowMyCanvasCoroutine()
@@ -58,8 +67,9 @@ public class CharacterUIController : MonoBehaviour
         myCanvasGroup.alpha = 1;
     }
 
-    IEnumerator HideMyCanvasCoroutine(float speed=10)
+    IEnumerator HideMyCanvasCoroutine(float speed=10, float delay=0)
     {
+        yield return new WaitForSeconds(delay);
         while (myCanvasGroup.alpha > 0)
         {
             myCanvasGroup.alpha -= Time.deltaTime * speed;
@@ -72,13 +82,12 @@ public class CharacterUIController : MonoBehaviour
      public void ShowBattlePanel()
     {
         battlePanel.gameObject.SetActive(true);
-        battlePanel.transform.localScale = Vector3.zero;
-        battlePanel.transform.DOScale(1, .2f).SetEase(Ease.OutBack);
     }
 
     public void HideBattlePanel()
     {
         battlePanel.gameObject.SetActive(false);
+        techsPanel.gameObject.SetActive(false);
     }
 
     public void ShowHidePointer(bool s)
@@ -126,5 +135,22 @@ public class CharacterUIController : MonoBehaviour
     void BounceFloatingText()
     {
         floatingText.rectTransform.DOAnchorPosY(originalFloatingTextY, .4f).SetEase(Ease.OutBounce);
+    }
+
+    public void UpdateSkillDescText(string t)
+    {
+        skillDescText.text = t;
+    }
+
+    public void SetSkillNames()
+    {
+        if (!techsPanel)
+            return;
+
+        for (int i = 0; i < characterBehaviour.Skills.Length; i++)
+        {
+            if (techsPanel.GetChild(0).GetChild(i).gameObject.activeSelf)
+                techsPanel.GetChild(0).GetChild(i).GetComponent<TextMeshProUGUI>().text = characterBehaviour.Skills[i].actionName;
+        }
     }
 }
