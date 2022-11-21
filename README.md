@@ -7,6 +7,10 @@ Recently implemented:
 - [Player] Normal attack and cooldown bar;
 - [Player + Enemies] Main animations and effects;
 - [Enemies] HP losing and death;
+- [Player] Single target and multi-target skills;
 
 Currently working on: 
-- [Player] Single target and multi-target skills;
+- Enemies AI Behaviour;
+
+Soon to be implemented:
+- 2nd Party Member (playable character) - a Mage hero;
