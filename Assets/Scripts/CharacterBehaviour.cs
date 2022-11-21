@@ -25,6 +25,7 @@ public struct CombatAction
     public string actionName;
     public string description;
     public bool goToTarget;
+    public bool isAreaOfEffect;
     public float damageMultiplier;
     public AnimationCycle animationCycle;
 }
@@ -74,6 +75,8 @@ public class CharacterBehaviour : MonoBehaviour
     protected Vector2 originalPosition;
 
     CombatAction currentAction;
+    public CombatAction CurrentAction => currentAction;
+
     CharacterBehaviour currentEnemy = null;
     public CharacterBehaviour CurrentEnemy => currentEnemy;
 
@@ -97,8 +100,6 @@ public class CharacterBehaviour : MonoBehaviour
     private void Update()
     {
         PickingTargetCycle();
-
-        //Debug.LogWarning(this.gameObject + "IS: " + CurrentBattlePhase);
     }
 
     public void UseNormalAttack()
@@ -107,7 +108,7 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.PICKING_TARGET);
     }
 
-    public void UseSkill(int skillIndex)
+    public void SelectSkill(int skillIndex)
     {
         currentAction = skills[skillIndex];
         ChangeBattleState(BattleState.PICKING_TARGET);
@@ -171,12 +172,15 @@ public class CharacterBehaviour : MonoBehaviour
         PlayAnimation(currentAction.animationCycle.name);
 
         yield return new WaitForSeconds(currentAction.animationCycle.cycleTime - 0.25f);
-        enemy.TakeDamage(CalculatedDamage());
+
+        ApplyDamage(enemy);
+
         yield return new WaitForSeconds(0.25f);
 
 
         if (currentAction.goToTarget)
-            GoBackToOriginalPosition();
+            GoBackToStartingPositionAndSetToIdle();
+        else SetToIdle();
 
         ScreenEffects.instance.HideDarkScreen();
 
@@ -184,10 +188,25 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.RECHARGING);
     }
 
-    private int CalculatedDamage()
+    private void ApplyDamage(CharacterBehaviour enemy)
+    {
+        if (!currentAction.isAreaOfEffect)
+            enemy.TakeDamage(CalculatedDamageValue());
+        else
+        {
+            for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
+            {
+                var dmg = CalculatedDamageValue();
+                Debug.LogWarning($"{CombatManager.instance.enemiesOnField[i].gameObject.name} took {dmg} damage");
+                CombatManager.instance.enemiesOnField[i].TakeDamage(dmg);
+            }
+        }
+    }
+
+    private int CalculatedDamageValue()
     {
         int rawDamage = myStats.baseDamage();
-        Debug.LogWarning($"Enemy took {rawDamage * currentAction.damageMultiplier} damage");
+        //Debug.LogWarning($"{currentEnemy.name} took {rawDamage * currentAction.damageMultiplier} damage");
         return Mathf.RoundToInt(rawDamage * currentAction.damageMultiplier);
     }
 
@@ -198,7 +217,7 @@ public class CharacterBehaviour : MonoBehaviour
         transform.DOMove(enemy.GetAttackedPos.position, secondsToReachTarget).SetEase(Ease.InOutExpo);
     }
 
-    public void GoBackToOriginalPosition()
+    public void GoBackToStartingPositionAndSetToIdle()
     {
         Debug.LogWarning("GOING BACK TO ORIGINAL POSITION -> " + this.secondsToGoBack);
         //enemySpriteRenderer.sortingOrder--;
@@ -266,7 +285,7 @@ public class CharacterBehaviour : MonoBehaviour
                 break;
             case BattleState.PICKING_TARGET:
                 UIController.HideBattlePanel();
-                CombatManager.instance.SetTargetedEnemyByIndex(0);
+                CombatManager.instance.SetTargetedEnemyByIndex(0,currentAction.isAreaOfEffect);
                 break;
             case BattleState.EXECUTING_ACTION:
                 break;
@@ -297,7 +316,6 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void TakeDamage(int damageAmount)
     {
-        Debug.LogWarning($"DECREASING {damageAmount} FROM HP");
 
         currentHP -= damageAmount;
 
@@ -312,8 +330,7 @@ public class CharacterBehaviour : MonoBehaviour
             {
                 UIController.HideCanvas(5,.5f);
                 combatEffects.DieEffect();
-                CombatManager.instance.enemiesOnField.Remove(this.GetComponent<EnemyBehaviour>());
-                return;
+                CombatManager.instance.RemoveDelayed(this.GetComponent<EnemyBehaviour>());
             }
         }
     }

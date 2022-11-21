@@ -53,7 +53,7 @@ public class CombatManager : MonoBehaviour
 
     private void Update()
     {
-        if (playersOnField[0].CurrentBattlePhase == BattleState.PICKING_TARGET)
+        if (playersOnField[0].CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentAction.isAreaOfEffect)
         {
             CycleThroughTargets();
         }
@@ -81,8 +81,14 @@ public class CombatManager : MonoBehaviour
         //_rndEnemy.ExecuteActionOn(_rndEnemy.GetRandomPlayer());
     }
 
-    public void SetTargetedEnemyByIndex(int index)
+    public void SetTargetedEnemyByIndex(int index, bool isAreaOfEffect = false)
     {
+        if (isAreaOfEffect)
+        {
+            currentTargetEnemyIndex = index;
+            ShowAllEnemyPointers();
+            return;
+        }
         currentTargetEnemyIndex = index;
 
         for (int i = 0; i < enemiesOnField.Count; i++)
@@ -114,6 +120,14 @@ public class CombatManager : MonoBehaviour
         SetTargetedEnemyByIndex(currentTargetEnemyIndex);
     }
 
+    public void ShowAllEnemyPointers()
+    {
+        foreach (EnemyBehaviour enemy in enemiesOnField)
+        {
+            enemy.ShowPointer();
+        }
+    }
+
     public void HideAllEnemyPointers()
     {
         foreach (EnemyBehaviour enemy in enemiesOnField)
@@ -133,6 +147,19 @@ public class CombatManager : MonoBehaviour
         {
             IncreaseTargetEnemyIndex();
         }
+    }
+
+    public void RemoveDelayed(CharacterBehaviour c)
+    {
+        StartCoroutine(RemoveDelayedCoroutine(c));
+    }
+
+    IEnumerator RemoveDelayedCoroutine(CharacterBehaviour c)
+    {
+        yield return new WaitForSeconds(0.02f);
+        if (c.GetComponent<EnemyBehaviour>())
+            enemiesOnField.Remove(c.GetComponent<EnemyBehaviour>());
+        else playersOnField.Remove(c);
     }
 
 

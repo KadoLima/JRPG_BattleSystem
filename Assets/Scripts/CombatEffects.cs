@@ -19,10 +19,21 @@ public class CombatEffects : MonoBehaviour
     public void ShakeCamera()
     {
         ScreenEffects.instance.ShakeCamera();
+        CharacterBehaviour player = GetComponentInParent<CharacterBehaviour>();
 
-        if (GetComponentInParent<CharacterBehaviour>().CurrentEnemy != null)
+        if (player.CurrentEnemy != null)
         {
-            GetComponentInParent<CharacterBehaviour>().CurrentEnemy.GetComponentInChildren<CombatEffects>().FlashRed();
+            if (player.CurrentAction.isAreaOfEffect)
+            {
+                for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
+                {
+                    CombatManager.instance.enemiesOnField[i].GetComponentInChildren<CombatEffects>().FlashRed();
+                }
+            }
+            else
+            {
+                player.CurrentEnemy.GetComponentInChildren<CombatEffects>().FlashRed();
+            }
             return;
         }
 
@@ -64,7 +75,7 @@ public class CombatEffects : MonoBehaviour
         float dissolveAmount = 0;
         while (dissolveAmount < 1)
         {
-            dissolveAmount += Time.fixedDeltaTime/5;
+            dissolveAmount += Time.fixedDeltaTime/15;
             myMaterial.SetFloat("_FadeAmount", dissolveAmount);
             yield return null;
         }
@@ -72,11 +83,11 @@ public class CombatEffects : MonoBehaviour
 
     IEnumerator FadeOutShadowCoroutine()
     {
-        float counter = 1;
+        float counter = shadow.color.a;
         while (counter>0)
         {
-            counter -= Time.fixedDeltaTime/4;
-            shadow.color = new Color(1, 1, 1, counter);
+            counter -= Time.fixedDeltaTime/20;
+            shadow.color = new Color(0, 0, 0, counter);
             yield return null;
         }
     }

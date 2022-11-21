@@ -527,7 +527,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _FadeTex:
         m_Texture: {fileID: 2800000, guid: 7aad8c583ef292e48b06af0d1f2fab97, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 5, y: 5}
         m_Offset: {x: 0, y: 0}
     - _GlowTex:
         m_Texture: {fileID: 0}
@@ -899,7 +899,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _FadeTex:
         m_Texture: {fileID: 2800000, guid: 7aad8c583ef292e48b06af0d1f2fab97, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 5, y: 5}
         m_Offset: {x: 0, y: 0}
     - _GlowTex:
         m_Texture: {fileID: 0}
@@ -1299,18 +1299,29 @@ MonoBehaviour:
     actionName: 
     description: 
     goToTarget: 1
+    isAreaOfEffect: 0
     damageMultiplier: 1
     animationCycle:
       name: Player1_NormalAttack
       cycleTime: 1
   skills:
   - actionType: 1
-    actionName: Scorpion Sting
+    actionName: Phantom Pierce
     description: A super fast lounge attack.
     goToTarget: 1
+    isAreaOfEffect: 0
     damageMultiplier: 1.4
     animationCycle:
       name: Player1_Skill1
+      cycleTime: 1.5
+  - actionType: 1
+    actionName: V-Sting
+    description: Hits all targets with a powerful sting.
+    goToTarget: 0
+    isAreaOfEffect: 1
+    damageMultiplier: 1.1
+    animationCycle:
+      name: Player1_Skill2
       cycleTime: 1.5
   myStats:
     baseHP: 158
@@ -1731,7 +1742,7 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 163177641}
           m_TargetAssemblyTypeName: CharacterBehaviour, Assembly-CSharp
-          m_MethodName: UseSkill
+          m_MethodName: SelectSkill
           m_Mode: 3
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -2723,6 +2734,7 @@ MonoBehaviour:
     actionName: 
     description: 
     goToTarget: 1
+    isAreaOfEffect: 0
     damageMultiplier: 1
     animationCycle:
       name: EnemyHog_NormalAttack
@@ -2732,6 +2744,7 @@ MonoBehaviour:
     actionName: 
     description: 
     goToTarget: 1
+    isAreaOfEffect: 0
     damageMultiplier: 1.5
     animationCycle:
       name: EnemyHog_Skill1
@@ -9473,6 +9486,7 @@ MonoBehaviour:
     actionName: 
     description: 
     goToTarget: 1
+    isAreaOfEffect: 0
     damageMultiplier: 1
     animationCycle:
       name: EnemySnake_NormalAttack
@@ -9482,6 +9496,7 @@ MonoBehaviour:
     actionName: 
     description: 
     goToTarget: 1
+    isAreaOfEffect: 0
     damageMultiplier: 1.5
     animationCycle:
       name: EnemySnake_Skill1
@@ -10061,10 +10076,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 2
+    m_Mode: 4
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
+    m_SelectOnDown: {fileID: 1075879703}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
@@ -10140,9 +10155,9 @@ MonoBehaviour:
     serializedVersion: 2
     rgba: 4294967295
   m_fontSize: 23
-  m_fontSizeBase: 30
+  m_fontSizeBase: 23
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 23
   m_fontStyle: 0
@@ -10264,7 +10279,7 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 163177641}
           m_TargetAssemblyTypeName: CharacterBehaviour, Assembly-CSharp
-          m_MethodName: UseSkill
+          m_MethodName: SelectSkill
           m_Mode: 3
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -10294,7 +10309,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1075879702
 RectTransform:
   m_ObjectHideFlags: 0
@@ -10328,9 +10343,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 2
+    m_Mode: 4
     m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
+    m_SelectOnUp: {fileID: 1040813313}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
@@ -10406,8 +10421,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 23
+  m_fontSizeBase: 23
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -10531,7 +10546,7 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 163177641}
           m_TargetAssemblyTypeName: CharacterBehaviour, Assembly-CSharp
-          m_MethodName: UseSkill
+          m_MethodName: SelectSkill
           m_Mode: 3
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -11636,7 +11651,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _FadeTex:
         m_Texture: {fileID: 2800000, guid: 7aad8c583ef292e48b06af0d1f2fab97, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 5, y: 5}
         m_Offset: {x: 0, y: 0}
     - _GlowTex:
         m_Texture: {fileID: 0}
@@ -14442,10 +14457,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 19
+  m_fontSize: 17
+  m_fontSizeBase: 17
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 17
   m_fontSizeMax: 20
   m_fontStyle: 0
@@ -14629,6 +14644,7 @@ MonoBehaviour:
     actionName: 
     description: 
     goToTarget: 1
+    isAreaOfEffect: 0
     damageMultiplier: 1
     animationCycle:
       name: EnemyBat_NormalAttack
@@ -14638,6 +14654,7 @@ MonoBehaviour:
     actionName: 
     description: 
     goToTarget: 1
+    isAreaOfEffect: 0
     damageMultiplier: 1.5
     animationCycle:
       name: EnemyBat_Skill1
