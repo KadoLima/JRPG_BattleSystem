@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
 
 public class SubPanel : MonoBehaviour
 {
     [SerializeField] BattlePanel battlePanel;
-    [SerializeField] GameObject firstSelected;
-    [SerializeField] Transform skillsParent;
+    [SerializeField] Transform[] skillsItems;
 
     CharacterBehaviour player;
 
@@ -16,7 +16,11 @@ public class SubPanel : MonoBehaviour
     {
         player = GetComponentInParent<CharacterBehaviour>();
 
-        Debug.LogWarning(player.gameObject.name);
+        for (int i = 0; i < player.Skills.Length; i++)
+        {
+            skillsItems[i].GetChild(0).GetComponent<TextMeshProUGUI>().text= player.Skills[i].mpCost.ToString();
+        }
+
     }
 
     private void OnEnable()
@@ -26,14 +30,14 @@ public class SubPanel : MonoBehaviour
 
         for (int i = 0; i < player.Skills.Length; i++)
         {
-            skillsParent.GetChild(i).GetComponent<Button>().interactable = player.CurrentMP > player.Skills[i].mpCost;
+            skillsItems[i].GetComponent<Button>().interactable = player.CurrentMP > player.Skills[i].mpCost;
         }
     }
 
     public void SetFirstSelected()
     {
         battlePanel.ShowDarkOverlay();
-        battlePanel._EventSystem.SetSelectedGameObject(firstSelected);
+        battlePanel._EventSystem.SetSelectedGameObject(skillsItems[0].gameObject);
     }
 
     // Update is called once per frame
