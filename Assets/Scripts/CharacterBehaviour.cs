@@ -24,6 +24,7 @@ public struct CombatAction
     public ActionType actionType;
     public string actionName;
     public string description;
+    public int mpCost;
     public bool goToTarget;
     public bool isAreaOfEffect;
     public float damageMultiplier;
@@ -34,6 +35,7 @@ public struct CombatAction
 public struct Stats
 {
     public int baseHP;
+    public int baseMP;
     public int minDamage;
     public int maxDamage;
     public float baseCooldown;
@@ -65,7 +67,9 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] protected Stats myStats;
     float currentCooldown;
     protected int currentHP;
+    protected int currentMP;
     public int CurrentHP => currentHP;
+    public int CurrentMP => currentMP;
     //[SerializeField] float baseDamage;
     //[field: SerializeField] public float BaseCooldown { get; private set; }
 
@@ -95,6 +99,7 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.RECHARGING);
 
         currentHP = myStats.baseHP;
+        currentMP = myStats.baseMP;
     }
 
     private void Update()
@@ -111,6 +116,10 @@ public class CharacterBehaviour : MonoBehaviour
     public void SelectSkill(int skillIndex)
     {
         currentAction = skills[skillIndex];
+
+        if (currentMP < currentAction.mpCost)
+            return;
+
         ChangeBattleState(BattleState.PICKING_TARGET);
     }
 
@@ -161,7 +170,12 @@ public class CharacterBehaviour : MonoBehaviour
         CombatManager.instance.HideAllEnemyPointers();
 
         if (currentAction.actionType == ActionType.SKILL)
+        {
+            currentMP -= currentAction.mpCost;
+            Debug.LogWarning($"SPENDING {currentAction.mpCost} , player has {currentMP} left");
+            UIController.RefreshMP(currentMP,myStats.baseMP);
             ScreenEffects.instance.ShowDarkScreen();
+        }
 
         if (currentAction.goToTarget)
         {

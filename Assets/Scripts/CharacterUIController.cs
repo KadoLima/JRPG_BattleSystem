@@ -13,6 +13,7 @@ public class CharacterUIController : MonoBehaviour
     [SerializeField] BattlePanel battlePanel;
     [SerializeField] Transform techsPanel;
     [SerializeField] TextMeshProUGUI hpText;
+    [SerializeField] TextMeshProUGUI mpText;
     [SerializeField] TextMeshProUGUI floatingText;
     [SerializeField] TextMeshProUGUI skillDescText;
     float originalFloatingTextY;
@@ -33,6 +34,7 @@ public class CharacterUIController : MonoBehaviour
             battlePanel.gameObject.SetActive(false);
 
         RefreshHP(characterBehaviour.CurrentHP, characterBehaviour.CurrentHP);
+        RefreshMP(characterBehaviour.CurrentMP, characterBehaviour.CurrentMP);
 
         ResetFloatingText();
 
@@ -99,8 +101,18 @@ public class CharacterUIController : MonoBehaviour
     {
 
         if (currentHP > 0)
-            hpText.text = currentHP + "/" + baseHP;
-        else hpText.text = 0 + "/" + baseHP;
+            hpText.text = "H: " + currentHP + "/" + baseHP;
+        else hpText.text = "H: " + 0 + "/" + baseHP;
+    }
+
+    public void RefreshMP(int currentMP, int baseMP)
+    {
+        if (mpText == null)
+            return;
+
+        if (currentMP > 0)
+            mpText.text = "M: " + currentMP + "/" + baseMP;
+        else mpText.text = "M: " + 0 + "/" + baseMP;
     }
 
     public void ShowFloatingDamageText(int damageAmount, bool isHealing = false)
