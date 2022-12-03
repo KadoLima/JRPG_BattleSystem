@@ -40,4 +40,10 @@ public class BattlePanel : MonoBehaviour
     {
         darkOverlay.SetActive(false);
     }
+
+    public void HideSubPanels()
+    {
+        SubPanels subPanels = GetComponent<SubPanels>();
+        subPanels.HideSubPanels();
+    }
 }

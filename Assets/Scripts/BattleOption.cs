@@ -5,7 +5,14 @@ using UnityEngine.EventSystems;
 
 public class BattleOption : MonoBehaviour
 {
-    [SerializeField] GameObject panelToOpen;
+    [System.Serializable]
+    public struct PanelToOpen
+    {
+        public GameObject panel;
+        public BattleState battleState;
+    }
+
+    [SerializeField] PanelToOpen panelToOpen;
 
     // Start is called before the first frame update
     void Start()
@@ -15,12 +22,29 @@ public class BattleOption : MonoBehaviour
 
     public void ExecuteAction()
     {
-        if (panelToOpen)
+        if (panelToOpen.panel)
         {
-            panelToOpen.SetActive(true);
-            panelToOpen.GetComponent<SubPanel>().SetFirstSelected();
+            GetComponentInParent<CharacterBehaviour>().ChangeBattleState(panelToOpen.battleState);
+            panelToOpen.panel.SetActive(true);
+            EventSystem.current.SetSelectedGameObject(GetFirstActiveChild());
+            //panelToOpen.GetComponent<SubPanels>().SetFirstSelected();
             return;
         }
     }
 
+    private GameObject GetFirstActiveChild()
+    {
+        GameObject firstSelected = null;
+
+        for (int i = 0; i < panelToOpen.panel.transform.GetChild(0).childCount; i++)
+        {
+            if (panelToOpen.panel.transform.GetChild(0).GetChild(i).gameObject.activeSelf)
+            {
+                firstSelected = panelToOpen.panel.transform.GetChild(0).GetChild(i).gameObject;
+                break;
+            }
+        }
+
+        return firstSelected;
+    }
 }

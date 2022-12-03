@@ -69,6 +69,7 @@ public class CharacterBehaviour : MonoBehaviour
     protected int currentHP;
     protected int currentMP;
     public int CurrentHP => currentHP;
+
     public int CurrentMP => currentMP;
     //[SerializeField] float baseDamage;
     //[field: SerializeField] public float BaseCooldown { get; private set; }
@@ -113,7 +114,7 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.PICKING_TARGET);
     }
 
-    public void SelectSkill(int skillIndex)
+    public void SelectTech(int skillIndex)
     {
         currentAction = skills[skillIndex];
 
@@ -123,9 +124,14 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.PICKING_TARGET);
     }
 
-    public void ShowSkillDesc(int skillIndex)
+    public void ShowDescription(int skillIndex)
     {
-        UIController.UpdateSkillDescText(skills[skillIndex].description);
+        UIController.ShowDescriptionTooltip(skills[skillIndex].description);
+    }
+
+    public void ShowDescription(string text)
+    {
+        UIController.ShowDescriptionTooltip(text);
     }
 
     private void PickingTargetCycle()
@@ -303,6 +309,10 @@ public class CharacterBehaviour : MonoBehaviour
                 break;
             case BattleState.EXECUTING_ACTION:
                 break;
+            case BattleState.SELECTING_TECH:
+                break;
+            case BattleState.SELECTING_ITEM:
+                break;
             case BattleState.WAITING:
                 break;
             case BattleState.DEAD:
@@ -347,6 +357,18 @@ public class CharacterBehaviour : MonoBehaviour
                 CombatManager.instance.RemoveDelayed(this.GetComponent<EnemyBehaviour>());
             }
         }
+    }
+
+    public void IncreaseHP(int amount)
+    {
+        currentHP += amount;
+        if (currentHP > myStats.baseHP) currentHP = myStats.baseHP;
+    }
+
+    public void IncreaseMP(int amount)
+    {
+        currentMP += amount;
+        if (currentMP > myStats.baseMP) currentMP = myStats.baseMP;
     }
 
 

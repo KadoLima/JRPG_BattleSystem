@@ -11,11 +11,11 @@ public class CharacterUIController : MonoBehaviour
     [SerializeField] CanvasGroup myCanvasGroup;
     [SerializeField] GameObject pointer;
     [SerializeField] BattlePanel battlePanel;
-    [SerializeField] Transform techsPanel;
+    //[SerializeField] Transform techsPanel;
     [SerializeField] TextMeshProUGUI hpText;
     [SerializeField] TextMeshProUGUI mpText;
     [SerializeField] TextMeshProUGUI floatingText;
-    [SerializeField] TextMeshProUGUI skillDescText;
+    [SerializeField] TextMeshProUGUI descriptionTooltipText;
     float originalFloatingTextY;
     [field: SerializeField] public Image cooldownBar { get; private set; }
 
@@ -38,7 +38,7 @@ public class CharacterUIController : MonoBehaviour
 
         ResetFloatingText();
 
-        SetSkillNames();
+        //SetSkillNames();
     }
 
     private void ResetFloatingText()
@@ -84,12 +84,14 @@ public class CharacterUIController : MonoBehaviour
      public void ShowBattlePanel()
     {
         battlePanel.gameObject.SetActive(true);
+        battlePanel.SetFirstSelected();
+        HideDescriptionTooltip();
     }
 
     public void HideBattlePanel()
     {
+        battlePanel.HideSubPanels();
         battlePanel.gameObject.SetActive(false);
-        techsPanel.gameObject.SetActive(false);
     }
 
     public void ShowHidePointer(bool s)
@@ -149,20 +151,26 @@ public class CharacterUIController : MonoBehaviour
         floatingText.rectTransform.DOAnchorPosY(originalFloatingTextY, .4f).SetEase(Ease.OutBounce);
     }
 
-    public void UpdateSkillDescText(string t)
+    public void ShowDescriptionTooltip(string t)
     {
-        skillDescText.text = t;
+        descriptionTooltipText.transform.parent.parent.gameObject.SetActive(true);
+        descriptionTooltipText.text = t;
     }
 
-    public void SetSkillNames()
+    public void HideDescriptionTooltip()
     {
-        if (!techsPanel)
-            return;
-
-        for (int i = 0; i < characterBehaviour.Skills.Length; i++)
-        {
-            if (techsPanel.GetChild(0).GetChild(i).gameObject.activeSelf)
-                techsPanel.GetChild(0).GetChild(i).GetComponent<TextMeshProUGUI>().text = characterBehaviour.Skills[i].actionName;
-        }
+        descriptionTooltipText.transform.parent.parent.gameObject.SetActive(false);
     }
+
+    //public void SetSkillNames()
+    //{
+    //    if (!techsPanel)
+    //        return;
+
+    //    for (int i = 0; i < characterBehaviour.Skills.Length; i++)
+    //    {
+    //        if (techsPanel.GetChild(0).GetChild(i).gameObject.activeSelf)
+    //            techsPanel.GetChild(0).GetChild(i).GetComponent<TextMeshProUGUI>().text = characterBehaviour.Skills[i].actionName;
+    //    }
+    //}
 }

@@ -8,6 +8,8 @@ public enum BattleState
     READY,
     PICKING_TARGET,
     EXECUTING_ACTION,
+    SELECTING_TECH,
+    SELECTING_ITEM,
     WAITING,
     DEAD,
     NULL
@@ -22,6 +24,8 @@ public class CombatManager : MonoBehaviour
 
     int currentTargetEnemyIndex = 0;
     public int CurrentTargetEnemyIndex => currentTargetEnemyIndex;
+
+    public CharacterBehaviour CurrentActivePlayer => playersOnField[0];
 
     public bool CanExecuteAction()
     {
@@ -53,7 +57,7 @@ public class CombatManager : MonoBehaviour
 
     private void Update()
     {
-        if (playersOnField[0].CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentAction.isAreaOfEffect)
+        if (CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentAction.isAreaOfEffect)
         {
             CycleThroughTargets();
         }
