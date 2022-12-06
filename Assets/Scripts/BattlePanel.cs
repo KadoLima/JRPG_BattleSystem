@@ -46,4 +46,9 @@ public class BattlePanel : MonoBehaviour
         SubPanels subPanels = GetComponent<SubPanels>();
         subPanels.HideSubPanels();
     }
+
+    public SubPanels GetSubPanels()
+    {
+        return GetComponent<SubPanels>();
+    }
 }

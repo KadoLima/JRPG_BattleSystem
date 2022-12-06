@@ -81,6 +81,11 @@ public class CharacterUIController : MonoBehaviour
         myCanvasGroup.alpha = 0;
     }
 
+    public BattlePanel GetBattlePanel()
+    {
+        return battlePanel;
+    }
+
      public void ShowBattlePanel()
     {
         battlePanel.gameObject.SetActive(true);
@@ -117,22 +122,24 @@ public class CharacterUIController : MonoBehaviour
         else mpText.text = "M: " + 0 + "/" + baseMP;
     }
 
-    public void ShowFloatingDamageText(int damageAmount, bool isHealing = false)
+    public void ShowFloatingDamageText(int damageAmount, bool isHealing = false, bool isRestoreMP = false)
     {
-        StartCoroutine(FloatingTextCoroutine(damageAmount, isHealing));
+        StartCoroutine(FloatingTextCoroutine(damageAmount, isHealing, isRestoreMP));
     }
 
-    IEnumerator FloatingTextCoroutine(int damageAmount, bool isHealing = false)
+    IEnumerator FloatingTextCoroutine(int damageAmount, bool isHealing = false, bool isRestoreMP = false)
     {
         float _popMovingTime = .2f;
         float _fadeTime = .2f;
         float yMovingAmount = 40f;
-        float _showingTime = _popMovingTime + 1f;
+        float _showingTime = _popMovingTime + 1.5f;
 
         Color _finalColor;
 
         if (isHealing)
             _finalColor = Color.green;
+        else if (isRestoreMP)
+            _finalColor = new Color(0.18f,.63f,1f); //light blue
         else
             _finalColor = Color.white;
 

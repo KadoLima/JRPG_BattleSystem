@@ -10,6 +10,8 @@ public class ConsumableItem : MonoBehaviour
     [SerializeField] TextMeshProUGUI amountText;
     InventoryItemData inventoryItemData;
 
+    //int consumableIndex;
+
 
     // Start is called before the first frame update
     void Start()
@@ -17,8 +19,9 @@ public class ConsumableItem : MonoBehaviour
         
     }
 
-    public void Initialize(Item item)
+    public void Initialize(Item item, int index)
     {
+        //consumableIndex = index;
         inventoryItemData = item.itemData;
         GetComponent<TextMeshProUGUI>().text = item.itemData.name;
         image.sprite = item.itemData.itemSprite;
@@ -33,6 +36,12 @@ public class ConsumableItem : MonoBehaviour
 
     public void UseItem()
     {
+        CharacterBehaviour player = GetComponentInParent<CharacterBehaviour>();
+        player.SelectConsumableItem(transform.GetSiblingIndex());
+    }
 
+    public void UpdateAmountText(int amount)
+    {
+        amountText.text = amount.ToString();
     }
 }

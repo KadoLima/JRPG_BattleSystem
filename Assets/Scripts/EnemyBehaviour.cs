@@ -31,13 +31,5 @@ public class EnemyBehaviour : CharacterBehaviour
         return currentPlayerTarget;
     }
 
-    public void ShowPointer()
-    {
-        UIController.ShowHidePointer(true);
-    }
 
-    public void HidePointer()
-    {
-        UIController.ShowHidePointer(false);
-    }
 }

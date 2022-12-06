@@ -14,7 +14,8 @@ public class SubPanels : MonoBehaviour
     [SerializeField] GameObject techsSubPanel;
     [SerializeField] Transform techsContent;
     [Header("CONSUMABLES SUBPANEL")]
-    [SerializeField] List<Button> consumableItens = new List<Button>();
+    [SerializeField] List<Button> itensList = new List<Button>();
+    public List<Button> ItensList => itensList;
     [SerializeField] GameObject consumablePrefab;
     [SerializeField] GameObject itensSubpanel;
     [SerializeField] Transform itensContent;
@@ -30,7 +31,7 @@ public class SubPanels : MonoBehaviour
         if (techItens.Count == 0)
             BuildTechItens();
 
-        if (consumableItens.Count == 0)
+        if (itensList.Count == 0)
             BuildComsumableItens();
 
         for (int i = 0; i < player.Skills.Length; i++)
@@ -61,8 +62,8 @@ public class SubPanels : MonoBehaviour
                 Input.GetKeyDown(KeyCode.LeftArrow) ||
                 Input.GetKeyDown(KeyCode.A))
             {
-                techsSubPanel.SetActive(false);
-                itensSubpanel.SetActive(false);
+                //techsSubPanel.SetActive(false);
+                //itensSubpanel.SetActive(false);
                 player.ChangeBattleState(BattleState.READY);
             }
         }
@@ -72,10 +73,10 @@ public class SubPanels : MonoBehaviour
     {
         for (int i = 0; i < player.Skills.Length; i++)
         {
-            GameObject g = Instantiate(techItemPrefab, techsContent);
-            g.GetComponent<TechItem>().Initialize(i, player.Skills[i]);
+            GameObject techItemPrefab = Instantiate(this.techItemPrefab, techsContent);
+            techItemPrefab.GetComponent<TechItem>().Initialize(i, player.Skills[i]);
             //g.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = player.Skills[i].mpCost.ToString();
-            techItens.Add(g.GetComponent<Button>());
+            techItens.Add(techItemPrefab.GetComponent<Button>());
         }
 
         SetNavigation(techItens);
@@ -87,15 +88,32 @@ public class SubPanels : MonoBehaviour
 
         for (int i = 0; i < playerInventory.inventoryItens.Count; i++)
         {
-            GameObject g = Instantiate(consumablePrefab, itensContent);
-            g.GetComponent<ConsumableItem>().Initialize(playerInventory.inventoryItens[i]);
-            consumableItens.Add(g.GetComponent<Button>());
+            GameObject consumableItemPrefab = Instantiate(consumablePrefab, itensContent);
+            consumableItemPrefab.GetComponent<ConsumableItem>().Initialize(playerInventory.inventoryItens[i],i);
+            itensList.Add(consumableItemPrefab.GetComponent<Button>());
         }
 
-        SetNavigation(consumableItens);
+        SetNavigation(itensList);
     }
+    
+    //public void RefreshConsumableItensListUI()
+    //{
+    //    CharacterInventory playerInventory = player.GetComponent<CharacterInventory>();
 
-    void SetNavigation(List<Button> listItems)
+    //    for (int i = 0; i < playerInventory.inventoryItens.Count; i++)
+    //    {
+    //        itensList[i].GetComponent<ConsumableItem>().UpdateAmountText(playerInventory.inventoryItens[i].amount);
+
+    //        if (playerInventory.inventoryItens[i].amount <= 0)
+    //        {
+    //            itensList.Remove(itensList[i]);
+    //            Destroy(itensList[i].gameObject);
+    //        }
+    //    }
+
+    //}
+
+    public void SetNavigation(List<Button> listItems)
     {
         for (int i = 0; i < listItems.Count; i++)
         {
@@ -117,10 +135,18 @@ public class SubPanels : MonoBehaviour
         }
     }
 
-    public void SetFirstSelected()
+    public void SetFirstTechSelected()
     {
         battlePanel.ShowDarkOverlay();
         battlePanel._EventSystem.SetSelectedGameObject(techItens[0].gameObject);
+    }
+
+    public void SetFirstItemSelected()
+    {
+        battlePanel.ShowDarkOverlay();
+
+        if (itensList.Count > 0)
+            battlePanel._EventSystem.SetSelectedGameObject(itensList[0].gameObject);
     }
 
     public void HideSubPanels()

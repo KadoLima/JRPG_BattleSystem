@@ -23,7 +23,9 @@ public class CombatManager : MonoBehaviour
     public static CombatManager instance;
 
     int currentTargetEnemyIndex = 0;
+    int currentFriendlyTargetIndex = 0;
     public int CurrentTargetEnemyIndex => currentTargetEnemyIndex;
+    public int CurrentFriendlyTargetIndex => currentFriendlyTargetIndex;
 
     public CharacterBehaviour CurrentActivePlayer => playersOnField[0];
 
@@ -59,11 +61,14 @@ public class CombatManager : MonoBehaviour
     {
         if (CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentAction.isAreaOfEffect)
         {
-            CycleThroughTargets();
+            if (!playersOnField[0].CurrentAction.isFriendlyAction)
+                CycleThroughEnemyTargets();
+            else CycleThroughFriendlyTargets();
         }
     }
 
-    public void RandomEnemyStartAction(int forceEnemyIndex=-1)
+    #region Enemy Target
+    public void RandomEnemyStartAction(int forceEnemyIndex = -1)
     {
         EnemyBehaviour _rndEnemy;
         int _forceEnemyIndex = forceEnemyIndex;
@@ -87,6 +92,7 @@ public class CombatManager : MonoBehaviour
 
     public void SetTargetedEnemyByIndex(int index, bool isAreaOfEffect = false)
     {
+        Debug.LogWarning("Selecting enemy...");
         if (isAreaOfEffect)
         {
             currentTargetEnemyIndex = index;
@@ -107,7 +113,7 @@ public class CombatManager : MonoBehaviour
     {
         currentTargetEnemyIndex++;
 
-        if (currentTargetEnemyIndex > enemiesOnField.Count-1)
+        if (currentTargetEnemyIndex > enemiesOnField.Count - 1)
             currentTargetEnemyIndex = 0;
 
         SetTargetedEnemyByIndex(currentTargetEnemyIndex);
@@ -140,7 +146,7 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    public void CycleThroughTargets()
+    public void CycleThroughEnemyTargets()
     {
         if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
         {
@@ -166,7 +172,91 @@ public class CombatManager : MonoBehaviour
         else playersOnField.Remove(c);
     }
 
+    #endregion
 
+
+    #region Friendly Target
+
+
+    public void SetTargetedFriendlyTargetByIndex(int index, bool isAreaOfEffect = false)
+    {
+        //Debug.LogWarning("SELECTING FRIENDLY TARGET");
+
+        if (isAreaOfEffect)
+        {
+            currentFriendlyTargetIndex = index;
+            ShowAllFriendlyTargetPointers();
+            return;
+        }
+        currentFriendlyTargetIndex = index;
+
+        for (int i = 0; i < playersOnField.Count; i++)
+        {
+            if (i == index)
+                playersOnField[i].ShowPointer();
+            else playersOnField[i].HidePointer();
+        }
+    }
+
+
+
+
+
+    public void IncreaseFriendlyTargetIndex()
+    {
+        currentFriendlyTargetIndex++;
+
+        if (currentFriendlyTargetIndex > playersOnField.Count - 1)
+            currentFriendlyTargetIndex = 0;
+
+        SetTargetedFriendlyTargetByIndex(currentFriendlyTargetIndex);
+
+    }
+
+    public void DecreaseFriendlyTargetIndex()
+    {
+        currentFriendlyTargetIndex--;
+
+        if (currentFriendlyTargetIndex < 0)
+            currentFriendlyTargetIndex = playersOnField.Count - 1;
+
+        SetTargetedFriendlyTargetByIndex(currentTargetEnemyIndex);
+    }
+
+
+
+
+    public void ShowAllFriendlyTargetPointers()
+    {
+        foreach (CharacterBehaviour character in playersOnField)
+        {
+            character.ShowPointer();
+        }
+    }
+
+    public void HideAllFriendlyTargetPointers()
+    {
+        foreach (CharacterBehaviour character in playersOnField)
+        {
+            character.HidePointer();
+        }
+    }
+
+
+    public void CycleThroughFriendlyTargets()
+    {
+        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            DecreaseFriendlyTargetIndex();
+        }
+
+        else if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            IncreaseFriendlyTargetIndex();
+        }
+    }
+
+    #endregion
 
 
 }

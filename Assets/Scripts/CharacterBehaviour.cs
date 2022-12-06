@@ -16,6 +16,7 @@ public struct AnimationCycle
 {
     public string name;
     public float cycleTime;
+    public ParticleSystem particles;
 }
 
 [System.Serializable]
@@ -27,6 +28,7 @@ public struct CombatAction
     public int mpCost;
     public bool goToTarget;
     public bool isAreaOfEffect;
+    public bool isFriendlyAction;
     public float damageMultiplier;
     public AnimationCycle animationCycle;
 }
@@ -59,6 +61,8 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] string deadAnimation;
     [SerializeField] CombatAction normalAttack;
     [SerializeField] CombatAction[] skills;
+    [SerializeField] CombatAction useItem;
+    int currentConsumableItemIndex;
     public CombatAction[] Skills => skills;
 
     protected CharacterUIController UIController;
@@ -108,6 +112,26 @@ public class CharacterBehaviour : MonoBehaviour
         PickingTargetCycle();
     }
 
+    private void PickingTargetCycle()
+    {
+        if (CurrentBattlePhase == BattleState.PICKING_TARGET)
+        {
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            {
+                if (!currentAction.isFriendlyAction)
+                    ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
+                else ExecuteActionOn(CombatManager.instance.playersOnField[CombatManager.instance.CurrentFriendlyTargetIndex]);
+            }
+
+            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) ||
+                     Input.GetKeyDown(KeyCode.Backspace) ||
+                     Input.GetKeyDown(KeyCode.Escape))
+            {
+                ChangeBattleState(BattleState.READY);
+            }
+        }
+    }
+
     public void UseNormalAttack()
     {
         currentAction = normalAttack;
@@ -124,6 +148,15 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.PICKING_TARGET);
     }
 
+    public void SelectConsumableItem(int itemIndex)
+    {
+        currentAction = useItem;
+        currentConsumableItemIndex = itemIndex;
+        Debug.LogWarning(itemIndex);
+
+        ChangeBattleState(BattleState.PICKING_TARGET);
+    }
+
     public void ShowDescription(int skillIndex)
     {
         UIController.ShowDescriptionTooltip(skills[skillIndex].description);
@@ -134,38 +167,13 @@ public class CharacterBehaviour : MonoBehaviour
         UIController.ShowDescriptionTooltip(text);
     }
 
-    private void PickingTargetCycle()
+
+
+    public void ExecuteActionOn(CharacterBehaviour target)
     {
-        if (CurrentBattlePhase == BattleState.PICKING_TARGET)
-        {
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
-            {
-                ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
-            }
+        currentEnemy = target;
 
-            else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) || 
-                     Input.GetKeyDown(KeyCode.Backspace) || 
-                     Input.GetKeyDown(KeyCode.Escape))
-            {
-                ChangeBattleState(BattleState.READY);
-            }
-        }
-    }
-
-    public void ExecuteActionOn(CharacterBehaviour enemy, int skillIndex = 0)
-    {
-        currentEnemy = enemy;
-
-        //switch (actionType)
-        //{
-        //    case ActionType.NORMAL_ATTACK:
-        //        currentAction = normalAttack;
-        //        break;
-        //    case ActionType.SKILL:
-        //        currentAction = skills[skillIndex];
-        //        break;
-        //}
-        StartCoroutine(ActionCoroutine(enemy));
+        StartCoroutine(ActionCoroutine(target));
         ChangeBattleState(BattleState.EXECUTING_ACTION);
     }
 
@@ -178,7 +186,7 @@ public class CharacterBehaviour : MonoBehaviour
         if (currentAction.actionType == ActionType.SKILL)
         {
             currentMP -= currentAction.mpCost;
-            Debug.LogWarning($"SPENDING {currentAction.mpCost} , player has {currentMP} left");
+            //Debug.LogWarning($"SPENDING {currentAction.mpCost} , player has {currentMP} left");
             UIController.RefreshMP(currentMP,myStats.baseMP);
             ScreenEffects.instance.ShowDarkScreen();
         }
@@ -189,11 +197,21 @@ public class CharacterBehaviour : MonoBehaviour
             yield return new WaitForSeconds(secondsToReachTarget);
         }
 
+        if (currentAction.animationCycle.particles)
+            currentAction.animationCycle.particles.Play();
+
         PlayAnimation(currentAction.animationCycle.name);
 
         yield return new WaitForSeconds(currentAction.animationCycle.cycleTime - 0.25f);
 
-        ApplyDamage(enemy);
+        ApplyDamageOrHeal(enemy);
+
+        if (currentAction.actionType == ActionType.ITEM)
+        {
+            CharacterInventory inventory = GetComponent<CharacterInventory>();
+            inventory.ConsumeItem(currentConsumableItemIndex);
+            //UIController.GetBattlePanel().GetSubPanels().RefreshConsumableItensListUI();
+        }
 
         yield return new WaitForSeconds(0.25f);
 
@@ -208,40 +226,39 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.RECHARGING);
     }
 
-    private void ApplyDamage(CharacterBehaviour enemy)
+    private void ApplyDamageOrHeal(CharacterBehaviour target)
     {
         if (!currentAction.isAreaOfEffect)
-            enemy.TakeDamage(CalculatedDamageValue());
+            target.TakeDamageOrHeal(CalculatedValue());
         else
         {
             for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
             {
-                var dmg = CalculatedDamageValue();
+                var dmg = CalculatedValue();
                 Debug.LogWarning($"{CombatManager.instance.enemiesOnField[i].gameObject.name} took {dmg} damage");
-                CombatManager.instance.enemiesOnField[i].TakeDamage(dmg);
+                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(dmg);
             }
         }
     }
 
-    private int CalculatedDamageValue()
+    private int CalculatedValue()
     {
         int rawDamage = myStats.baseDamage();
-        //Debug.LogWarning($"{currentEnemy.name} took {rawDamage * currentAction.damageMultiplier} damage");
-        return Mathf.RoundToInt(rawDamage * currentAction.damageMultiplier);
+        if (currentAction.actionType != ActionType.ITEM)
+            return Mathf.RoundToInt(rawDamage * currentAction.damageMultiplier);
+
+
+        CharacterInventory inventory = GetComponent<CharacterInventory>();
+        return inventory.inventoryItens[currentConsumableItemIndex].itemData.effectAmount;
     }
 
     public void MoveToTarget(CharacterBehaviour enemy)
     {
-        //enemySpriteRenderer = enemy.GetComponentInChildren<SpriteRenderer>();
-        //enemySpriteRenderer.sortingOrder++;
         transform.DOMove(enemy.GetAttackedPos.position, secondsToReachTarget).SetEase(Ease.InOutExpo);
     }
 
     public void GoBackToStartingPositionAndSetToIdle()
     {
-        Debug.LogWarning("GOING BACK TO ORIGINAL POSITION -> " + this.secondsToGoBack);
-        //enemySpriteRenderer.sortingOrder--;
-        //enemySpriteRenderer = null;
         transform.DOMove(originalPosition, secondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
     }
 
@@ -271,7 +288,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         PlayAnimation(idleAnimation);
 
-        ChangeBattleState(BattleState.RECHARGING);
+        //ChangeBattleState(BattleState.RECHARGING);
     }
 
 
@@ -301,11 +318,15 @@ public class CharacterBehaviour : MonoBehaviour
                 break;
             case BattleState.READY:
                 CombatManager.instance.HideAllEnemyPointers();
+                CombatManager.instance.HideAllFriendlyTargetPointers();
                 UIController.ShowBattlePanel();
+                UIController.GetBattlePanel().HideSubPanels();
                 break;
             case BattleState.PICKING_TARGET:
                 UIController.HideBattlePanel();
-                CombatManager.instance.SetTargetedEnemyByIndex(0,currentAction.isAreaOfEffect);
+                if (!currentAction.isFriendlyAction)
+                    CombatManager.instance.SetTargetedEnemyByIndex(0, currentAction.isAreaOfEffect);
+                else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentAction.isAreaOfEffect);
                 break;
             case BattleState.EXECUTING_ACTION:
                 break;
@@ -338,25 +359,59 @@ public class CharacterBehaviour : MonoBehaviour
         return currentCooldown >= myStats.baseCooldown;
     }
 
-    public void TakeDamage(int damageAmount)
+    public void TakeDamageOrHeal(int amount)
     {
-
-        currentHP -= damageAmount;
-
-        UIController.ShowFloatingDamageText(damageAmount);
-        UIController.RefreshHP(currentHP, myStats.baseHP);
-
-        if (currentHP <= 0)
+        if (!currentAction.isFriendlyAction)
         {
-            ChangeBattleState(BattleState.DEAD);
+            currentHP -= amount;
+            UIController.ShowFloatingDamageText(amount);
 
-            if (GetComponent<EnemyBehaviour>())
+            if (currentHP <= 0)
             {
-                UIController.HideCanvas(5,.5f);
-                combatEffects.DieEffect();
-                CombatManager.instance.RemoveDelayed(this.GetComponent<EnemyBehaviour>());
+                ChangeBattleState(BattleState.DEAD);
+
+                if (GetComponent<EnemyBehaviour>())
+                {
+                    UIController.HideCanvas(5, .5f);
+                    combatEffects.DieEffect();
+                    CombatManager.instance.RemoveDelayed(this.GetComponent<EnemyBehaviour>());
+                }
             }
         }
+        else
+        {
+            if (currentAction.actionType == ActionType.ITEM)
+            {
+                CharacterInventory inventory = GetComponent<CharacterInventory>();
+
+                if (inventory.inventoryItens[currentConsumableItemIndex].itemData.consumableType == InventoryItemData.ConsumableType.HP_POTION)
+                {
+                    Debug.LogWarning("RESTORING HP");
+                    currentHP += amount;
+                    
+                    if (currentHP > myStats.baseHP)
+                        currentHP = myStats.baseHP;
+
+                    UIController.ShowFloatingDamageText(amount, true);
+                }
+                else if (inventory.inventoryItens[currentConsumableItemIndex].itemData.consumableType == InventoryItemData.ConsumableType.MANA_POTION)
+                {
+                    Debug.LogWarning("RESTORING MANA");
+                    currentMP += amount;
+
+                    if (currentMP > myStats.baseMP)
+                        currentMP = myStats.baseMP;
+
+                    UIController.ShowFloatingDamageText(amount, false, true);
+                }
+            }
+
+            
+
+        }
+
+        UIController.RefreshHP(currentHP, myStats.baseHP);
+        UIController.RefreshMP(currentMP, myStats.baseMP);
     }
 
     public void IncreaseHP(int amount)
@@ -369,6 +424,16 @@ public class CharacterBehaviour : MonoBehaviour
     {
         currentMP += amount;
         if (currentMP > myStats.baseMP) currentMP = myStats.baseMP;
+    }
+
+    public void ShowPointer()
+    {
+        UIController.ShowHidePointer(true);
+    }
+
+    public void HidePointer()
+    {
+        UIController.ShowHidePointer(false);
     }
 
 
