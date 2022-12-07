@@ -54,12 +54,12 @@ public class CharacterBehaviour : MonoBehaviour
 
     [Header("ANIMATION PARAMETERS")]
     [SerializeField] Animator myAnim;
-    [SerializeField] float secondsToReachTarget = .75f;
-    [SerializeField] float secondsToGoBack = .45f;
+    [SerializeField] protected float secondsToReachTarget = .75f;
+    [SerializeField] protected float secondsToGoBack = .45f;
     [Header("ANIMATION ACTIONS")]
     [SerializeField] string idleAnimation;
     [SerializeField] string deadAnimation;
-    [SerializeField] CombatAction normalAttack;
+    [SerializeField] protected CombatAction normalAttack;
     [SerializeField] CombatAction[] skills;
     [SerializeField] CombatAction useItem;
     int currentConsumableItemIndex;
@@ -83,7 +83,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     protected Vector2 originalPosition;
 
-    CombatAction currentAction;
+    protected CombatAction currentAction;
     public CombatAction CurrentAction => currentAction;
 
     CharacterBehaviour currentEnemy = null;
@@ -107,7 +107,7 @@ public class CharacterBehaviour : MonoBehaviour
         currentMP = myStats.baseMP;
     }
 
-    private void Update()
+    public virtual void Update()
     {
         PickingTargetCycle();
     }
@@ -177,11 +177,13 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.EXECUTING_ACTION);
     }
 
-    IEnumerator ActionCoroutine(CharacterBehaviour enemy)
+    IEnumerator ActionCoroutine(CharacterBehaviour target)
     {
-        SetToBusy();
-
+       
         CombatManager.instance.HideAllEnemyPointers();
+
+        yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true);
+        SetToBusy();
 
         if (currentAction.actionType == ActionType.SKILL)
         {
@@ -193,7 +195,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentAction.goToTarget)
         {
-            MoveToTarget(enemy);
+            MoveToTarget(target);
             yield return new WaitForSeconds(secondsToReachTarget);
         }
 
@@ -204,7 +206,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         yield return new WaitForSeconds(currentAction.animationCycle.cycleTime - 0.25f);
 
-        ApplyDamageOrHeal(enemy);
+        ApplyDamageOrHeal(target);
 
         if (currentAction.actionType == ActionType.ITEM)
         {
@@ -218,15 +220,16 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentAction.goToTarget)
             GoBackToStartingPositionAndSetToIdle();
-        else SetToIdle();
 
         ScreenEffects.instance.HideDarkScreen();
 
         yield return new WaitForSeconds(0.2f);
         ChangeBattleState(BattleState.RECHARGING);
+
+        SetToIdle();
     }
 
-    private void ApplyDamageOrHeal(CharacterBehaviour target)
+    protected void ApplyDamageOrHeal(CharacterBehaviour target)
     {
         if (!currentAction.isAreaOfEffect)
             target.TakeDamageOrHeal(CalculatedValue());
@@ -235,7 +238,7 @@ public class CharacterBehaviour : MonoBehaviour
             for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
             {
                 var dmg = CalculatedValue();
-                Debug.LogWarning($"{CombatManager.instance.enemiesOnField[i].gameObject.name} took {dmg} damage");
+                //Debug.LogWarning($"{CombatManager.instance.enemiesOnField[i].gameObject.name} took {dmg} damage");
                 CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(dmg);
             }
         }
@@ -268,18 +271,18 @@ public class CharacterBehaviour : MonoBehaviour
         return currentEnemy;
     }
 
-    void SetToBusy()
+    protected void SetToBusy()
     {
         isBusy = true;
         UIController.HideCanvas();
     }
 
-    void PlayAnimation(string animString)
+    protected void PlayAnimation(string animString)
     {
         myAnim.Play(animString);
     }
 
-    void SetToIdle()
+    protected void SetToIdle()
     {
         isBusy = false;
         //currentAction = null;

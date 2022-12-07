@@ -29,7 +29,10 @@ public class CombatManager : MonoBehaviour
 
     public CharacterBehaviour CurrentActivePlayer => playersOnField[0];
 
-    public bool CanExecuteAction()
+    [SerializeField] float globalEnemyAttackCD = 5f;
+    float currentGlobalEnemyAttackCD;
+
+    public bool FieldIsClear()
     {
         foreach (var p in playersOnField)
         {
@@ -54,7 +57,7 @@ public class CombatManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        currentGlobalEnemyAttackCD = globalEnemyAttackCD;
     }
 
     private void Update()
@@ -65,7 +68,35 @@ public class CombatManager : MonoBehaviour
                 CycleThroughEnemyTargets();
             else CycleThroughFriendlyTargets();
         }
+
+        if (FieldIsClear())
+        {
+            if (enemiesOnField.Count == 0)
+                return;
+
+            currentGlobalEnemyAttackCD -= Time.deltaTime;
+            currentGlobalEnemyAttackCD = Mathf.Clamp(currentGlobalEnemyAttackCD, 0, globalEnemyAttackCD);
+
+            if (EnemyCanAttack())
+            {
+                enemiesOnField[Random.Range(0, enemiesOnField.Count)].AttackRandomPlayer();
+                ResetGlobalEnemyAttackCD();
+            }
+        }
     }
+
+    public void ResetGlobalEnemyAttackCD()
+    {
+        globalEnemyAttackCD = Random.Range(4, 6);
+        currentGlobalEnemyAttackCD = globalEnemyAttackCD;
+    }
+
+    public bool EnemyCanAttack()
+    {
+        return currentGlobalEnemyAttackCD <= 0;
+    }
+
+
 
     #region Enemy Target
     public void RandomEnemyStartAction(int forceEnemyIndex = -1)
@@ -76,18 +107,6 @@ public class CombatManager : MonoBehaviour
         if (_forceEnemyIndex != -1)
             _rndEnemy = enemiesOnField[_forceEnemyIndex];
         else _rndEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
-
-
-        //if (Random.value > _rndEnemy.ChanceToUseSkill)
-        //{
-        //    _actionToExecute = ActionType.NORMAL_ATTACK;
-        //}
-        //else
-        //{
-        //    _actionToExecute = ActionType.SKILL;
-        //}
-
-        //_rndEnemy.ExecuteActionOn(_rndEnemy.GetRandomPlayer());
     }
 
     public void SetTargetedEnemyByIndex(int index, bool isAreaOfEffect = false)
