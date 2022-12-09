@@ -12,6 +12,7 @@ public enum BattleState
     SELECTING_ITEM,
     WAITING,
     DEAD,
+    GAMEWIN,
     NULL
 }
 
@@ -31,6 +32,9 @@ public class CombatManager : MonoBehaviour
 
     [SerializeField] float globalEnemyAttackCD = 5f;
     float currentGlobalEnemyAttackCD;
+
+    [SerializeField]int totalXPEarned = 0;
+    [SerializeField] VictoryScreen victoryScreen;
 
     public bool FieldIsClear()
     {
@@ -62,9 +66,9 @@ public class CombatManager : MonoBehaviour
 
     private void Update()
     {
-        if (CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentAction.isAreaOfEffect)
+        if (CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentPreAction.isAreaOfEffect)
         {
-            if (!playersOnField[0].CurrentAction.isFriendlyAction)
+            if (playersOnField[0].CurrentPreAction.IsHarmful)
                 CycleThroughEnemyTargets();
             else CycleThroughFriendlyTargets();
         }
@@ -83,17 +87,31 @@ public class CombatManager : MonoBehaviour
                 ResetGlobalEnemyAttackCD();
             }
         }
+
+        //Debug.LogWarning(FieldIsClear());
     }
 
     public void ResetGlobalEnemyAttackCD()
     {
-        globalEnemyAttackCD = Random.Range(4, 6);
+        globalEnemyAttackCD = Random.Range(3, 5);
         currentGlobalEnemyAttackCD = globalEnemyAttackCD;
     }
 
     public bool EnemyCanAttack()
     {
         return currentGlobalEnemyAttackCD <= 0;
+    }
+
+    public void AddToTotalXP(int amount)
+    {
+        totalXPEarned += amount;
+
+       // Debug.LogWarning("TOTALXPEARNED = " + totalXPEarned);
+    }
+
+    public int TotalXPEarned()
+    {
+        return totalXPEarned;
     }
 
 
@@ -178,17 +196,33 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    public void RemoveDelayed(CharacterBehaviour c)
+    public void RemoveFromField_Delayed(CharacterBehaviour c)
     {
-        StartCoroutine(RemoveDelayedCoroutine(c));
+        StartCoroutine(RemoveFromField_Delayed_Coroutine(c));
     }
 
-    IEnumerator RemoveDelayedCoroutine(CharacterBehaviour c)
+    IEnumerator RemoveFromField_Delayed_Coroutine(CharacterBehaviour c)
     {
         yield return new WaitForSeconds(0.02f);
         if (c.GetComponent<EnemyBehaviour>())
+        {
             enemiesOnField.Remove(c.GetComponent<EnemyBehaviour>());
+            StartCoroutine(CheckVictoryConditionCoroutine());
+        }
         else playersOnField.Remove(c);
+    }
+
+    IEnumerator CheckVictoryConditionCoroutine()
+    {
+        if (enemiesOnField.Count == 0)
+        {
+            foreach (CharacterBehaviour p in playersOnField)
+            {
+                p.GameOver_Win();
+            }
+            yield return new WaitForSeconds(2);
+            victoryScreen.ShowScreen();
+        }
     }
 
     #endregion

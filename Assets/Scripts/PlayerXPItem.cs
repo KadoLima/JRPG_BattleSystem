@@ -10,7 +10,7 @@ public class PlayerXPItem : MonoBehaviour
     [System.Serializable]
     public class XPInfo
     {
-        public int xpGained = 3218;
+        //public int xpGained = 3218;
         public float currentXP = 3755;
         public float xpToLevel = 5000;
         public int currentLevel = 3;
@@ -53,11 +53,11 @@ public class PlayerXPItem : MonoBehaviour
     IEnumerator EarnXPCoroutine()
     {
         int remainingValueToLevel = (int)(playerXPInfo.xpToLevel - playerXPInfo.currentXP);
-        int overflowXP = playerXPInfo.xpGained - remainingValueToLevel;
+        int overflowXP = CombatManager.instance.TotalXPEarned() - remainingValueToLevel;
 
         if (overflowXP <= 0) //NO OVERFLOW XP
         {
-            int resultXP = (int)(playerXPInfo.currentXP + playerXPInfo.xpGained);
+            int resultXP = (int)(playerXPInfo.currentXP + CombatManager.instance.TotalXPEarned());
             while (playerXPInfo.currentXP < resultXP)
             {
                 AddToXP(resultXP);

@@ -1113,7 +1113,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 99367105}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.45, y: 0.62, z: 0}
+  m_LocalPosition: {x: 0, y: 0.62, z: 0}
   m_LocalScale: {x: 0.885, y: 0.885, z: 0.885}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1298,12 +1298,12 @@ MonoBehaviour:
   deadAnimation: 
   normalAttack:
     actionType: 0
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 1
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 1
     animationCycle:
       name: Player1_NormalAttack
@@ -1311,24 +1311,24 @@ MonoBehaviour:
       particles: {fileID: 0}
   skills:
   - actionType: 1
+    damageType: 0
     actionName: Phantom Pierce
     description: A super fast lounge attack.
     mpCost: 9
     goToTarget: 1
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 1.4
     animationCycle:
       name: Player1_Skill1
       cycleTime: 1.5
       particles: {fileID: 0}
   - actionType: 1
+    damageType: 0
     actionName: V-Sting
     description: Hits all targets with a powerful sting.
     mpCost: 19
     goToTarget: 0
     isAreaOfEffect: 1
-    isFriendlyAction: 0
     damageMultiplier: 1.1
     animationCycle:
       name: Player1_Skill2
@@ -1336,12 +1336,12 @@ MonoBehaviour:
       particles: {fileID: 0}
   useItem:
     actionType: 2
+    damageType: 3
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 0
     isAreaOfEffect: 0
-    isFriendlyAction: 1
     damageMultiplier: 0
     animationCycle:
       name: 
@@ -1371,6 +1371,8 @@ MonoBehaviour:
   hpText: {fileID: 181815994}
   mpText: {fileID: 1111750561}
   floatingText: {fileID: 344903663}
+  healColor: {r: 0.2962757, g: 1, b: 0.25, a: 1}
+  manaColor: {r: 0.25943398, g: 0.54714704, b: 1, a: 1}
   descriptionTooltipText: {fileID: 1975042747}
   <cooldownBar>k__BackingField: {fileID: 374786434}
 --- !u!114 &163177643
@@ -2931,12 +2933,12 @@ MonoBehaviour:
   deadAnimation: HOG_Dead
   normalAttack:
     actionType: 0
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 1
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 1
     animationCycle:
       name: EnemyHog_NormalAttack
@@ -2944,12 +2946,12 @@ MonoBehaviour:
       particles: {fileID: 0}
   skills:
   - actionType: 1
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 1
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 1.5
     animationCycle:
       name: EnemyHog_Skill1
@@ -2957,12 +2959,12 @@ MonoBehaviour:
       particles: {fileID: 0}
   useItem:
     actionType: 0
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 0
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 0
     animationCycle:
       name: 
@@ -2974,6 +2976,7 @@ MonoBehaviour:
     minDamage: 9
     maxDamage: 14
     baseCooldown: 5
+  xpRewarded: 1400
   chanceToUseSkill: 0.3
 --- !u!114 &423170166
 MonoBehaviour:
@@ -2993,6 +2996,8 @@ MonoBehaviour:
   hpText: {fileID: 1920788049}
   mpText: {fileID: 0}
   floatingText: {fileID: 1478575316}
+  healColor: {r: 0.29803923, g: 1, b: 0.2509804, a: 1}
+  manaColor: {r: 0.25882354, g: 0.54901963, b: 1, a: 1}
   descriptionTooltipText: {fileID: 0}
   <cooldownBar>k__BackingField: {fileID: 0}
 --- !u!1 &432264254
@@ -9781,12 +9786,12 @@ MonoBehaviour:
   deadAnimation: SNAKE_Dead
   normalAttack:
     actionType: 0
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 1
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 1
     animationCycle:
       name: EnemySnake_NormalAttack
@@ -9794,12 +9799,12 @@ MonoBehaviour:
       particles: {fileID: 0}
   skills:
   - actionType: 1
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 1
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 1.5
     animationCycle:
       name: EnemySnake_Skill1
@@ -9807,12 +9812,12 @@ MonoBehaviour:
       particles: {fileID: 0}
   useItem:
     actionType: 0
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 0
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 0
     animationCycle:
       name: 
@@ -9824,6 +9829,7 @@ MonoBehaviour:
     minDamage: 4
     maxDamage: 8
     baseCooldown: 5
+  xpRewarded: 1250
   chanceToUseSkill: 0.5
 --- !u!114 &944414669
 MonoBehaviour:
@@ -9843,6 +9849,8 @@ MonoBehaviour:
   hpText: {fileID: 1603523596}
   mpText: {fileID: 0}
   floatingText: {fileID: 1559349120}
+  healColor: {r: 0.29803923, g: 1, b: 0.2509804, a: 1}
+  manaColor: {r: 0.25882354, g: 0.54901963, b: 1, a: 1}
   descriptionTooltipText: {fileID: 0}
   <cooldownBar>k__BackingField: {fileID: 0}
 --- !u!1 &948349204
@@ -16652,7 +16660,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playersOnField: []
   enemiesOnField: []
-  globalEnemyAttackCD: 5
+  globalEnemyAttackCD: 3
+  totalXPEarned: 0
+  victoryScreen: {fileID: 1060207807}
 --- !u!21 &1275116041
 Material:
   serializedVersion: 8
@@ -19941,12 +19951,12 @@ MonoBehaviour:
   deadAnimation: BAT_Dead
   normalAttack:
     actionType: 0
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 1
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 1
     animationCycle:
       name: EnemyBat_NormalAttack
@@ -19954,12 +19964,12 @@ MonoBehaviour:
       particles: {fileID: 0}
   skills:
   - actionType: 1
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 1
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 1.5
     animationCycle:
       name: EnemyBat_Skill1
@@ -19967,12 +19977,12 @@ MonoBehaviour:
       particles: {fileID: 0}
   useItem:
     actionType: 0
+    damageType: 0
     actionName: 
     description: 
     mpCost: 0
     goToTarget: 0
     isAreaOfEffect: 0
-    isFriendlyAction: 0
     damageMultiplier: 0
     animationCycle:
       name: 
@@ -19984,6 +19994,7 @@ MonoBehaviour:
     minDamage: 4
     maxDamage: 6
     baseCooldown: 5
+  xpRewarded: 1120
   chanceToUseSkill: 0.6
 --- !u!114 &2136534219
 MonoBehaviour:
@@ -20003,5 +20014,7 @@ MonoBehaviour:
   hpText: {fileID: 727637717}
   mpText: {fileID: 0}
   floatingText: {fileID: 888481231}
+  healColor: {r: 0.29803923, g: 1, b: 0.2509804, a: 1}
+  manaColor: {r: 0.25882354, g: 0.54901963, b: 1, a: 1}
   descriptionTooltipText: {fileID: 0}
   <cooldownBar>k__BackingField: {fileID: 0}

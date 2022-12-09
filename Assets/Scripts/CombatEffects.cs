@@ -23,7 +23,7 @@ public class CombatEffects : MonoBehaviour
 
         if (player.CurrentEnemy != null)
         {
-            if (player.CurrentAction.isAreaOfEffect)
+            if (player.CurrentPreAction.isAreaOfEffect)
             {
                 for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
                 {
@@ -75,7 +75,7 @@ public class CombatEffects : MonoBehaviour
         float dissolveAmount = 0;
         while (dissolveAmount < 1)
         {
-            dissolveAmount += Time.fixedDeltaTime/15;
+            dissolveAmount += Time.fixedDeltaTime/8;
             myMaterial.SetFloat("_FadeAmount", dissolveAmount);
             yield return null;
         }

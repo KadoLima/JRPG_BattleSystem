@@ -37,11 +37,12 @@ public class ConsumableItem : MonoBehaviour
     public void UseItem()
     {
         CharacterBehaviour player = GetComponentInParent<CharacterBehaviour>();
-        player.SelectConsumableItem(transform.GetSiblingIndex());
+        player.SelectConsumableItem(transform.GetSiblingIndex(), inventoryItemData.damageType);
     }
 
     public void UpdateAmountText(int amount)
     {
+        Debug.LogWarning("Updating amount...");
         amountText.text = amount.ToString();
     }
 }

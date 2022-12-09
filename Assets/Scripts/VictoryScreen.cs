@@ -20,16 +20,16 @@ public class VictoryScreen : MonoBehaviour
         
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.F3))
-        {
-            if (screen.activeSelf == false)
-                ShowScreen();
-        }
-    }
+    //private void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.F3))
+    //    {
+    //        if (screen.activeSelf == false)
+    //            ShowScreen();
+    //    }
+    //}
 
-    void ShowScreen()
+    public void ShowScreen()
     {
         screen.SetActive(true);
 

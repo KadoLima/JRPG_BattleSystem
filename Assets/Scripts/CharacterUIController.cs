@@ -14,7 +14,11 @@ public class CharacterUIController : MonoBehaviour
     //[SerializeField] Transform techsPanel;
     [SerializeField] TextMeshProUGUI hpText;
     [SerializeField] TextMeshProUGUI mpText;
+    [Header("Floating Combat Text")]
     [SerializeField] TextMeshProUGUI floatingText;
+    [SerializeField] Color healColor;
+    [SerializeField] Color manaColor;
+    [Space(10)]
     [SerializeField] TextMeshProUGUI descriptionTooltipText;
     float originalFloatingTextY;
     [field: SerializeField] public Image cooldownBar { get; private set; }
@@ -83,11 +87,17 @@ public class CharacterUIController : MonoBehaviour
 
     public BattlePanel GetBattlePanel()
     {
+        if (!battlePanel)
+            return null;
+
         return battlePanel;
     }
 
      public void ShowBattlePanel()
     {
+        if (!battlePanel)
+            return;
+
         battlePanel.gameObject.SetActive(true);
         battlePanel.SetFirstSelected();
         HideDescriptionTooltip();
@@ -95,6 +105,9 @@ public class CharacterUIController : MonoBehaviour
 
     public void HideBattlePanel()
     {
+        if (!battlePanel)
+            return;
+
         battlePanel.HideSubPanels();
         battlePanel.gameObject.SetActive(false);
     }
@@ -122,35 +135,52 @@ public class CharacterUIController : MonoBehaviour
         else mpText.text = "M: " + 0 + "/" + baseMP;
     }
 
-    public void ShowFloatingDamageText(int damageAmount, bool isHealing = false, bool isRestoreMP = false)
+    public void ShowFloatingDamageText(int damageAmount, DamageType dmgType)
     {
-        StartCoroutine(FloatingTextCoroutine(damageAmount, isHealing, isRestoreMP));
+        StartCoroutine(FloatingTextCoroutine(damageAmount, dmgType));
     }
 
-    IEnumerator FloatingTextCoroutine(int damageAmount, bool isHealing = false, bool isRestoreMP = false)
+    IEnumerator FloatingTextCoroutine(int damageAmount, DamageType dmgType)
     {
         float _popMovingTime = .2f;
         float _fadeTime = .2f;
         float yMovingAmount = 40f;
         float _showingTime = _popMovingTime + 1.5f;
 
-        Color _finalColor;
+        //Color _finalColor;
 
-        if (isHealing)
-            _finalColor = Color.green;
-        else if (isRestoreMP)
-            _finalColor = new Color(0.18f,.63f,1f); //light blue
+        if (dmgType == DamageType.HEALING)
+            SetTextColor_Heal();
+        else if (dmgType == DamageType.MANA)
+            SetTextColor_Mana();
         else
-            _finalColor = Color.white;
+            SetTextColor_Normal();
 
         floatingText.text = damageAmount.ToString();
-        floatingText.color = new Color(1, 1, 1, 0);
-        floatingText.DOColor(_finalColor, _fadeTime);
+        floatingText.color = new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 0);
+        floatingText.DOColor(new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 1), _fadeTime);
         floatingText.rectTransform.DOAnchorPosY(floatingText.rectTransform.anchoredPosition.y + yMovingAmount, _popMovingTime).OnComplete(BounceFloatingText);
         yield return new WaitForSeconds(_showingTime);
-        floatingText.DOColor(new Color(0, 0, 0, 0), _fadeTime);
+        floatingText.DOColor(new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 0), _fadeTime);
         //yield return new WaitForSeconds(_fadeTime);
         //floatingText.rectTransform.localPosition = floatingTextPos;
+
+        //new Color(0.18f, .63f, 1f); //light blue
+    }
+
+    void SetTextColor_Normal()
+    {
+        floatingText.color = Color.white;
+    }
+
+    void SetTextColor_Heal()
+    {
+        floatingText.color = healColor;
+    }
+
+    void SetTextColor_Mana()
+    {
+        floatingText.color = manaColor;
     }
 
     void BounceFloatingText()
@@ -166,6 +196,9 @@ public class CharacterUIController : MonoBehaviour
 
     public void HideDescriptionTooltip()
     {
+        if (!descriptionTooltipText)
+            return;
+
         descriptionTooltipText.transform.parent.parent.gameObject.SetActive(false);
     }
 

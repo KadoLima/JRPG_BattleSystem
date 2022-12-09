@@ -16,6 +16,6 @@ MonoBehaviour:
   itemDescription: Restores 20 MP.
   itemSprite: {fileID: 21300000, guid: 0f84048cdb89bac4d85194f2d5f0bf17, type: 3}
   itemType: 0
-  consumableType: 1
+  damageType: 2
   effectAmount: 20
   effectTurns: 0

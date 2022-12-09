@@ -11,19 +11,12 @@ public class InventoryItemData : ScriptableObject
         EQUIPMENT,
         NULL
     }
-    public enum ConsumableType
-    {
-        HP_POTION,
-        MANA_POTION,
-        BERSERK_POTION,
-        NULL
-    }
 
     public string itemName;
     public string itemDescription;
     public Sprite itemSprite;
     public ItemType itemType;
-    public ConsumableType consumableType;
+    public DamageType damageType;
     public int effectAmount;
     public int effectTurns;
 
@@ -31,15 +24,13 @@ public void ApplyItemEffect()
 {
         CharacterBehaviour currentPlayer = CombatManager.instance.CurrentActivePlayer;
 
-    switch (this.consumableType)
+    switch (damageType)
         {
-            case ConsumableType.HP_POTION:
+            case DamageType.HEALING:
                 currentPlayer.IncreaseHP(effectAmount);
                 break;
-            case ConsumableType.MANA_POTION:
+            case DamageType.MANA:
                 currentPlayer.IncreaseMP(effectAmount);
-                break;
-            case ConsumableType.BERSERK_POTION:
                 break;
         }
 }

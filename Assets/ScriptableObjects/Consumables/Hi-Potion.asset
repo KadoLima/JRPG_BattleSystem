@@ -16,6 +16,6 @@ MonoBehaviour:
   itemDescription: Restores 120 HP.
   itemSprite: {fileID: 21300000, guid: 80c6b89f2e5a6de48beb56adf0957302, type: 3}
   itemType: 0
-  consumableType: 0
+  damageType: 1
   effectAmount: 120
   effectTurns: 0

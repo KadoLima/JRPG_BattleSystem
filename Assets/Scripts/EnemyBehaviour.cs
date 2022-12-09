@@ -6,6 +6,8 @@ public class EnemyBehaviour : CharacterBehaviour
 {
     //[field: SerializeField] public Transform GetAttackedPos { get ; private set; }
     //[SerializeField] CombatEffects combatEffects;
+    [Header("ENEMY SPECIFIC PARAMETERS")]
+    [SerializeField] int xpRewarded;
     [SerializeField] float chanceToUseSkill;
     public float ChanceToUseSkill => chanceToUseSkill;
     CharacterBehaviour currentPlayerTarget;
@@ -16,7 +18,7 @@ public class EnemyBehaviour : CharacterBehaviour
     {
         UIController = GetComponent<CharacterUIController>();
         CombatManager.instance.enemiesOnField.Add(this);
-        originalPosition = this.transform.localPosition;
+        originalPosition = transform.localPosition;
         currentHP = myStats.baseHP;
     }
 
@@ -36,40 +38,64 @@ public class EnemyBehaviour : CharacterBehaviour
 
     IEnumerator AttackRandomPlayerCoroutine()
     {
+        ChangeBattleState(BattleState.READY);
         CharacterBehaviour currentTarget = GetRandomPlayer();
-        ChangeBattleState(BattleState.EXECUTING_ACTION);
         yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true && CombatManager.instance.EnemyCanAttack() == true);
+        ChangeBattleState(BattleState.EXECUTING_ACTION);
         SetToBusy();
 
         SetCurrentAction();
 
-        if (currentAction.goToTarget)
+        if (currentExecutingAction.goToTarget)
         {
             MoveToTarget(currentTarget);
 
-            if (currentAction.actionType == ActionType.SKILL)
+            if (currentExecutingAction.actionType == ActionType.SKILL)
                 ScreenEffects.instance.ShowDarkScreen();
 
             yield return new WaitForSeconds(secondsToReachTarget);
 
-            PlayAnimation(currentAction.animationCycle.name);
+            PlayAnimation(currentExecutingAction.animationCycle.name);
 
-            yield return new WaitForSeconds(currentAction.animationCycle.cycleTime - 0.25f);
+            yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
             ApplyDamageOrHeal(currentTarget);
 
             yield return new WaitForSeconds(0.25f);
 
-            if (currentAction.goToTarget)
-                GoBackToStartingPositionAndSetToIdle();
+            if (currentExecutingAction.goToTarget)
+                GoBackToStartingPosition();
 
             ScreenEffects.instance.HideDarkScreen();
 
-            yield return new WaitForSeconds(0.2f);
-            ChangeBattleState(BattleState.RECHARGING);
+            yield return new WaitForSeconds(.2f);
+            PlayAnimation(idleAnimation);
 
-            SetToIdle();
+            yield return new WaitForSeconds(1.5f);
+            ChangeBattleState(BattleState.RECHARGING);
         }
+    }
+
+    public override void TakeDamageOrHeal(int amount, DamageType dmgType)
+    {
+
+        if (dmgType == DamageType.HARMFUL)
+        {
+            currentHP -= amount;
+            UIController.ShowFloatingDamageText(amount, dmgType);
+
+            if (currentHP <= 0)
+            {
+                Debug.LogWarning("ENEMY DIED!");
+                CombatManager.instance.AddToTotalXP(xpRewarded);
+                ChangeBattleState(BattleState.DEAD);
+                UIController.HideCanvas(5, .5f);
+                combatEffects.DieEffect();
+                CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
+            }
+        }
+
+        UIController.RefreshHP(currentHP, myStats.baseHP);
     }
 
     private void SetCurrentAction()
@@ -77,7 +103,7 @@ public class EnemyBehaviour : CharacterBehaviour
         float randomValue = Random.value;
 
         if (randomValue > chanceToUseSkill)
-            currentAction = normalAttack;
-        else currentAction = Skills[0];
+            currentExecutingAction = normalAttack;
+        else currentExecutingAction = Skills[0];
     }
 }
