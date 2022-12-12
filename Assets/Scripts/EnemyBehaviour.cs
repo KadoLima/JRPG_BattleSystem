@@ -104,6 +104,11 @@ public class EnemyBehaviour : CharacterBehaviour
 
         if (randomValue > chanceToUseSkill)
             currentExecutingAction = normalAttack;
-        else currentExecutingAction = Skills[0];
+        else
+        {
+            currentExecutingAction = Skills[0];
+            Debug.LogWarning(currentExecutingAction.actionType + ", " + currentExecutingAction.actionName);
+            SkillNameScreen.instance.Show(currentExecutingAction.actionName);
+        }
     }
 }

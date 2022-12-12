@@ -200,6 +200,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.actionType == ActionType.SKILL)
         {
+            SkillNameScreen.instance.Show(currentExecutingAction.actionName);
             currentMP -= currentExecutingAction.mpCost;
             //Debug.LogWarning($"SPENDING {currentAction.mpCost} , player has {currentMP} left");
             UIController.RefreshMP(currentMP,myStats.baseMP);
