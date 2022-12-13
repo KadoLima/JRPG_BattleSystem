@@ -67,9 +67,9 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] Animator myAnim;
     [SerializeField] protected float secondsToReachTarget = .75f;
     [SerializeField] protected float secondsToGoBack = .45f;
-    [Header("ANIMATION ACTIONS")]
     [SerializeField] protected string idleAnimation;
     [SerializeField] string deadAnimation;
+    [Header("ANIMATION ACTIONS")]
     [SerializeField] protected CombatAction normalAttack;
     [SerializeField] CombatAction[] skills;
     [SerializeField] CombatAction useItem;
@@ -118,7 +118,16 @@ public class CharacterBehaviour : MonoBehaviour
 
     public virtual void Update()
     {
+        if (CurrentBattlePhase == BattleState.DEAD)
+            return;
+
         PickingTargetCycle();
+
+        if (!GetComponent<EnemyBehaviour>())
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                ChangeBattleState(BattleState.DEAD);
+            }
     }
 
     private void PickingTargetCycle()
@@ -271,7 +280,10 @@ public class CharacterBehaviour : MonoBehaviour
     protected void SetToBusy()
     {
         isBusy = true;
-        UIController.HideCanvas();
+        UIController.HideBattlePanel();
+        UIController.ShowHP();
+
+        //UIController.HideCanvas();
     }
 
     protected void PlayAnimation(string animString)
@@ -283,13 +295,13 @@ public class CharacterBehaviour : MonoBehaviour
     {
         isBusy = false;
         currentEnemy = null;
-        UIController.ShowCanvas();
-
+        //UIController.ShowCanvas();
+        UIController.ShowHP();
         PlayAnimation(idleAnimation);
     }
 
 
-    IEnumerator FillCooldownCoroutine()
+    IEnumerator RechargingCoroutine()
     {
         if (!UIController.cooldownBar)
             yield break;
@@ -312,7 +324,7 @@ public class CharacterBehaviour : MonoBehaviour
         {
             case BattleState.RECHARGING:
                 currentPreAction.actionType = ActionType.NULL;
-                StartCoroutine(FillCooldownCoroutine());
+                StartCoroutine(RechargingCoroutine());
                 SetToIdle();
                 break;
             case BattleState.READY:
@@ -344,11 +356,27 @@ public class CharacterBehaviour : MonoBehaviour
                 break;
             case BattleState.DEAD:
                 myAnim.Play(deadAnimation);
+
+                if (!GetComponent<EnemyBehaviour>())
+                {
+                    StopAllCoroutines();
+                    Material mat = GetComponentInChildren<SpriteRenderer>().material;
+                    mat.SetFloat("_GreyscaleBlend", 1);
+                    UIController.HideCanvas(10, 0);
+                    StartCoroutine(CombatManager.instance.ShowGameOverIfNeeded_Coroutine());
+
+                }
+                else
+                {
+                    UIController.HideCanvas(5, .25f);
+                    combatEffects.DieEffect();
+                    CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
+                }
                 break;
 
             case BattleState.GAMEWIN:
                 GoBackToStartingPosition();
-                UIController.HideBattlePanel();
+                //UIController.HideBattlePanel();
                 UIController.HideCanvas();
                 break;
             case BattleState.NULL:

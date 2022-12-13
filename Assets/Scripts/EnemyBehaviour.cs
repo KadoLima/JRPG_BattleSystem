@@ -89,9 +89,9 @@ public class EnemyBehaviour : CharacterBehaviour
                 Debug.LogWarning("ENEMY DIED!");
                 CombatManager.instance.AddToTotalXP(xpRewarded);
                 ChangeBattleState(BattleState.DEAD);
-                UIController.HideCanvas(5, .5f);
-                combatEffects.DieEffect();
-                CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
+                //UIController.HideCanvas(5, .5f);
+                //combatEffects.DieEffect();
+                //CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
             }
         }
 

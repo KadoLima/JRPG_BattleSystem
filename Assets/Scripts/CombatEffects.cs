@@ -75,7 +75,7 @@ public class CombatEffects : MonoBehaviour
         float dissolveAmount = 0;
         while (dissolveAmount < 1)
         {
-            dissolveAmount += Time.fixedDeltaTime/8;
+            dissolveAmount += Time.fixedDeltaTime/30;
             myMaterial.SetFloat("_FadeAmount", dissolveAmount);
             yield return null;
         }

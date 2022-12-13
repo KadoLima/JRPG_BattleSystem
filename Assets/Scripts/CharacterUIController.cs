@@ -82,6 +82,8 @@ public class CharacterUIController : MonoBehaviour
             yield return null;
         }
 
+        HideBattlePanel();
+
         myCanvasGroup.alpha = 0;
     }
 
@@ -115,6 +117,16 @@ public class CharacterUIController : MonoBehaviour
     public void ShowHidePointer(bool s)
     {
         pointer.SetActive(s);
+    }
+
+    public void HideHP()
+    {
+        hpText.DOColor(new Color(0, 0, 0, 0f), .2f);
+    }
+
+    public void ShowHP()
+    {
+        hpText.DOColor(new Color(0, 0, 0, 1f), .2f);
     }
 
     public void RefreshHP(int currentHP, int baseHP)

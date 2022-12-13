@@ -35,6 +35,7 @@ public class CombatManager : MonoBehaviour
 
     [SerializeField]int totalXPEarned = 0;
     [SerializeField] VictoryScreen victoryScreen;
+    [SerializeField] GameOverScreen gameOverScreen;
 
     public bool FieldIsClear()
     {
@@ -81,7 +82,7 @@ public class CombatManager : MonoBehaviour
             currentGlobalEnemyAttackCD -= Time.deltaTime;
             currentGlobalEnemyAttackCD = Mathf.Clamp(currentGlobalEnemyAttackCD, 0, globalEnemyAttackCD);
 
-            if (EnemyCanAttack())
+            if (EnemyCanAttack() && !IsGameOver())
             {
                 enemiesOnField[Random.Range(0, enemiesOnField.Count)].AttackRandomPlayer();
                 ResetGlobalEnemyAttackCD();
@@ -207,12 +208,12 @@ public class CombatManager : MonoBehaviour
         if (c.GetComponent<EnemyBehaviour>())
         {
             enemiesOnField.Remove(c.GetComponent<EnemyBehaviour>());
-            StartCoroutine(CheckVictoryConditionCoroutine());
+            StartCoroutine(CheckWinConditionCoroutine());
         }
         else playersOnField.Remove(c);
     }
 
-    IEnumerator CheckVictoryConditionCoroutine()
+    IEnumerator CheckWinConditionCoroutine()
     {
         if (enemiesOnField.Count == 0)
         {
@@ -222,6 +223,31 @@ public class CombatManager : MonoBehaviour
             }
             yield return new WaitForSeconds(2);
             victoryScreen.ShowScreen();
+        }
+    }
+
+    bool IsGameOver()
+    {
+
+        foreach (CharacterBehaviour p in playersOnField)
+        {
+            if (p.CurrentBattlePhase != BattleState.DEAD)
+            {
+                return false;
+            }
+        }
+        return true;
+        
+    }
+
+    public IEnumerator ShowGameOverIfNeeded_Coroutine()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (IsGameOver())
+        {
+            yield return new WaitForSeconds(1);
+            gameOverScreen.ShowGameOverScreen();
         }
     }
 
