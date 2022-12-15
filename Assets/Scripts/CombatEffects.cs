@@ -8,6 +8,11 @@ public class CombatEffects : MonoBehaviour
     SpriteRenderer mySpriteRenderer;
     [SerializeField] Color takeDamageColor;
     [SerializeField] SpriteRenderer shadow;
+
+    [SerializeField] Transform[] spotsToGetHit;
+
+    public Transform[] SpotsToGetHit => spotsToGetHit;
+
     Material myMaterial;
 
     private void Start()

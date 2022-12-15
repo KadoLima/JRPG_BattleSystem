@@ -36,6 +36,7 @@ public struct CombatAction
     public string actionName;
     public string description;
     public int mpCost;
+    public GameObject projectile;
     public bool goToTarget;
     public bool isAreaOfEffect;
     public float damageMultiplier;
@@ -69,6 +70,7 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] protected float secondsToGoBack = .45f;
     [SerializeField] protected string idleAnimation;
     [SerializeField] string deadAnimation;
+    [SerializeField] Transform projectileSpawnPoint;
     [Header("ANIMATION ACTIONS")]
     [SerializeField] protected CombatAction normalAttack;
     [SerializeField] CombatAction[] skills;
@@ -80,6 +82,8 @@ public class CharacterBehaviour : MonoBehaviour
 
     [Header("STATS")]
     [SerializeField] protected Stats myStats;
+    public Stats MyStats => myStats;
+
     float currentCooldown;
     protected int currentHP;
     protected int currentMP;
@@ -227,6 +231,28 @@ public class CharacterBehaviour : MonoBehaviour
 
         PlayAnimation(currentExecutingAction.animationCycle.name);
 
+        if (currentExecutingAction.projectile)
+        {
+            if (currentExecutingAction.isAreaOfEffect == false)
+            {
+                GameObject p = Instantiate(currentExecutingAction.projectile.gameObject, projectileSpawnPoint.transform.position, Quaternion.identity);
+                p.transform.SetParent(this.gameObject.transform);
+                yield return new WaitForSeconds(0.25f);
+                p.GetComponent<SpellBehaviour>().Execute(projectileSpawnPoint.position, target);
+            }
+            else
+            {
+                yield return new WaitForSeconds(0.25f);
+                for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
+                {
+                    GameObject p = Instantiate(currentExecutingAction.projectile.gameObject, projectileSpawnPoint.transform.position, Quaternion.identity);
+                    p.transform.SetParent(this.gameObject.transform);
+                    p.GetComponent<SpellBehaviour>().Execute(projectileSpawnPoint.position, CombatManager.instance.enemiesOnField[i]);
+                }
+                yield return new WaitForSeconds(0.25f);
+            }
+        }
+
         yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
         ApplyDamageOrHeal(target);
@@ -281,7 +307,7 @@ public class CharacterBehaviour : MonoBehaviour
     {
         isBusy = true;
         UIController.HideBattlePanel();
-        UIController.ShowHP();
+        UIController.HideUI();
 
         //UIController.HideCanvas();
     }
@@ -296,7 +322,7 @@ public class CharacterBehaviour : MonoBehaviour
         isBusy = false;
         currentEnemy = null;
         //UIController.ShowCanvas();
-        UIController.ShowHP();
+        UIController.ShowUI();
         PlayAnimation(idleAnimation);
     }
 
@@ -455,8 +481,7 @@ public class CharacterBehaviour : MonoBehaviour
             
 
         }
-        UIController.RefreshHP(currentHP, myStats.baseHP);
-        UIController.RefreshMP(currentMP, myStats.baseMP);
+        UIController.RefreshHPMP();
     }
 
     private int CalculatedValue()

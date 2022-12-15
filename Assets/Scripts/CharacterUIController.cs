@@ -37,12 +37,18 @@ public class CharacterUIController : MonoBehaviour
         if (battlePanel)
             battlePanel.gameObject.SetActive(false);
 
-        RefreshHP(characterBehaviour.CurrentHP, characterBehaviour.CurrentHP);
-        RefreshMP(characterBehaviour.CurrentMP, characterBehaviour.CurrentMP);
+
+        Invoke(nameof(RefreshHPMP), .1f);
 
         ResetFloatingText();
 
         //SetSkillNames();
+    }
+
+    public void RefreshHPMP()
+    {
+        RefreshHP(characterBehaviour.CurrentHP, characterBehaviour.MyStats.baseHP);
+        RefreshMP(characterBehaviour.CurrentMP, characterBehaviour.MyStats.baseMP);
     }
 
     private void ResetFloatingText()
@@ -119,14 +125,26 @@ public class CharacterUIController : MonoBehaviour
         pointer.SetActive(s);
     }
 
-    public void HideHP()
+    public void HideUI()
     {
         hpText.DOColor(new Color(0, 0, 0, 0f), .2f);
+
+        if (mpText)
+            mpText.DOColor(new Color(0, 0, 0, 0f), .2f);
+
+        if (cooldownBar)
+            cooldownBar.GetComponentInParent<CanvasGroup>().alpha = 0;
     }
 
-    public void ShowHP()
+    public void ShowUI()
     {
         hpText.DOColor(new Color(0, 0, 0, 1f), .2f);
+
+        if (mpText)
+            mpText.DOColor(new Color(0, 0, 0, 1f), .2f);
+
+        if (cooldownBar)
+            cooldownBar.GetComponentInParent<CanvasGroup>().alpha = 1;
     }
 
     public void RefreshHP(int currentHP, int baseHP)
