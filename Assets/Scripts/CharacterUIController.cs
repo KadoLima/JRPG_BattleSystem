@@ -58,25 +58,25 @@ public class CharacterUIController : MonoBehaviour
         originalFloatingTextY = floatingText.rectTransform.anchoredPosition.y;
     }
 
-    public void ShowCanvas()
-    {
-        StartCoroutine(ShowMyCanvasCoroutine());
-    }
+    //public void ShowCanvas()
+    //{
+    //    StartCoroutine(ShowMyCanvasCoroutine());
+    //}
 
-    public void HideCanvas(float speed=10, float delay=0)
-    {
-        StartCoroutine(HideMyCanvasCoroutine(speed,delay));
-    }
+    //IEnumerator ShowMyCanvasCoroutine()
+    //{
+    //    while (myCanvasGroup.alpha < 1)
+    //    {
+    //        myCanvasGroup.alpha += Time.deltaTime * 10f;
+    //        yield return null;
+    //    }
 
-    IEnumerator ShowMyCanvasCoroutine()
-    {
-        while (myCanvasGroup.alpha < 1)
-        {
-            myCanvasGroup.alpha += Time.deltaTime * 10f;
-            yield return null;
-        }
+    //    myCanvasGroup.alpha = 1;
+    //}
 
-        myCanvasGroup.alpha = 1;
+    public void HideCanvas(float speed = 10, float delay = 0)
+    {
+        StartCoroutine(HideMyCanvasCoroutine(speed, delay));
     }
 
     IEnumerator HideMyCanvasCoroutine(float speed=10, float delay=0)

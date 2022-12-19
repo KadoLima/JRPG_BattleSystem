@@ -9,6 +9,7 @@ public class BattlePanel : MonoBehaviour
 {
     [SerializeField]EventSystem eventSystem;
     [SerializeField]GameObject darkOverlay;
+    [SerializeField] GameObject arrows;
     public EventSystem _EventSystem => eventSystem;
 
     [SerializeField] GameObject firstSelected;
@@ -51,4 +52,10 @@ public class BattlePanel : MonoBehaviour
     {
         return GetComponent<SubPanels>();
     }
+
+    public void ShowHideArrows(bool state)
+    {
+        arrows.SetActive(state);
+    }
+
 }

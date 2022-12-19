@@ -78,7 +78,8 @@ public class CharacterBehaviour : MonoBehaviour
     int currentConsumableItemIndex;
     public CombatAction[] Skills => skills;
 
-    protected CharacterUIController UIController;
+    protected CharacterUIController uiController;
+    public CharacterUIController UIController => uiController;
 
     [Header("STATS")]
     [SerializeField] protected Stats myStats;
@@ -112,7 +113,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         originalPosition = this.transform.localPosition;
 
-        UIController = GetComponent<CharacterUIController>();
+        uiController = GetComponent<CharacterUIController>();
 
         ChangeBattleState(BattleState.RECHARGING);
 
@@ -127,11 +128,58 @@ public class CharacterBehaviour : MonoBehaviour
 
         PickingTargetCycle();
 
-        if (!GetComponent<EnemyBehaviour>())
-            if (Input.GetKeyDown(KeyCode.F2))
+        if (uiController.GetBattlePanel() && CurrentBattlePhase == BattleState.READY)
+        {
+            if (CombatManager.instance.ReadyPlayersAmount() > 1)
             {
-                ChangeBattleState(BattleState.DEAD);
+                UIController.GetBattlePanel().ShowHideArrows(true);
+
+                if (CombatManager.instance.CurrentActivePlayer == this)
+                {
+                    if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.A)
+                        || Input.GetKeyDown(KeyCode.D))
+                    {
+                        StartCoroutine(PickAnotherTarget_Coroutine());
+                    }
+                }
             }
+            else
+            {
+                UIController.GetBattlePanel().ShowHideArrows(false);
+            }
+        }
+    }
+
+    IEnumerator PickAnotherTarget_Coroutine()
+    {
+        yield return new WaitForSeconds(0.02f);
+        UIController.HideBattlePanel();
+        CombatManager.instance.PickAnotherReadyCharacter();
+    }
+
+    IEnumerator RechargingCoroutine()
+    {
+        if (!uiController.cooldownBar)
+            yield break;
+
+        currentCooldown = 0;
+
+        while (currentCooldown < myStats.baseCooldown)
+        {
+            currentCooldown += Time.deltaTime;
+            uiController.cooldownBar.fillAmount = currentCooldown / myStats.baseCooldown;
+            yield return null;
+        }
+        ChangeBattleState(BattleState.READY);
+    }
+
+    protected void SetToIdle()
+    {
+        isBusy = false;
+        currentEnemy = null;
+        //UIController.ShowCanvas();
+        uiController.ShowUI();
+        PlayAnimation(idleAnimation);
     }
 
     private void PickingTargetCycle()
@@ -182,12 +230,12 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void ShowDescription(int skillIndex)
     {
-        UIController.ShowDescriptionTooltip(skills[skillIndex].description);
+        uiController.ShowDescriptionTooltip(skills[skillIndex].description);
     }
 
     public void ShowDescription(string text)
     {
-        UIController.ShowDescriptionTooltip(text);
+        uiController.ShowDescriptionTooltip(text);
     }
 
 
@@ -202,6 +250,15 @@ public class CharacterBehaviour : MonoBehaviour
 
     IEnumerator ActionCoroutine(CharacterBehaviour target)
     {
+        if (CombatManager.instance.CurrentActivePlayer == this)
+        {
+            Debug.LogWarning("1111111");
+            CombatManager.instance.SetCurrentActivePlayer(null);
+            CombatManager.instance.LookForReadyPlayer();
+        }
+
+
+
         ChangeBattleState(BattleState.EXECUTING_ACTION);
 
         currentExecutingAction = currentPreAction;
@@ -216,7 +273,7 @@ public class CharacterBehaviour : MonoBehaviour
             SkillNameScreen.instance.Show(currentExecutingAction.actionName);
             currentMP -= currentExecutingAction.mpCost;
             //Debug.LogWarning($"SPENDING {currentAction.mpCost} , player has {currentMP} left");
-            UIController.RefreshMP(currentMP,myStats.baseMP);
+            uiController.RefreshMP(currentMP,myStats.baseMP);
             ScreenEffects.instance.ShowDarkScreen();
         }
 
@@ -306,8 +363,8 @@ public class CharacterBehaviour : MonoBehaviour
     protected void SetToBusy()
     {
         isBusy = true;
-        UIController.HideBattlePanel();
-        UIController.HideUI();
+        uiController.HideBattlePanel();
+        uiController.HideUI();
 
         //UIController.HideCanvas();
     }
@@ -317,36 +374,17 @@ public class CharacterBehaviour : MonoBehaviour
         myAnim.Play(animString);
     }
 
-    protected void SetToIdle()
-    {
-        isBusy = false;
-        currentEnemy = null;
-        //UIController.ShowCanvas();
-        UIController.ShowUI();
-        PlayAnimation(idleAnimation);
-    }
-
-
-    IEnumerator RechargingCoroutine()
-    {
-        if (!UIController.cooldownBar)
-            yield break;
-
-        currentCooldown = 0;
-
-        while (currentCooldown < myStats.baseCooldown)
-        {
-            currentCooldown += Time.deltaTime;
-            UIController.cooldownBar.fillAmount = currentCooldown / myStats.baseCooldown;
-            yield return null;
-        }
-
-        ChangeBattleState(BattleState.READY);
-    }
-
     public void ChangeBattleState(BattleState phase)
     {
-        switch (phase)
+        StartCoroutine(ChangePhaseDelayed(phase));
+    }
+
+    IEnumerator ChangePhaseDelayed(BattleState p)
+    {
+        yield return new WaitForSeconds(0.02f);
+        CurrentBattlePhase = p;
+
+        switch (CurrentBattlePhase)
         {
             case BattleState.RECHARGING:
                 currentPreAction.actionType = ActionType.NULL;
@@ -354,20 +392,27 @@ public class CharacterBehaviour : MonoBehaviour
                 SetToIdle();
                 break;
             case BattleState.READY:
-                CombatManager.instance.HideAllEnemyPointers();
 
-                if (!GetComponent<EnemyBehaviour>())
-                    UIController.ShowHidePointer(false);
+                //CombatManager.instance.LookForReadyPlayer();
+                //if (!GetComponent<EnemyBehaviour>())
 
-                if (UIController.GetBattlePanel())
+                if (uiController.GetBattlePanel())
                 {
-                    UIController.ShowBattlePanel();
-                    UIController.GetBattlePanel().HideSubPanels();
+                    CombatManager.instance.LookForReadyPlayer();
+
+
+                    if (CombatManager.instance.CurrentActivePlayer == this)
+                    {
+                        CombatManager.instance.HideAllEnemyPointers();
+                        uiController.ShowHidePointer(false);
+                        uiController.ShowBattlePanel();
+                        uiController.GetBattlePanel().HideSubPanels();
+                    }
                 }
 
                 break;
             case BattleState.PICKING_TARGET:
-                UIController.HideBattlePanel();
+                uiController.HideBattlePanel();
                 if (currentPreAction.IsHarmful)
                     CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.isAreaOfEffect);
                 else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.isAreaOfEffect);
@@ -388,13 +433,13 @@ public class CharacterBehaviour : MonoBehaviour
                     StopAllCoroutines();
                     Material mat = GetComponentInChildren<SpriteRenderer>().material;
                     mat.SetFloat("_GreyscaleBlend", 1);
-                    UIController.HideCanvas(10, 0);
+                    uiController.HideCanvas(10, 0);
                     StartCoroutine(CombatManager.instance.ShowGameOverIfNeeded_Coroutine());
 
                 }
                 else
                 {
-                    UIController.HideCanvas(5, .25f);
+                    uiController.HideCanvas(5, .25f);
                     combatEffects.DieEffect();
                     CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
                 }
@@ -403,21 +448,13 @@ public class CharacterBehaviour : MonoBehaviour
             case BattleState.GAMEWIN:
                 GoBackToStartingPosition();
                 //UIController.HideBattlePanel();
-                UIController.HideCanvas();
+                uiController.HideCanvas();
                 break;
             case BattleState.NULL:
                 break;
             default:
                 break;
         }
-
-        StartCoroutine(ChangePhaseDelayed(phase));
-    }
-
-    IEnumerator ChangePhaseDelayed(BattleState p)
-    {
-        yield return new WaitForSeconds(0.02f);
-        CurrentBattlePhase = p;
     }
 
     bool IsReady()
@@ -445,7 +482,7 @@ public class CharacterBehaviour : MonoBehaviour
         if (dmgType == DamageType.HARMFUL)
         {
             currentHP -= amount;
-            UIController.ShowFloatingDamageText(amount, dmgType);
+            uiController.ShowFloatingDamageText(amount, dmgType);
 
             if (currentHP <= 0)
             {
@@ -475,13 +512,13 @@ public class CharacterBehaviour : MonoBehaviour
                         currentMP = myStats.baseMP;
 
                 }
-                UIController.ShowFloatingDamageText(amount, inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType);
+                uiController.ShowFloatingDamageText(amount, inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType);
             }
 
             
 
         }
-        UIController.RefreshHPMP();
+        uiController.RefreshHPMP();
     }
 
     private int CalculatedValue()
@@ -509,12 +546,12 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void ShowPointer()
     {
-        UIController.ShowHidePointer(true);
+        uiController.ShowHidePointer(true);
     }
 
     public void HidePointer()
     {
-        UIController.ShowHidePointer(false);
+        uiController.ShowHidePointer(false);
     }
 
     public void GameOver_Win()

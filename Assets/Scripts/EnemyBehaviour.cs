@@ -16,7 +16,7 @@ public class EnemyBehaviour : CharacterBehaviour
     // Start is called before the first frame update
     public override void Start()
     {
-        UIController = GetComponent<CharacterUIController>();
+        uiController = GetComponent<CharacterUIController>();
         CombatManager.instance.enemiesOnField.Add(this);
         originalPosition = transform.localPosition;
         currentHP = myStats.baseHP;
@@ -82,7 +82,7 @@ public class EnemyBehaviour : CharacterBehaviour
         if (dmgType == DamageType.HARMFUL)
         {
             currentHP -= amount;
-            UIController.ShowFloatingDamageText(amount, dmgType);
+            uiController.ShowFloatingDamageText(amount, dmgType);
 
             if (currentHP <= 0)
             {
@@ -95,7 +95,7 @@ public class EnemyBehaviour : CharacterBehaviour
             }
         }
 
-        UIController.RefreshHP(currentHP, myStats.baseHP);
+        uiController.RefreshHP(currentHP, myStats.baseHP);
     }
 
     private void SetCurrentAction()

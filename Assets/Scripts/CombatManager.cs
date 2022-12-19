@@ -28,7 +28,8 @@ public class CombatManager : MonoBehaviour
     public int CurrentTargetEnemyIndex => currentTargetEnemyIndex;
     public int CurrentFriendlyTargetIndex => currentFriendlyTargetIndex;
 
-    public CharacterBehaviour CurrentActivePlayer => playersOnField[0];
+    CharacterBehaviour currentActivePlayer = null;
+    public CharacterBehaviour CurrentActivePlayer => currentActivePlayer;
 
     [SerializeField] float globalEnemyAttackCD = 5f;
     float currentGlobalEnemyAttackCD;
@@ -67,7 +68,7 @@ public class CombatManager : MonoBehaviour
 
     private void Update()
     {
-        if (CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentPreAction.isAreaOfEffect)
+        if (CurrentActivePlayer!= null && CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentPreAction.isAreaOfEffect)
         {
             if (playersOnField[0].CurrentPreAction.IsHarmful)
                 CycleThroughEnemyTargets();
@@ -115,7 +116,97 @@ public class CombatManager : MonoBehaviour
         return totalXPEarned;
     }
 
+    public int ReadyPlayersAmount()
+    {
+        int _readyPlayers = 0;
 
+        foreach (CharacterBehaviour c in playersOnField)
+        {
+            if (c.CurrentBattlePhase == BattleState.READY)
+            {
+                _readyPlayers++;
+            }
+        }
+
+        return _readyPlayers;
+    }
+
+    public void LookForReadyPlayer()
+    {
+        if (currentActivePlayer != null)
+        {
+            return;
+        }
+
+        foreach (CharacterBehaviour c in playersOnField)
+        {
+            if (c.CurrentBattlePhase == BattleState.READY)
+            {
+                SetCurrentActivePlayer(c);
+                return;
+            }
+        }
+
+        SetCurrentActivePlayer(null);
+    }
+
+    public void SetCurrentActivePlayer(CharacterBehaviour c)
+    {
+        //Debug.LogWarning("SETTING CURRENT ACTIVE PLAYER: " + c);
+        currentActivePlayer = c;
+
+        if (c != null)
+            c.UIController.ShowBattlePanel();
+    }
+
+    public int GetCurrentActivePlayerIndex()
+    {
+        for (int i = 0; i < playersOnField.Count; i++)
+        {
+            if (currentActivePlayer == playersOnField[i])
+                return i;
+        }
+
+        return -1;
+    }
+
+    public void PickAnotherReadyCharacter()
+    {
+        int index = GetCurrentActivePlayerIndex();
+        index++;
+
+        if (index == playersOnField.Count)
+            index = 0;
+
+        Debug.LogWarning(index);
+        SetCurrentActivePlayer(playersOnField[index]);
+    }
+
+    //public int RechargingPlayersAmount()
+    //{
+    //    int _rechargingPlayers = 0;
+
+    //    foreach (CharacterBehaviour c in playersOnField)
+    //    {
+    //        if (c.CurrentBattlePhase == BattleState.RECHARGING)
+    //        {
+    //            _rechargingPlayers++;
+    //        }
+    //    }
+
+    //    return _rechargingPlayers;
+    //}
+
+    //public bool IsOnlyPlayerReady(CharacterBehaviour player)
+    //{
+    //    foreach (CharacterBehaviour c in playersOnField)
+    //    {
+    //        if (player != c && c.CurrentBattlePhase != BattleState.RECHARGING)
+    //            return false;
+    //    }
+
+    //    return true;
+    //}
 
     #region Enemy Target
     public void RandomEnemyStartAction(int forceEnemyIndex = -1)
@@ -130,7 +221,7 @@ public class CombatManager : MonoBehaviour
 
     public void SetTargetedEnemyByIndex(int index, bool isAreaOfEffect = false)
     {
-        Debug.LogWarning("Selecting enemy...");
+        //Debug.LogWarning("Selecting enemy...");
         if (isAreaOfEffect)
         {
             currentTargetEnemyIndex = index;
