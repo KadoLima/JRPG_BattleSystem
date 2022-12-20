@@ -122,7 +122,7 @@ public class CombatManager : MonoBehaviour
 
         foreach (CharacterBehaviour c in playersOnField)
         {
-            if (c.CurrentBattlePhase == BattleState.READY)
+            if (c.CurrentBattlePhase == BattleState.READY && c.CurrentBattlePhase != BattleState.DEAD)
             {
                 _readyPlayers++;
             }
@@ -312,7 +312,7 @@ public class CombatManager : MonoBehaviour
             {
                 p.GameOver_Win();
             }
-            yield return new WaitForSeconds(2);
+            yield return new WaitForSeconds(2.75f);
             victoryScreen.ShowScreen();
         }
     }
@@ -367,9 +367,6 @@ public class CombatManager : MonoBehaviour
             else playersOnField[i].HidePointer();
         }
     }
-
-
-
 
 
     public void IncreaseFriendlyTargetIndex()

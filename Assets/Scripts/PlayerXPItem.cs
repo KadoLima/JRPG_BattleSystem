@@ -73,7 +73,7 @@ public class PlayerXPItem : MonoBehaviour
             }
 
             playerXPInfo.currentLevel++;
-            playerXPInfo.xpToLevel *= 1.11f;
+            playerXPInfo.xpToLevel = Mathf.RoundToInt(playerXPInfo.xpToLevel * 1.06f);
             UpdateLevelText();
             levelUpWarning.SetActive(true);
             xpBarFill.fillAmount = 0;

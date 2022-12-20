@@ -26,7 +26,14 @@ public class EnemyBehaviour : CharacterBehaviour
 
     public CharacterBehaviour GetRandomPlayer()
     {
-        currentPlayerTarget = CombatManager.instance.playersOnField[Random.Range(0, CombatManager.instance.playersOnField.Count)];
+        int randomPlayerIndex = Random.Range(0,CombatManager.instance.playersOnField.Count);
+
+        while (CombatManager.instance.playersOnField[randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
+        {
+            randomPlayerIndex = Random.Range(0, CombatManager.instance.playersOnField.Count);
+        }
+
+        currentPlayerTarget = CombatManager.instance.playersOnField[randomPlayerIndex];
         return currentPlayerTarget;
     }
 

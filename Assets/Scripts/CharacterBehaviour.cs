@@ -150,6 +150,24 @@ public class CharacterBehaviour : MonoBehaviour
         }
     }
 
+    protected void SetToIdle()
+    {
+        isBusy = false;
+        currentEnemy = null;
+        //UIController.ShowCanvas();
+        uiController.ShowUI();
+        PlayAnimation(idleAnimation);
+    }
+
+    protected void SetToBusy()
+    {
+        isBusy = true;
+        uiController.HideBattlePanel();
+        uiController.HideUI();
+
+        //UIController.HideCanvas();
+    }
+
     IEnumerator PickAnotherTarget_Coroutine()
     {
         yield return new WaitForSeconds(0.02f);
@@ -173,14 +191,7 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.READY);
     }
 
-    protected void SetToIdle()
-    {
-        isBusy = false;
-        currentEnemy = null;
-        //UIController.ShowCanvas();
-        uiController.ShowUI();
-        PlayAnimation(idleAnimation);
-    }
+
 
     private void PickingTargetCycle()
     {
@@ -202,44 +213,6 @@ public class CharacterBehaviour : MonoBehaviour
         }
     }
 
-    public void UseNormalAttack()
-    {
-        currentPreAction = normalAttack;
-        ChangeBattleState(BattleState.PICKING_TARGET);
-    }
-
-    public void SelectTech(int skillIndex)
-    {
-        currentPreAction = skills[skillIndex];
-
-        if (currentMP < currentPreAction.mpCost)
-            return;
-
-        ChangeBattleState(BattleState.PICKING_TARGET);
-    }
-
-    public void SelectConsumableItem(int itemIndex, DamageType dmgType)
-    {
-        Debug.LogWarning("player selected a consumable item...");
-        currentPreAction = useItem;
-        currentPreAction.damageType = dmgType;
-        currentConsumableItemIndex = itemIndex;
-
-        ChangeBattleState(BattleState.PICKING_TARGET);
-    }
-
-    public void ShowDescription(int skillIndex)
-    {
-        uiController.ShowDescriptionTooltip(skills[skillIndex].description);
-    }
-
-    public void ShowDescription(string text)
-    {
-        uiController.ShowDescriptionTooltip(text);
-    }
-
-
-
     public void ExecuteActionOn(CharacterBehaviour target)
     {
         currentEnemy = target;
@@ -257,12 +230,10 @@ public class CharacterBehaviour : MonoBehaviour
             CombatManager.instance.LookForReadyPlayer();
         }
 
-
-
         ChangeBattleState(BattleState.EXECUTING_ACTION);
 
         currentExecutingAction = currentPreAction;
-       
+
         CombatManager.instance.HideAllEnemyPointers();
 
         yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true);
@@ -273,7 +244,7 @@ public class CharacterBehaviour : MonoBehaviour
             SkillNameScreen.instance.Show(currentExecutingAction.actionName);
             currentMP -= currentExecutingAction.mpCost;
             //Debug.LogWarning($"SPENDING {currentAction.mpCost} , player has {currentMP} left");
-            uiController.RefreshMP(currentMP,myStats.baseMP);
+            uiController.RefreshMP(currentMP, myStats.baseMP);
             ScreenEffects.instance.ShowDarkScreen();
         }
 
@@ -313,7 +284,7 @@ public class CharacterBehaviour : MonoBehaviour
         yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
         ApplyDamageOrHeal(target);
-        
+
         if (currentExecutingAction.actionType == ActionType.ITEM)
         {
             Debug.LogWarning("Player is using an item..");
@@ -335,9 +306,41 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.RECHARGING);
     }
 
+    public void UseNormalAttack()
+    {
+        currentPreAction = normalAttack;
+        ChangeBattleState(BattleState.PICKING_TARGET);
+    }
 
+    public void SelectTech(int skillIndex)
+    {
+        currentPreAction = skills[skillIndex];
 
+        if (currentMP < currentPreAction.mpCost)
+            return;
 
+        ChangeBattleState(BattleState.PICKING_TARGET);
+    }
+
+    public void SelectConsumableItem(int itemIndex, DamageType dmgType)
+    {
+        Debug.LogWarning("player selected a consumable item...");
+        currentPreAction = useItem;
+        currentPreAction.damageType = dmgType;
+        currentConsumableItemIndex = itemIndex;
+
+        ChangeBattleState(BattleState.PICKING_TARGET);
+    }
+
+    public void ShowDescription(int skillIndex)
+    {
+        uiController.ShowDescriptionTooltip(skills[skillIndex].description);
+    }
+
+    public void ShowDescription(string text)
+    {
+        uiController.ShowDescriptionTooltip(text);
+    }
 
     public void MoveToTarget(CharacterBehaviour enemy)
     {
@@ -354,20 +357,11 @@ public class CharacterBehaviour : MonoBehaviour
         transform.DOLocalMove(originalPosition, secondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
     }
 
-    public CharacterBehaviour GetRandomEnemy()
-    {
-        currentEnemy = CombatManager.instance.enemiesOnField[UnityEngine.Random.Range(0, CombatManager.instance.enemiesOnField.Count)];
-        return currentEnemy;
-    }
-
-    protected void SetToBusy()
-    {
-        isBusy = true;
-        uiController.HideBattlePanel();
-        uiController.HideUI();
-
-        //UIController.HideCanvas();
-    }
+    //public CharacterBehaviour GetRandomEnemy()
+    //{
+    //    currentEnemy = CombatManager.instance.enemiesOnField[UnityEngine.Random.Range(0, CombatManager.instance.enemiesOnField.Count)];
+    //    return currentEnemy;
+    //}
 
     protected void PlayAnimation(string animString)
     {
@@ -392,10 +386,6 @@ public class CharacterBehaviour : MonoBehaviour
                 SetToIdle();
                 break;
             case BattleState.READY:
-
-                //CombatManager.instance.LookForReadyPlayer();
-                //if (!GetComponent<EnemyBehaviour>())
-
                 if (uiController.GetBattlePanel())
                 {
                     CombatManager.instance.LookForReadyPlayer();
@@ -447,8 +437,10 @@ public class CharacterBehaviour : MonoBehaviour
 
             case BattleState.GAMEWIN:
                 GoBackToStartingPosition();
+                PlayAnimation(idleAnimation);
                 //UIController.HideBattlePanel();
                 uiController.HideCanvas();
+                ScreenEffects.instance.HideDarkScreen();
                 break;
             case BattleState.NULL:
                 break;
