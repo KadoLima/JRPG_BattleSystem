@@ -8,9 +8,8 @@ Recently implemented:
 - [Player + Enemies] Main animations and effects;
 - [Enemies] HP losing and death;
 - [Player] Single target and multi-target skills;
+- [Enemies] Enemies AI Behaviour;
+- 2nd Party Member (playable character with a different skill set);
 
 Currently working on: 
-- Enemies AI Behaviour;
-
-Soon to be implemented:
-- 2nd Party Member (playable character) - a Mage hero;
+- Bug fixing after implementing 2nd party member.
