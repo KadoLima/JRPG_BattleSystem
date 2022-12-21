@@ -9344,7 +9344,7 @@ MonoBehaviour:
       cycleTime: 0
       particles: {fileID: 0}
   myStats:
-    baseHP: 10
+    baseHP: 112
     baseMP: 0
     minDamage: 9
     maxDamage: 14
@@ -17234,7 +17234,7 @@ MonoBehaviour:
       cycleTime: 0
       particles: {fileID: 0}
   myStats:
-    baseHP: 10
+    baseHP: 85
     baseMP: 0
     minDamage: 4
     maxDamage: 8
@@ -24380,6 +24380,7 @@ GameObject:
   - component: {fileID: 1260718195}
   - component: {fileID: 1260718196}
   - component: {fileID: 1260718197}
+  - component: {fileID: 1260718198}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -24507,6 +24508,20 @@ MonoBehaviour:
   normalStrength: 5
   normalSmoothing: 1
   computingNormal: 0
+--- !u!114 &1260718198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1260718192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff776d484a1a3f048abd97dc4fac20fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startTimeBetweenSpawns: 0.02
+  echo: {fileID: 4821512705132272490, guid: acb4f317ec8e3c94398028300d2bc244, type: 3}
 --- !u!1 &1268389926
 GameObject:
   m_ObjectHideFlags: 0
@@ -24553,6 +24568,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playersOnField: []
   enemiesOnField: []
+  globalIntervalBetweenActions: 1.25
   globalEnemyAttackCD: 3
   totalXPEarned: 0
   victoryScreen: {fileID: 1060207807}
@@ -31127,7 +31143,7 @@ MonoBehaviour:
       cycleTime: 0
       particles: {fileID: 0}
   myStats:
-    baseHP: 9
+    baseHP: 76
     baseMP: 0
     minDamage: 4
     maxDamage: 6

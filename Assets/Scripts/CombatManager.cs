@@ -31,6 +31,9 @@ public class CombatManager : MonoBehaviour
     CharacterBehaviour currentActivePlayer = null;
     public CharacterBehaviour CurrentActivePlayer => currentActivePlayer;
 
+    [SerializeField] float globalIntervalBetweenActions = 1f;
+    public float GlobalIntervalBetweenActions => globalIntervalBetweenActions;
+
     [SerializeField] float globalEnemyAttackCD = 5f;
     float currentGlobalEnemyAttackCD;
 

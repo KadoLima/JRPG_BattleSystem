@@ -152,11 +152,22 @@ public class CharacterBehaviour : MonoBehaviour
 
     protected void SetToIdle()
     {
-        isBusy = false;
+        StartCoroutine(SetToIdle_Coroutine());
+        //isBusy = false;
+        //currentEnemy = null;
+        ////UIController.ShowCanvas();
+        //uiController.ShowUI();
+        //PlayAnimation(idleAnimation);
+    }
+
+    IEnumerator SetToIdle_Coroutine()
+    {
         currentEnemy = null;
         //UIController.ShowCanvas();
         uiController.ShowUI();
         PlayAnimation(idleAnimation);
+        yield return new WaitForSeconds(CombatManager.instance.GlobalIntervalBetweenActions);
+        isBusy = false;
     }
 
     protected void SetToBusy()
@@ -225,7 +236,6 @@ public class CharacterBehaviour : MonoBehaviour
     {
         if (CombatManager.instance.CurrentActivePlayer == this)
         {
-            Debug.LogWarning("1111111");
             CombatManager.instance.SetCurrentActivePlayer(null);
             CombatManager.instance.LookForReadyPlayer();
         }
@@ -250,8 +260,18 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.goToTarget)
         {
+            Debug.LogWarning("GOING TO TARGET");
+
+            TrailEffect _trailEffect = GetComponentInChildren<TrailEffect>();
+
+            if (_trailEffect)
+                _trailEffect.ShowTrail();
+
             MoveToTarget(target);
             yield return new WaitForSeconds(secondsToReachTarget);
+
+            if (_trailEffect)
+                _trailEffect.HideTrail();
         }
 
         if (currentExecutingAction.animationCycle.particles)
