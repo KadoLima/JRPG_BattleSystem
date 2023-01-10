@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class SubPanels : MonoBehaviour
 {
@@ -48,26 +49,26 @@ public class SubPanels : MonoBehaviour
         itensSubpanel.SetActive(false);
     }
 
-    void Update()
-    {
-        BackIfKeyPressed();
-    }
+    //void Update()
+    //{
+    //    BackIfKeyPressed();
+    //}
 
-    private void BackIfKeyPressed()
-    {
-        if (player.CurrentBattlePhase == BattleState.SELECTING_TECH ||
-            player.CurrentBattlePhase == BattleState.SELECTING_ITEM)
-        {
-            if (Input.GetKeyDown(KeyCode.Backspace) ||
-                Input.GetKeyDown(KeyCode.LeftArrow) ||
-                Input.GetKeyDown(KeyCode.A))
-            {
-                //techsSubPanel.SetActive(false);
-                //itensSubpanel.SetActive(false);
-                player.ChangeBattleState(BattleState.READY);
-            }
-        }
-    }
+    //private void BackIfKeyPressed()
+    //{
+    //    if (player.CurrentBattlePhase == BattleState.SELECTING_TECH ||
+    //        player.CurrentBattlePhase == BattleState.SELECTING_ITEM)
+    //    {
+    //        if (Input.GetKeyDown(KeyCode.Backspace) ||
+    //            Input.GetKeyDown(KeyCode.LeftArrow) ||
+    //            Input.GetKeyDown(KeyCode.A))
+    //        {
+    //            //techsSubPanel.SetActive(false);
+    //            //itensSubpanel.SetActive(false);
+    //            player.ChangeBattleState(BattleState.READY);
+    //        }
+    //    }
+    //}
 
     private void BuildTechItens()
     {
@@ -154,6 +155,4 @@ public class SubPanels : MonoBehaviour
         techsSubPanel.SetActive(false);
         itensSubpanel.SetActive(false);
     }
-
-
 }

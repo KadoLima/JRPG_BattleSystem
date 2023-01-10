@@ -24,7 +24,6 @@ public class SpellBehaviour : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.LogWarning("HELLO?");
         myAnim = GetComponent<Animator>();
 
         if (myAnim)
@@ -82,7 +81,6 @@ public class SpellBehaviour : MonoBehaviour
 
     IEnumerator FadeOutDestroy_Coroutine(float delay = 0)
     {
-        Debug.LogWarning("Fading out");
         yield return new WaitForSeconds(delay);
         float _fadeOutTime = .25f;
         SpriteRenderer _spriteRenderer = GetComponent<SpriteRenderer>();

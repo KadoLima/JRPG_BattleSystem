@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum BattleState
 {
@@ -31,31 +32,51 @@ public class CombatManager : MonoBehaviour
     CharacterBehaviour currentActivePlayer = null;
     public CharacterBehaviour CurrentActivePlayer => currentActivePlayer;
 
+    EnemyBehaviour currentActiveEnemy = null;
+
     [SerializeField] float globalIntervalBetweenActions = 1f;
     public float GlobalIntervalBetweenActions => globalIntervalBetweenActions;
 
     [SerializeField] float globalEnemyAttackCD = 5f;
+    float originalGlobalEnemyAttackCDValue;
     float currentGlobalEnemyAttackCD;
+
+    [SerializeField] float internalPlayerCD = 2f;
+    float currentInternalPlayerCD;
 
     [SerializeField]int totalXPEarned = 0;
     [SerializeField] VictoryScreen victoryScreen;
     [SerializeField] GameOverScreen gameOverScreen;
 
+    [Header("COMBAT QUEUE")]
+    public List<Transform> combatQueue = new List<Transform>();
+
     public bool FieldIsClear()
     {
         foreach (var p in playersOnField)
         {
-            if (p.IsBusy())
+            if (p.CurrentBattlePhase == BattleState.EXECUTING_ACTION)
                 return false;
         }
 
         foreach (var e in enemiesOnField)
         {
-            if (e.IsBusy())
+            if (e.CurrentBattlePhase == BattleState.EXECUTING_ACTION)
                 return false;
         }
 
         return true;
+    }
+
+    public bool IsAnyEnemyAttacking()
+    {
+        foreach (var e in enemiesOnField)
+        {
+            if (e.IsBusy())
+                return true;
+        }
+
+        return false;
     }
 
     private void Awake()
@@ -66,17 +87,18 @@ public class CombatManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        currentGlobalEnemyAttackCD = globalEnemyAttackCD;
+        currentGlobalEnemyAttackCD = originalGlobalEnemyAttackCDValue = globalEnemyAttackCD;
+        currentInternalPlayerCD = 0;
     }
 
     private void Update()
     {
-        if (CurrentActivePlayer!= null && CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentPreAction.isAreaOfEffect)
-        {
-            if (playersOnField[0].CurrentPreAction.IsHarmful)
-                CycleThroughEnemyTargets();
-            else CycleThroughFriendlyTargets();
-        }
+        //if (CurrentActivePlayer!= null && CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentPreAction.isAreaOfEffect)
+        //{
+        //    if (playersOnField[0].CurrentPreAction.IsHarmful)
+        //        CycleThroughEnemyTargets();
+        //    else CycleThroughFriendlyTargets();
+        //}
 
         if (FieldIsClear())
         {
@@ -86,10 +108,15 @@ public class CombatManager : MonoBehaviour
             currentGlobalEnemyAttackCD -= Time.deltaTime;
             currentGlobalEnemyAttackCD = Mathf.Clamp(currentGlobalEnemyAttackCD, 0, globalEnemyAttackCD);
 
+            currentInternalPlayerCD -= Time.deltaTime;
+            currentInternalPlayerCD = Mathf.Clamp(currentInternalPlayerCD, 0, internalPlayerCD);
+
             if (EnemyCanAttack() && !IsGameOver())
             {
-                enemiesOnField[Random.Range(0, enemiesOnField.Count)].AttackRandomPlayer();
-                ResetGlobalEnemyAttackCD();
+                currentActiveEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
+                currentActiveEnemy.AttackRandomPlayer();
+
+                //ResetGlobalEnemyAttackCD();
             }
         }
 
@@ -98,13 +125,25 @@ public class CombatManager : MonoBehaviour
 
     public void ResetGlobalEnemyAttackCD()
     {
-        globalEnemyAttackCD = Random.Range(3, 5);
+        currentActiveEnemy = null;
+        globalEnemyAttackCD = Random.Range(originalGlobalEnemyAttackCDValue - 0.5f, originalGlobalEnemyAttackCDValue + 1f);
         currentGlobalEnemyAttackCD = globalEnemyAttackCD;
+    }
+
+    public void ResetInternalPlayerActionCD()
+    {
+        //Debug.LogWarning("RESETTING INTERNAL PLAYER CD");
+        currentInternalPlayerCD = internalPlayerCD;
     }
 
     public bool EnemyCanAttack()
     {
-        return currentGlobalEnemyAttackCD <= 0;
+        return currentGlobalEnemyAttackCD <= 0 && currentActiveEnemy == null;
+    }
+
+    public bool PlayerCanAttack()
+    {
+        return currentInternalPlayerCD <= 0;
     }
 
     public void AddToTotalXP(int amount)
@@ -136,9 +175,16 @@ public class CombatManager : MonoBehaviour
 
     public void LookForReadyPlayer()
     {
+        StartCoroutine(LookForReadyPlayerCoroutine());
+    }
+
+    IEnumerator LookForReadyPlayerCoroutine()
+    {
+        yield return new WaitForSeconds(0.02f);
+
         if (currentActivePlayer != null)
         {
-            return;
+            yield break;
         }
 
         foreach (CharacterBehaviour c in playersOnField)
@@ -146,7 +192,7 @@ public class CombatManager : MonoBehaviour
             if (c.CurrentBattlePhase == BattleState.READY)
             {
                 SetCurrentActivePlayer(c);
-                return;
+                yield break;
             }
         }
 
@@ -181,7 +227,6 @@ public class CombatManager : MonoBehaviour
         if (index == playersOnField.Count)
             index = 0;
 
-        Debug.LogWarning(index);
         SetCurrentActivePlayer(playersOnField[index]);
     }
 
@@ -278,18 +323,18 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    public void CycleThroughEnemyTargets()
-    {
-        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            DecreaseTargetEnemyIndex();
-        }
+    //public void CycleThroughEnemyTargets()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+    //    {
+    //        DecreaseTargetEnemyIndex();
+    //    }
 
-        else if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            IncreaseTargetEnemyIndex();
-        }
-    }
+    //    else if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+    //    {
+    //        IncreaseTargetEnemyIndex();
+    //    }
+    //}
 
     public void RemoveFromField_Delayed(CharacterBehaviour c)
     {
@@ -385,12 +430,13 @@ public class CombatManager : MonoBehaviour
 
     public void DecreaseFriendlyTargetIndex()
     {
+        //Debug.LogWarning(currentFriendlyTargetIndex);
         currentFriendlyTargetIndex--;
 
         if (currentFriendlyTargetIndex < 0)
             currentFriendlyTargetIndex = playersOnField.Count - 1;
 
-        SetTargetedFriendlyTargetByIndex(currentTargetEnemyIndex);
+        SetTargetedFriendlyTargetByIndex(currentFriendlyTargetIndex);
     }
 
 
@@ -413,18 +459,42 @@ public class CombatManager : MonoBehaviour
     }
 
 
-    public void CycleThroughFriendlyTargets()
-    {
-        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            DecreaseFriendlyTargetIndex();
-        }
+    //public void CycleThroughFriendlyTargets()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+    //    {
+    //        DecreaseFriendlyTargetIndex();
+    //    }
 
-        else if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            IncreaseFriendlyTargetIndex();
-        }
-    }
+    //    else if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+    //    {
+    //        IncreaseFriendlyTargetIndex();
+    //    }
+    //}
+
+    #endregion
+
+    #region Inputs
+
+    //public void OnTargetNavigationUP(InputValue value)
+    //{
+    //    if (CurrentActivePlayer != null && CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !CurrentActivePlayer.CurrentPreAction.isAreaOfEffect)
+    //    {
+    //        if (CurrentActivePlayer.CurrentPreAction.IsHarmful)
+    //            IncreaseTargetEnemyIndex();
+    //        else IncreaseFriendlyTargetIndex();
+    //    }
+    //}
+
+    //public void OnTargetNavigationDOWN(InputValue value)
+    //{
+    //    if (CurrentActivePlayer != null && CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !CurrentActivePlayer.CurrentPreAction.isAreaOfEffect)
+    //    {
+    //        if (CurrentActivePlayer.CurrentPreAction.IsHarmful)
+    //            DecreaseTargetEnemyIndex();
+    //        else DecreaseFriendlyTargetIndex();
+    //    }
+    //}
 
     #endregion
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using System;
+using UnityEngine.InputSystem;
 
 public enum ActionType
 {
@@ -25,7 +26,7 @@ public struct AnimationCycle
 {
     public string name;
     public float cycleTime;
-    public ParticleSystem particles;
+    //public ParticleSystem particles;
 }
 
 [System.Serializable]
@@ -71,10 +72,12 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] protected string idleAnimation;
     [SerializeField] string deadAnimation;
     [SerializeField] Transform projectileSpawnPoint;
+    [SerializeField] ParticleSystem healingEffect;
     [Header("ANIMATION ACTIONS")]
     [SerializeField] protected CombatAction normalAttack;
     [SerializeField] CombatAction[] skills;
     [SerializeField] CombatAction useItem;
+
     int currentConsumableItemIndex;
     public CombatAction[] Skills => skills;
 
@@ -100,8 +103,8 @@ public class CharacterBehaviour : MonoBehaviour
     public CombatAction CurrentPreAction => currentPreAction;
     public CombatAction CurrentExecutingAction => currentExecutingAction;
 
-    CharacterBehaviour currentEnemy = null;
-    public CharacterBehaviour CurrentEnemy => currentEnemy;
+    CharacterBehaviour currentTarget = null;
+    public CharacterBehaviour CurrentTarget => currentTarget;
 
     bool isBusy = false;
     public bool IsBusy() => isBusy;
@@ -123,32 +126,47 @@ public class CharacterBehaviour : MonoBehaviour
 
     public virtual void Update()
     {
-        if (CurrentBattlePhase == BattleState.DEAD)
+        //if (Input.GetKeyDown(KeyCode.F))
+        //{
+        //    Debug.LogWarning("FieldIsClear() = " + CombatManager.instance.FieldIsClear());
+        //    Debug.LogWarning("PlayerCanAttack() = " + CombatManager.instance.PlayerCanAttack());
+        //    Debug.LogWarning($"Is it my turn? I'm {this.transform.name} and first in queue is {CombatManager.instance.combatQueue[0].name}");
+        //}
+
+        if (CurrentBattlePhase == BattleState.DEAD || CombatManager.instance.CurrentActivePlayer != this)
             return;
 
-        PickingTargetCycle();
+        UIController.GetBattlePanel().ShowHideSwapCharsIndicator(CombatManager.instance.ReadyPlayersAmount() > 1);
 
-        if (uiController.GetBattlePanel() && CurrentBattlePhase == BattleState.READY)
-        {
-            if (CombatManager.instance.ReadyPlayersAmount() > 1)
-            {
-                UIController.GetBattlePanel().ShowHideArrows(true);
 
-                if (CombatManager.instance.CurrentActivePlayer == this)
-                {
-                    if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.A)
-                        || Input.GetKeyDown(KeyCode.D))
-                    {
-                        StartCoroutine(PickAnotherTarget_Coroutine());
-                    }
-                }
-            }
-            else
-            {
-                UIController.GetBattlePanel().ShowHideArrows(false);
-            }
-        }
+
     }
+
+    //    //TargetSelection();
+
+    //    if (uiController.GetBattlePanel() && CurrentBattlePhase == BattleState.READY)
+    //    {
+    //        if (CombatManager.instance.ReadyPlayersAmount() > 1)
+    //        {
+    //            UIController.GetBattlePanel().ShowHideArrows(true);
+
+    //            if (CombatManager.instance.CurrentActivePlayer == this)
+    //            {
+    //                if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.A)
+    //                    || Input.GetKeyDown(KeyCode.D))
+    //                {
+    //                    SwapActiveCharacter();
+    //                }
+    //            }
+    //        }
+    //        else
+    //        {
+    //            UIController.GetBattlePanel().ShowHideArrows(false);
+    //        }
+    //    }
+    //}
+
+
 
     protected void SetToIdle()
     {
@@ -162,7 +180,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     IEnumerator SetToIdle_Coroutine()
     {
-        currentEnemy = null;
+        currentTarget = null;
         //UIController.ShowCanvas();
         uiController.ShowUI();
         PlayAnimation(idleAnimation);
@@ -173,13 +191,19 @@ public class CharacterBehaviour : MonoBehaviour
     protected void SetToBusy()
     {
         isBusy = true;
+        //CombatManager.instance.combatQueue.Remove(this.transform);
         uiController.HideBattlePanel();
         uiController.HideUI();
 
         //UIController.HideCanvas();
     }
 
-    IEnumerator PickAnotherTarget_Coroutine()
+    public void SwapActiveCharacter()
+    {
+        StartCoroutine(SwapActiveCharacter_Coroutine());
+    }
+
+    IEnumerator SwapActiveCharacter_Coroutine()
     {
         yield return new WaitForSeconds(0.02f);
         UIController.HideBattlePanel();
@@ -190,6 +214,8 @@ public class CharacterBehaviour : MonoBehaviour
     {
         if (!uiController.cooldownBar)
             yield break;
+
+        //yield return new WaitUntil(() => IntroScreen.IntroDone);
 
         currentCooldown = 0;
 
@@ -204,30 +230,42 @@ public class CharacterBehaviour : MonoBehaviour
 
 
 
-    private void PickingTargetCycle()
-    {
-        if (CurrentBattlePhase == BattleState.PICKING_TARGET)
-        {
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
-            {
-                if (currentPreAction.IsHarmful)
-                    ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
-                else ExecuteActionOn(CombatManager.instance.playersOnField[CombatManager.instance.CurrentFriendlyTargetIndex]);
-            }
+    //private void TargetSelection()
+    //{
+        //if (CurrentBattlePhase == BattleState.PICKING_TARGET)
+        //{
+            //if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            //{
+            //    PressedConfirmButton();
+            //}
 
-            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) ||
-                     Input.GetKeyDown(KeyCode.Backspace) ||
-                     Input.GetKeyDown(KeyCode.Escape))
-            {
-                ChangeBattleState(BattleState.READY);
-            }
-        }
-    }
+
+            //if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) ||
+            //         Input.GetKeyDown(KeyCode.Backspace) ||
+            //         Input.GetKeyDown(KeyCode.Escape))
+            //{
+            //    PressedBackButton();
+            //}
+        //}
+    //}
+
+    //private void PressedBackButton()
+    //{
+    //        ChangeBattleState(BattleState.READY);
+    //}
+
+    //private void PressedConfirmButton()
+    //{
+    //    Debug.LogWarning("CONFIRM!");
+
+    //    if (currentPreAction.IsHarmful)
+    //            ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
+    //        else ExecuteActionOn(CombatManager.instance.playersOnField[CombatManager.instance.CurrentFriendlyTargetIndex]);
+    //}
 
     public void ExecuteActionOn(CharacterBehaviour target)
     {
-        currentEnemy = target;
-
+        currentTarget = target;
         StartCoroutine(ActionCoroutine(target));
 
     }
@@ -240,14 +278,26 @@ public class CharacterBehaviour : MonoBehaviour
             CombatManager.instance.LookForReadyPlayer();
         }
 
-        ChangeBattleState(BattleState.EXECUTING_ACTION);
-
         currentExecutingAction = currentPreAction;
 
         CombatManager.instance.HideAllEnemyPointers();
 
-        yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true);
-        SetToBusy();
+        yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true && CombatManager.instance.PlayerCanAttack() && 
+                                         (CombatManager.instance.combatQueue.Count>0 && CombatManager.instance.combatQueue[0] == this.transform));
+
+        ChangeBattleState(BattleState.EXECUTING_ACTION);
+        
+
+        //Debug.LogWarning("TARGET_v1: " + target);
+        //check if target is alive
+        if (target.CurrentBattlePhase == BattleState.DEAD)
+        {
+            //Debug.LogWarning("CHANGING TARGET!");
+            if (currentExecutingAction.IsHarmful)
+                target = CombatManager.instance.enemiesOnField[0];
+            else target = CombatManager.instance.playersOnField[0];
+        }
+
 
         if (currentExecutingAction.actionType == ActionType.SKILL)
         {
@@ -260,13 +310,14 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.goToTarget)
         {
-            Debug.LogWarning("GOING TO TARGET");
+            //Debug.LogWarning("GOING TO TARGET");
 
             TrailEffect _trailEffect = GetComponentInChildren<TrailEffect>();
 
             if (_trailEffect)
                 _trailEffect.ShowTrail();
 
+            Debug.LogWarning(this.gameObject.name + " TARGET_v2: " + target);
             MoveToTarget(target);
             yield return new WaitForSeconds(secondsToReachTarget);
 
@@ -274,8 +325,8 @@ public class CharacterBehaviour : MonoBehaviour
                 _trailEffect.HideTrail();
         }
 
-        if (currentExecutingAction.animationCycle.particles)
-            currentExecutingAction.animationCycle.particles.Play();
+        //if (currentExecutingAction.animationCycle.particles)
+        //    currentExecutingAction.animationCycle.particles.Play();
 
         PlayAnimation(currentExecutingAction.animationCycle.name);
 
@@ -284,7 +335,7 @@ public class CharacterBehaviour : MonoBehaviour
             if (currentExecutingAction.isAreaOfEffect == false)
             {
                 GameObject p = Instantiate(currentExecutingAction.projectile.gameObject, projectileSpawnPoint.transform.position, Quaternion.identity);
-                p.transform.SetParent(this.gameObject.transform);
+                p.transform.SetParent(gameObject.transform);
                 yield return new WaitForSeconds(0.25f);
                 p.GetComponent<SpellBehaviour>().Execute(projectileSpawnPoint.position, target);
             }
@@ -301,15 +352,19 @@ public class CharacterBehaviour : MonoBehaviour
             }
         }
 
+        CombatManager.instance.HideAllFriendlyTargetPointers();
+
         yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
         ApplyDamageOrHeal(target);
 
         if (currentExecutingAction.actionType == ActionType.ITEM)
         {
-            Debug.LogWarning("Player is using an item..");
+            //Debug.LogWarning("Player is using an item..");
             CharacterInventory inventory = GetComponent<CharacterInventory>();
             inventory.ConsumeItem(currentConsumableItemIndex);
+            PlayHealingEffect(target);
+
             //UIController.GetBattlePanel().GetSubPanels().RefreshConsumableItensListUI();
         }
 
@@ -323,17 +378,25 @@ public class CharacterBehaviour : MonoBehaviour
         ScreenEffects.instance.HideDarkScreen();
 
         yield return new WaitForSeconds(0.2f);
+        CombatManager.instance.combatQueue.Remove(this.transform);
+        CombatManager.instance.ResetInternalPlayerActionCD();
         ChangeBattleState(BattleState.RECHARGING);
     }
 
     public void UseNormalAttack()
     {
+        if (CombatManager.instance.CurrentActivePlayer != this)
+            return;
+
         currentPreAction = normalAttack;
         ChangeBattleState(BattleState.PICKING_TARGET);
     }
 
     public void SelectTech(int skillIndex)
     {
+        if (CombatManager.instance.CurrentActivePlayer != this)
+            return;
+
         currentPreAction = skills[skillIndex];
 
         if (currentMP < currentPreAction.mpCost)
@@ -344,7 +407,10 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void SelectConsumableItem(int itemIndex, DamageType dmgType)
     {
-        Debug.LogWarning("player selected a consumable item...");
+        if (CombatManager.instance.CurrentActivePlayer != this)
+            return;
+
+        //Debug.LogWarning("player selected a consumable item...");
         currentPreAction = useItem;
         currentPreAction.damageType = dmgType;
         currentConsumableItemIndex = itemIndex;
@@ -406,6 +472,7 @@ public class CharacterBehaviour : MonoBehaviour
                 SetToIdle();
                 break;
             case BattleState.READY:
+
                 if (uiController.GetBattlePanel())
                 {
                     CombatManager.instance.LookForReadyPlayer();
@@ -413,7 +480,6 @@ public class CharacterBehaviour : MonoBehaviour
 
                     if (CombatManager.instance.CurrentActivePlayer == this)
                     {
-                        CombatManager.instance.HideAllEnemyPointers();
                         uiController.ShowHidePointer(false);
                         uiController.ShowBattlePanel();
                         uiController.GetBattlePanel().HideSubPanels();
@@ -421,6 +487,7 @@ public class CharacterBehaviour : MonoBehaviour
                 }
 
                 break;
+
             case BattleState.PICKING_TARGET:
                 uiController.HideBattlePanel();
                 if (currentPreAction.IsHarmful)
@@ -428,6 +495,7 @@ public class CharacterBehaviour : MonoBehaviour
                 else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.isAreaOfEffect);
                 break;
             case BattleState.EXECUTING_ACTION:
+                SetToBusy();
                 break;
             case BattleState.SELECTING_TECH:
                 break;
@@ -437,10 +505,10 @@ public class CharacterBehaviour : MonoBehaviour
                 break;
             case BattleState.DEAD:
                 myAnim.Play(deadAnimation);
+                StopAllCoroutines();
 
                 if (!GetComponent<EnemyBehaviour>())
                 {
-                    StopAllCoroutines();
                     Material mat = GetComponentInChildren<SpriteRenderer>().material;
                     mat.SetFloat("_GreyscaleBlend", 1);
                     uiController.HideCanvas(10, 0);
@@ -469,6 +537,11 @@ public class CharacterBehaviour : MonoBehaviour
         }
     }
 
+    public void PlayHealingEffect(CharacterBehaviour target)
+    {
+        target.healingEffect.Play();
+    }
+
     bool IsReady()
     {
         return currentCooldown >= myStats.baseCooldown;
@@ -477,7 +550,7 @@ public class CharacterBehaviour : MonoBehaviour
     protected void ApplyDamageOrHeal(CharacterBehaviour target)
     {
         if (!currentExecutingAction.isAreaOfEffect)
-            target.TakeDamageOrHeal(CalculatedValue(), currentExecutingAction.damageType);
+            target.TakeDamageOrHeal(CalculatedValue(), this.currentExecutingAction.damageType);
         else
         {
             for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
@@ -491,6 +564,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     public virtual void TakeDamageOrHeal(int amount, DamageType dmgType)
     {
+
         if (dmgType == DamageType.HARMFUL)
         {
             currentHP -= amount;
@@ -501,36 +575,57 @@ public class CharacterBehaviour : MonoBehaviour
                 ChangeBattleState(BattleState.DEAD);
             }
         }
-        else
+
+        else if (dmgType == DamageType.HEALING)
         {
-            if (currentExecutingAction.actionType == ActionType.ITEM)
-            {
-                CharacterInventory inventory = GetComponent<CharacterInventory>();
+            currentHP += amount;
 
-                if (inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType == DamageType.HEALING)
-                {
-                    currentHP += amount;
+            if (currentHP > myStats.baseHP)
+                currentHP = myStats.baseHP;
+
+            //UIController.ShowFloatingDamageText(amount, currentExecutingAction.damageType);
+        }
+        else if (dmgType == DamageType.MANA)
+        {
+            currentMP += amount;
+
+            if (currentMP > myStats.baseMP)
+                currentMP = myStats.baseMP;
+
+        }
+        uiController.ShowFloatingDamageText(amount, dmgType);
+        uiController.RefreshHPMP();
+
+        //else
+        //{
+        //    if (currentExecutingAction.actionType == ActionType.ITEM)
+        //    {
+        //        CharacterInventory inventory = GetComponent<CharacterInventory>();
+
+        //        if (inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType == DamageType.HEALING)
+        //        {
+        //            currentHP += amount;
                     
-                    if (currentHP > myStats.baseHP)
-                        currentHP = myStats.baseHP;
+        //            if (currentHP > myStats.baseHP)
+        //                currentHP = myStats.baseHP;
 
-                    //UIController.ShowFloatingDamageText(amount, currentExecutingAction.damageType);
-                }
-                else if (inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType == DamageType.MANA)
-                {
-                    currentMP += amount;
+        //            //UIController.ShowFloatingDamageText(amount, currentExecutingAction.damageType);
+        //        }
+        //        else if (inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType == DamageType.MANA)
+        //        {
+        //            currentMP += amount;
 
-                    if (currentMP > myStats.baseMP)
-                        currentMP = myStats.baseMP;
+        //            if (currentMP > myStats.baseMP)
+        //                currentMP = myStats.baseMP;
 
-                }
-                uiController.ShowFloatingDamageText(amount, inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType);
-            }
+        //        }
+        //        uiController.ShowFloatingDamageText(amount, inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType);
+        //    }
 
             
 
-        }
-        uiController.RefreshHPMP();
+        //}
+        //uiController.RefreshHPMP();
     }
 
     private int CalculatedValue()
@@ -571,5 +666,88 @@ public class CharacterBehaviour : MonoBehaviour
         StopAllCoroutines();
         ChangeBattleState(BattleState.GAMEWIN);
     }
+
+    //#region Inputs
+
+    //public void OnMenus_Confirm(InputValue value)
+    //{
+    //    Debug.LogWarning("OnMenus_Confirm");
+    //    if (CurrentBattlePhase == BattleState.PICKING_TARGET)
+    //    {
+    //        if (currentPreAction.IsHarmful)
+    //        {
+    //            //Debug.LogWarning(CombatManager.instance.CurrentTargetEnemyIndex);
+    //            ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
+    //        }
+    //        else
+    //        {
+    //            //Debug.LogWarning(CombatManager.instance.CurrentFriendlyTargetIndex);
+    //            ExecuteActionOn(CombatManager.instance.playersOnField[CombatManager.instance.CurrentFriendlyTargetIndex]);
+    //        }
+
+    //        CombatManager.instance.combatQueue.Add(this.transform);
+    //    }
+    //}
+
+    //public void OnMenus_Back(InputValue value)
+    //{
+    //    Debug.LogWarning("OnMenus_Back");
+
+    //    if (CurrentBattlePhase == BattleState.SELECTING_TECH ||
+    //        CurrentBattlePhase == BattleState.SELECTING_ITEM || 
+    //        CurrentBattlePhase == BattleState.PICKING_TARGET)
+    //    {
+    //        CombatManager.instance.HideAllEnemyPointers();
+    //        CombatManager.instance.HideAllFriendlyTargetPointers();
+    //        ChangeBattleState(BattleState.READY);
+    //    }
+    //}
+
+    //public void OnSwapActiveCharacter(InputValue value)
+    //{
+    //    if (CurrentBattlePhase == BattleState.DEAD || CombatManager.instance.CurrentActivePlayer != this || CombatManager.instance.ReadyPlayersAmount() <= 1)
+    //        return;
+
+    //    Debug.LogWarning("OnSwapActiveCharacter");
+
+    //    if (uiController.GetBattlePanel() && CurrentBattlePhase == BattleState.READY)
+    //    {
+    //            SwapActiveCharacter();            
+    //    }
+    //}
+
+    //public void OnTargetNavigationUP(InputValue value)
+    //{
+    //    Debug.LogWarning($"Active player is: {CombatManager.instance.CurrentActivePlayer}");
+    //    if (CombatManager.instance.CurrentActivePlayer != this)
+    //        return;
+
+    //    Debug.LogWarning("UP 2");
+    //    if (CurrentBattlePhase == BattleState.PICKING_TARGET && !CurrentPreAction.isAreaOfEffect)
+    //    {
+    //        Debug.LogWarning("UP 3");
+    //        if (CurrentPreAction.IsHarmful)
+    //            CombatManager.instance.IncreaseTargetEnemyIndex();
+    //        else CombatManager.instance.IncreaseFriendlyTargetIndex();
+    //    }
+    //}
+
+    //public void OnTargetNavigationDOWN(InputValue value)
+    //{
+    //    Debug.LogWarning($"Active player is: {CombatManager.instance.CurrentActivePlayer} and this is {this.gameObject.name}");
+
+    //    if (CombatManager.instance.CurrentActivePlayer != this)
+    //        return;
+
+    //    Debug.LogWarning("DOWN 2");
+    //    if (CurrentBattlePhase == BattleState.PICKING_TARGET && !CurrentPreAction.isAreaOfEffect)
+    //    {
+    //        Debug.LogWarning("DOWN 3");
+    //        if (CurrentPreAction.IsHarmful)
+    //            CombatManager.instance.DecreaseTargetEnemyIndex();
+    //        else CombatManager.instance.DecreaseFriendlyTargetIndex();
+    //    }
+    //}
+    //#endregion
 
 }

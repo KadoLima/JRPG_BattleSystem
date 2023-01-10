@@ -7,10 +7,11 @@ using UnityEngine.EventSystems;
 public class HighlightButton : MonoBehaviour
 {
     Tweener tweener;
+    [SerializeField] float scaleMultiplier = 1;
 
     public void Selected()
     {
-        tweener = transform.DOScale(1.075f, .1f);
+        tweener = transform.DOScale(1.075f * scaleMultiplier, .1f);
     }
 
     public void Deselected()

@@ -42,7 +42,7 @@ public class ConsumableItem : MonoBehaviour
 
     public void UpdateAmountText(int amount)
     {
-        Debug.LogWarning("Updating amount...");
+        //Debug.LogWarning("Updating amount...");
         amountText.text = amount.ToString();
     }
 }

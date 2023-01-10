@@ -167,6 +167,7 @@ public class CharacterUIController : MonoBehaviour
 
     public void ShowFloatingDamageText(int damageAmount, DamageType dmgType)
     {
+        //Debug.LogWarning("SHOWING FLOATING COMBAT TEXT");
         StartCoroutine(FloatingTextCoroutine(damageAmount, dmgType));
     }
 

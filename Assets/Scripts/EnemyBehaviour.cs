@@ -7,6 +7,7 @@ public class EnemyBehaviour : CharacterBehaviour
     //[field: SerializeField] public Transform GetAttackedPos { get ; private set; }
     //[SerializeField] CombatEffects combatEffects;
     [Header("ENEMY SPECIFIC PARAMETERS")]
+    [SerializeField] bool isAggressive = true;
     [SerializeField] int xpRewarded;
     [SerializeField] float chanceToUseSkill;
     public float ChanceToUseSkill => chanceToUseSkill;
@@ -39,7 +40,12 @@ public class EnemyBehaviour : CharacterBehaviour
 
     public void AttackRandomPlayer()
     {
-        StartCoroutine(AttackRandomPlayerCoroutine());
+        CombatManager.instance.combatQueue.Add(this.transform);
+
+        if (isAggressive)
+        {
+            StartCoroutine(AttackRandomPlayerCoroutine());
+        }
     }
 
 
@@ -47,11 +53,12 @@ public class EnemyBehaviour : CharacterBehaviour
     {
         ChangeBattleState(BattleState.READY);
         CharacterBehaviour currentTarget = GetRandomPlayer();
-        yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true && CombatManager.instance.EnemyCanAttack() == true);
+        yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true &&
+                                         (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.combatQueue[0] == this.transform));
         ChangeBattleState(BattleState.EXECUTING_ACTION);
-        SetToBusy();
-
+        //SetToBusy();
         SetCurrentAction();
+        //CombatManager.instance.ResetGlobalEnemyAttackCD();
 
         if (currentExecutingAction.goToTarget)
         {
@@ -78,7 +85,9 @@ public class EnemyBehaviour : CharacterBehaviour
             yield return new WaitForSeconds(.2f);
             PlayAnimation(idleAnimation);
 
-            yield return new WaitForSeconds(.5f);
+            //yield return new WaitForSeconds(.25f);
+            CombatManager.instance.combatQueue.Remove(this.transform);
+            CombatManager.instance.ResetGlobalEnemyAttackCD();
             ChangeBattleState(BattleState.RECHARGING);
         }
     }
@@ -114,7 +123,7 @@ public class EnemyBehaviour : CharacterBehaviour
         else
         {
             currentExecutingAction = Skills[0];
-            Debug.LogWarning(currentExecutingAction.actionType + ", " + currentExecutingAction.actionName);
+            //Debug.LogWarning(currentExecutingAction.actionType + ", " + currentExecutingAction.actionName);
             SkillNameScreen.instance.Show(currentExecutingAction.actionName);
         }
     }

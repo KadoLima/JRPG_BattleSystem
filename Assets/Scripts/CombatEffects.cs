@@ -26,7 +26,7 @@ public class CombatEffects : MonoBehaviour
         ScreenEffects.instance.ShakeCamera();
         CharacterBehaviour player = GetComponentInParent<CharacterBehaviour>();
 
-        if (player.CurrentEnemy != null)
+        if (player.CurrentTarget != null)
         {
             if (player.CurrentPreAction.isAreaOfEffect)
             {
@@ -37,7 +37,7 @@ public class CombatEffects : MonoBehaviour
             }
             else
             {
-                player.CurrentEnemy.GetComponentInChildren<CombatEffects>().FlashRed();
+                player.CurrentTarget.GetComponentInChildren<CombatEffects>().FlashRed();
             }
             return;
         }
@@ -80,7 +80,7 @@ public class CombatEffects : MonoBehaviour
         float dissolveAmount = 0;
         while (dissolveAmount < 1)
         {
-            dissolveAmount += Time.fixedDeltaTime/30;
+            dissolveAmount += Time.deltaTime/5;
             myMaterial.SetFloat("_FadeAmount", dissolveAmount);
             yield return null;
         }
