@@ -1,6 +1,6 @@
 # JRPG_BattleSystem
 
-This is my project in constant "work in progress", I'll try to implement some new mechanics, features or effects to this scene whenever I have some spare time. 
+This will always be a "work in progress", I'll try to implement some new mechanics, features or effects to this scene whenever I have some spare time. 
 And as a JRPG fan, I believe there are plenty of features to be implemented in a turn-based battle system, it's been a blast to work on it and a great way to study and improve! 
 I hope you enjoy it as much as I have been.
 
