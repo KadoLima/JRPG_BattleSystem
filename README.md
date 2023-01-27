@@ -4,6 +4,8 @@ This will always be a "work in progress", I'll try to implement some new mechani
 And as a JRPG fan, I believe there are plenty of features to be implemented in a turn-based battle system, it's been a blast to work on it and a great way to study and improve! 
 I hope you enjoy it as much as I have been.
 
+LATEST VERSION GAMEPLAY VIDEO: https://youtu.be/1Xyi3ChHLVo
+
 --------------
 Latest Updates:
 
