@@ -14,7 +14,7 @@ public class IntroScreen : MonoBehaviour
     {
         blackScreen.gameObject.SetActive(true);
 
-        Invoke(nameof(FadeOut), .2f);
+        Invoke(nameof(FadeOut), .20f);
     }
 
     void FadeOut()
