@@ -126,12 +126,6 @@ public class CharacterBehaviour : MonoBehaviour
 
     public virtual void Update()
     {
-        //if (Input.GetKeyDown(KeyCode.F))
-        //{
-        //    Debug.LogWarning("FieldIsClear() = " + CombatManager.instance.FieldIsClear());
-        //    Debug.LogWarning("PlayerCanAttack() = " + CombatManager.instance.PlayerCanAttack());
-        //    Debug.LogWarning($"Is it my turn? I'm {this.transform.name} and first in queue is {CombatManager.instance.combatQueue[0].name}");
-        //}
 
         if (CurrentBattlePhase == BattleState.DEAD || CombatManager.instance.CurrentActivePlayer != this)
             return;
@@ -142,46 +136,17 @@ public class CharacterBehaviour : MonoBehaviour
 
     }
 
-    //    //TargetSelection();
-
-    //    if (uiController.GetBattlePanel() && CurrentBattlePhase == BattleState.READY)
-    //    {
-    //        if (CombatManager.instance.ReadyPlayersAmount() > 1)
-    //        {
-    //            UIController.GetBattlePanel().ShowHideArrows(true);
-
-    //            if (CombatManager.instance.CurrentActivePlayer == this)
-    //            {
-    //                if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.A)
-    //                    || Input.GetKeyDown(KeyCode.D))
-    //                {
-    //                    SwapActiveCharacter();
-    //                }
-    //            }
-    //        }
-    //        else
-    //        {
-    //            UIController.GetBattlePanel().ShowHideArrows(false);
-    //        }
-    //    }
-    //}
-
 
 
     protected void SetToIdle()
     {
         StartCoroutine(SetToIdle_Coroutine());
-        //isBusy = false;
-        //currentEnemy = null;
-        ////UIController.ShowCanvas();
-        //uiController.ShowUI();
-        //PlayAnimation(idleAnimation);
+
     }
 
     IEnumerator SetToIdle_Coroutine()
     {
         currentTarget = null;
-        //UIController.ShowCanvas();
         uiController.ShowUI();
         PlayAnimation(idleAnimation);
         yield return new WaitForSeconds(CombatManager.instance.GlobalIntervalBetweenActions);
@@ -191,11 +156,8 @@ public class CharacterBehaviour : MonoBehaviour
     protected void SetToBusy()
     {
         isBusy = true;
-        //CombatManager.instance.combatQueue.Remove(this.transform);
         uiController.HideBattlePanel();
         uiController.HideUI();
-
-        //UIController.HideCanvas();
     }
 
     public void SwapActiveCharacter()
@@ -215,9 +177,9 @@ public class CharacterBehaviour : MonoBehaviour
         if (!uiController.cooldownBar)
             yield break;
 
-        //yield return new WaitUntil(() => IntroScreen.IntroDone);
-
         currentCooldown = 0;
+
+        yield return new WaitUntil(() => GameManager.gameStarted);
 
         while (currentCooldown < myStats.baseCooldown)
         {
@@ -228,40 +190,6 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.READY);
     }
 
-
-
-    //private void TargetSelection()
-    //{
-        //if (CurrentBattlePhase == BattleState.PICKING_TARGET)
-        //{
-            //if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
-            //{
-            //    PressedConfirmButton();
-            //}
-
-
-            //if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) ||
-            //         Input.GetKeyDown(KeyCode.Backspace) ||
-            //         Input.GetKeyDown(KeyCode.Escape))
-            //{
-            //    PressedBackButton();
-            //}
-        //}
-    //}
-
-    //private void PressedBackButton()
-    //{
-    //        ChangeBattleState(BattleState.READY);
-    //}
-
-    //private void PressedConfirmButton()
-    //{
-    //    Debug.LogWarning("CONFIRM!");
-
-    //    if (currentPreAction.IsHarmful)
-    //            ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
-    //        else ExecuteActionOn(CombatManager.instance.playersOnField[CombatManager.instance.CurrentFriendlyTargetIndex]);
-    //}
 
     public void ExecuteActionOn(CharacterBehaviour target)
     {
@@ -288,11 +216,8 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.EXECUTING_ACTION);
         
 
-        //Debug.LogWarning("TARGET_v1: " + target);
-        //check if target is alive
         if (target.CurrentBattlePhase == BattleState.DEAD)
         {
-            //Debug.LogWarning("CHANGING TARGET!");
             if (currentExecutingAction.IsHarmful)
                 target = CombatManager.instance.enemiesOnField[0];
             else target = CombatManager.instance.playersOnField[0];
@@ -303,14 +228,12 @@ public class CharacterBehaviour : MonoBehaviour
         {
             SkillNameScreen.instance.Show(currentExecutingAction.actionName);
             currentMP -= currentExecutingAction.mpCost;
-            //Debug.LogWarning($"SPENDING {currentAction.mpCost} , player has {currentMP} left");
             uiController.RefreshMP(currentMP, myStats.baseMP);
             ScreenEffects.instance.ShowDarkScreen();
         }
 
         if (currentExecutingAction.goToTarget)
         {
-            //Debug.LogWarning("GOING TO TARGET");
 
             TrailEffect _trailEffect = GetComponentInChildren<TrailEffect>();
 
@@ -325,8 +248,6 @@ public class CharacterBehaviour : MonoBehaviour
                 _trailEffect.HideTrail();
         }
 
-        //if (currentExecutingAction.animationCycle.particles)
-        //    currentExecutingAction.animationCycle.particles.Play();
 
         PlayAnimation(currentExecutingAction.animationCycle.name);
 
@@ -360,12 +281,10 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.actionType == ActionType.ITEM)
         {
-            //Debug.LogWarning("Player is using an item..");
+
             CharacterInventory inventory = GetComponent<CharacterInventory>();
             inventory.ConsumeItem(currentConsumableItemIndex);
             PlayHealingEffect(target);
-
-            //UIController.GetBattlePanel().GetSubPanels().RefreshConsumableItensListUI();
         }
 
 
@@ -442,12 +361,6 @@ public class CharacterBehaviour : MonoBehaviour
     {
         transform.DOLocalMove(originalPosition, secondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
     }
-
-    //public CharacterBehaviour GetRandomEnemy()
-    //{
-    //    currentEnemy = CombatManager.instance.enemiesOnField[UnityEngine.Random.Range(0, CombatManager.instance.enemiesOnField.Count)];
-    //    return currentEnemy;
-    //}
 
     protected void PlayAnimation(string animString)
     {
@@ -595,37 +508,6 @@ public class CharacterBehaviour : MonoBehaviour
         }
         uiController.ShowFloatingDamageText(amount, dmgType);
         uiController.RefreshHPMP();
-
-        //else
-        //{
-        //    if (currentExecutingAction.actionType == ActionType.ITEM)
-        //    {
-        //        CharacterInventory inventory = GetComponent<CharacterInventory>();
-
-        //        if (inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType == DamageType.HEALING)
-        //        {
-        //            currentHP += amount;
-                    
-        //            if (currentHP > myStats.baseHP)
-        //                currentHP = myStats.baseHP;
-
-        //            //UIController.ShowFloatingDamageText(amount, currentExecutingAction.damageType);
-        //        }
-        //        else if (inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType == DamageType.MANA)
-        //        {
-        //            currentMP += amount;
-
-        //            if (currentMP > myStats.baseMP)
-        //                currentMP = myStats.baseMP;
-
-        //        }
-        //        uiController.ShowFloatingDamageText(amount, inventory.inventoryItens[currentConsumableItemIndex].itemData.damageType);
-        //    }
-
-            
-
-        //}
-        //uiController.RefreshHPMP();
     }
 
     private int CalculatedValue()

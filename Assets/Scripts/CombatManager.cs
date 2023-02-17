@@ -93,16 +93,13 @@ public class CombatManager : MonoBehaviour
 
     private void Update()
     {
-        //if (CurrentActivePlayer!= null && CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !playersOnField[0].CurrentPreAction.isAreaOfEffect)
-        //{
-        //    if (playersOnField[0].CurrentPreAction.IsHarmful)
-        //        CycleThroughEnemyTargets();
-        //    else CycleThroughFriendlyTargets();
-        //}
 
         if (FieldIsClear())
         {
             if (enemiesOnField.Count == 0)
+                return;
+
+            if (GameManager.gameStarted == false)
                 return;
 
             currentGlobalEnemyAttackCD -= Time.deltaTime;
@@ -116,11 +113,9 @@ public class CombatManager : MonoBehaviour
                 currentActiveEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
                 currentActiveEnemy.AttackRandomPlayer();
 
-                //ResetGlobalEnemyAttackCD();
             }
         }
 
-        //Debug.LogWarning(FieldIsClear());
     }
 
     public void ResetGlobalEnemyAttackCD()
@@ -132,7 +127,6 @@ public class CombatManager : MonoBehaviour
 
     public void ResetInternalPlayerActionCD()
     {
-        //Debug.LogWarning("RESETTING INTERNAL PLAYER CD");
         currentInternalPlayerCD = internalPlayerCD;
     }
 
@@ -149,8 +143,6 @@ public class CombatManager : MonoBehaviour
     public void AddToTotalXP(int amount)
     {
         totalXPEarned += amount;
-
-       // Debug.LogWarning("TOTALXPEARNED = " + totalXPEarned);
     }
 
     public int TotalXPEarned()
@@ -230,32 +222,6 @@ public class CombatManager : MonoBehaviour
         SetCurrentActivePlayer(playersOnField[index]);
     }
 
-    //public int RechargingPlayersAmount()
-    //{
-    //    int _rechargingPlayers = 0;
-
-    //    foreach (CharacterBehaviour c in playersOnField)
-    //    {
-    //        if (c.CurrentBattlePhase == BattleState.RECHARGING)
-    //        {
-    //            _rechargingPlayers++;
-    //        }
-    //    }
-
-    //    return _rechargingPlayers;
-    //}
-
-    //public bool IsOnlyPlayerReady(CharacterBehaviour player)
-    //{
-    //    foreach (CharacterBehaviour c in playersOnField)
-    //    {
-    //        if (player != c && c.CurrentBattlePhase != BattleState.RECHARGING)
-    //            return false;
-    //    }
-
-    //    return true;
-    //}
-
     #region Enemy Target
     public void RandomEnemyStartAction(int forceEnemyIndex = -1)
     {
@@ -323,18 +289,6 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    //public void CycleThroughEnemyTargets()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-    //    {
-    //        DecreaseTargetEnemyIndex();
-    //    }
-
-    //    else if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
-    //    {
-    //        IncreaseTargetEnemyIndex();
-    //    }
-    //}
 
     public void RemoveFromField_Delayed(CharacterBehaviour c)
     {
@@ -458,19 +412,6 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-
-    //public void CycleThroughFriendlyTargets()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-    //    {
-    //        DecreaseFriendlyTargetIndex();
-    //    }
-
-    //    else if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
-    //    {
-    //        IncreaseFriendlyTargetIndex();
-    //    }
-    //}
 
     #endregion
 

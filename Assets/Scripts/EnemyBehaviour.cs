@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class EnemyBehaviour : CharacterBehaviour
 {
-    //[field: SerializeField] public Transform GetAttackedPos { get ; private set; }
-    //[SerializeField] CombatEffects combatEffects;
     [Header("ENEMY SPECIFIC PARAMETERS")]
     [SerializeField] bool isAggressive = true;
     [SerializeField] int xpRewarded;
@@ -21,6 +19,8 @@ public class EnemyBehaviour : CharacterBehaviour
         CombatManager.instance.enemiesOnField.Add(this);
         originalPosition = transform.localPosition;
         currentHP = myStats.baseHP;
+
+        //ChangeBattleState(BattleState.RECHARGING);
     }
 
 
@@ -53,6 +53,7 @@ public class EnemyBehaviour : CharacterBehaviour
     {
         ChangeBattleState(BattleState.READY);
         CharacterBehaviour currentTarget = GetRandomPlayer();
+
         yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true &&
                                          (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.combatQueue[0] == this.transform));
         ChangeBattleState(BattleState.EXECUTING_ACTION);
@@ -105,9 +106,7 @@ public class EnemyBehaviour : CharacterBehaviour
                 Debug.LogWarning("ENEMY DIED!");
                 CombatManager.instance.AddToTotalXP(xpRewarded);
                 ChangeBattleState(BattleState.DEAD);
-                //UIController.HideCanvas(5, .5f);
-                //combatEffects.DieEffect();
-                //CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
+
             }
         }
 

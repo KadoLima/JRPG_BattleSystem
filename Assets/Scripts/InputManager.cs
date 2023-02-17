@@ -12,6 +12,12 @@ public class InputManager : MonoBehaviour
         //if (IntroScreen.IntroDone == false)
         //    return;
 
+        if (GameManager.gameStarted == false)
+        {
+            FindObjectOfType<IntroScreen>().CloseContent();
+            return;
+        }
+
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET)
@@ -33,6 +39,13 @@ public class InputManager : MonoBehaviour
 
     public void OnMenus_Back(InputValue value)
     {
+
+        if (GameManager.gameStarted == false)
+        {
+            FindObjectOfType<IntroScreen>().CloseContent();
+            return;
+        }
+
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer.CurrentBattlePhase == BattleState.SELECTING_TECH ||
