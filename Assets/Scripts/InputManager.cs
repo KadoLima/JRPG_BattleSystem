@@ -5,16 +5,14 @@ using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
-    #region Inputs
-
     public void OnMenus_Confirm(InputValue value)
     {
 
-        if (!GameManager.instance.gameStarted)
-        {
-            FindObjectOfType<IntroScreen>().CloseContent();
-            return;
-        }
+        // if (!GameManager.instance.gameStarted)
+        // {
+        //     FindObjectOfType<IntroScreen>().CloseContent();
+        //     return;
+        // }
 
         if (GameManager.instance.gameWon)
             return;
@@ -42,11 +40,11 @@ public class InputManager : MonoBehaviour
     public void OnMenus_Back(InputValue value)
     {
 
-        if (!GameManager.instance.gameStarted)
-        {
-            FindObjectOfType<IntroScreen>().CloseContent();
-            return;
-        }
+        // if (!GameManager.instance.gameStarted)
+        // {
+        //     FindObjectOfType<IntroScreen>().CloseContent();
+        //     return;
+        // }
 
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
@@ -110,5 +108,5 @@ public class InputManager : MonoBehaviour
             else CombatManager.instance.DecreaseFriendlyTargetIndex();
         }
     }
-    #endregion
+ 
 }

@@ -17,6 +17,16 @@ public class IntroScreen : MonoBehaviour
         StartCoroutine(ShowContent_Coroutine());
     }
 
+    void Update()
+    {
+        if (Input.anyKeyDown)
+        {
+            if (!GameManager.instance.gameStarted)
+                CloseContent();
+            
+        }
+    }
+
     IEnumerator ShowContent_Coroutine()
     {
         blackScreen.gameObject.SetActive(true);

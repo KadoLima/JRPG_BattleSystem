@@ -33,7 +33,7 @@ public class PlayerXPItem : MonoBehaviour
     {
         UpdateXPText();
         UpdateLevelText();
-        Debug.LogWarning(playerXPInfo.currentXP / playerXPInfo.xpToLevel);
+        //Debug.LogWarning(playerXPInfo.currentXP / playerXPInfo.xpToLevel);
         xpBarFill.fillAmount = playerXPInfo.currentXP / playerXPInfo.xpToLevel;
 
         StartCoroutine(EarnXPCoroutine());
