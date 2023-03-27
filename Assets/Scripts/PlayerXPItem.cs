@@ -10,7 +10,6 @@ public class PlayerXPItem : MonoBehaviour
     [System.Serializable]
     public class XPInfo
     {
-        //public int xpGained = 3218;
         public float currentXP = 3755;
         public float xpToLevel = 5000;
         public int currentLevel = 3;

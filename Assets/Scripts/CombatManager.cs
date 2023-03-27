@@ -99,7 +99,7 @@ public class CombatManager : MonoBehaviour
             if (enemiesOnField.Count == 0)
                 return;
 
-            if (GameManager.gameStarted == false)
+            if (!GameManager.instance.gameStarted)
                 return;
 
             currentGlobalEnemyAttackCD -= Time.deltaTime;
@@ -308,8 +308,11 @@ public class CombatManager : MonoBehaviour
 
     IEnumerator CheckWinConditionCoroutine()
     {
+
         if (enemiesOnField.Count == 0)
         {
+            GameManager.instance.gameWon = true;
+
             foreach (CharacterBehaviour p in playersOnField)
             {
                 p.GameOver_Win();
@@ -412,30 +415,6 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-
-    #endregion
-
-    #region Inputs
-
-    //public void OnTargetNavigationUP(InputValue value)
-    //{
-    //    if (CurrentActivePlayer != null && CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !CurrentActivePlayer.CurrentPreAction.isAreaOfEffect)
-    //    {
-    //        if (CurrentActivePlayer.CurrentPreAction.IsHarmful)
-    //            IncreaseTargetEnemyIndex();
-    //        else IncreaseFriendlyTargetIndex();
-    //    }
-    //}
-
-    //public void OnTargetNavigationDOWN(InputValue value)
-    //{
-    //    if (CurrentActivePlayer != null && CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !CurrentActivePlayer.CurrentPreAction.isAreaOfEffect)
-    //    {
-    //        if (CurrentActivePlayer.CurrentPreAction.IsHarmful)
-    //            DecreaseTargetEnemyIndex();
-    //        else DecreaseFriendlyTargetIndex();
-    //    }
-    //}
 
     #endregion
 

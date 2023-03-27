@@ -30,14 +30,6 @@ public class VictoryScreen : MonoBehaviour
         quitButton.SetActive(false);
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            ShowScreen();
-        }
-    }
-
 
     public void ShowScreen()
     {

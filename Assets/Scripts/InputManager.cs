@@ -9,27 +9,29 @@ public class InputManager : MonoBehaviour
 
     public void OnMenus_Confirm(InputValue value)
     {
-        //if (IntroScreen.IntroDone == false)
-        //    return;
 
-        if (GameManager.gameStarted == false)
+        if (!GameManager.instance.gameStarted)
         {
             FindObjectOfType<IntroScreen>().CloseContent();
             return;
         }
 
+        if (GameManager.instance.gameWon)
+            return;
+
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
+
+        if (_activePlayer == null)
+            return;
 
         if (_activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET)
         {
             if (_activePlayer.CurrentPreAction.IsHarmful)
             {
-                //Debug.LogWarning(CombatManager.instance.CurrentTargetEnemyIndex);
                 _activePlayer.ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
             }
             else
             {
-                //Debug.LogWarning(CombatManager.instance.CurrentFriendlyTargetIndex);
                 _activePlayer.ExecuteActionOn(CombatManager.instance.playersOnField[CombatManager.instance.CurrentFriendlyTargetIndex]);
             }
 
@@ -40,7 +42,7 @@ public class InputManager : MonoBehaviour
     public void OnMenus_Back(InputValue value)
     {
 
-        if (GameManager.gameStarted == false)
+        if (!GameManager.instance.gameStarted)
         {
             FindObjectOfType<IntroScreen>().CloseContent();
             return;
@@ -48,6 +50,9 @@ public class InputManager : MonoBehaviour
 
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
+        if (_activePlayer == null)
+            return;
+        
         if (_activePlayer.CurrentBattlePhase == BattleState.SELECTING_TECH ||
             _activePlayer.CurrentBattlePhase == BattleState.SELECTING_ITEM ||
             _activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET)
@@ -61,19 +66,17 @@ public class InputManager : MonoBehaviour
     public void OnSwapActiveCharacter(InputValue value)
     {
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
-        CharacterUIController _uiController = _activePlayer.GetComponent<CharacterUIController>();
 
-        //Debug.LogWarning(CombatManager.instance.ReadyPlayersAmount());
+        if (_activePlayer == null)
+            return;
+            
+        CharacterUIController _uiController = _activePlayer.GetComponent<CharacterUIController>();
 
         if (_activePlayer.CurrentBattlePhase == BattleState.DEAD || CombatManager.instance.ReadyPlayersAmount() <= 1 || !_uiController)
             return;
 
-        //Debug.LogWarning("OnSwapActiveCharacter");
-
-
         if (_uiController.GetBattlePanel() && _activePlayer.CurrentBattlePhase == BattleState.READY)
         {
-            //Debug.LogWarning("Changing active char!");
             _activePlayer.SwapActiveCharacter();
         }
     }
@@ -82,11 +85,11 @@ public class InputManager : MonoBehaviour
     {
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
-        //Debug.LogWarning($"Active player is: {CombatManager.instance.CurrentActivePlayer}");
+        if (_activePlayer == null)
+            return;
 
         if (_activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !_activePlayer.CurrentPreAction.isAreaOfEffect)
         {
-            //Debug.LogWarning("UP 3");
             if (_activePlayer.CurrentPreAction.IsHarmful)
                 CombatManager.instance.IncreaseTargetEnemyIndex();
             else CombatManager.instance.IncreaseFriendlyTargetIndex();
@@ -97,11 +100,11 @@ public class InputManager : MonoBehaviour
     {
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
-        //Debug.LogWarning($"Active player is: {CombatManager.instance.CurrentActivePlayer}");
+        if (_activePlayer == null)
+            return;
 
         if (_activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !_activePlayer.CurrentPreAction.isAreaOfEffect)
         {
-            //Debug.LogWarning("DOWN 3");
             if (_activePlayer.CurrentPreAction.IsHarmful)
                 CombatManager.instance.DecreaseTargetEnemyIndex();
             else CombatManager.instance.DecreaseFriendlyTargetIndex();

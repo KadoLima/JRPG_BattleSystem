@@ -21,7 +21,7 @@ public class Sun : MonoBehaviour
 
     IEnumerator MoveCoroutine()
     {
-        yield return new WaitUntil(() => GameManager.gameStarted == true);
+        yield return new WaitUntil(() => GameManager.instance.gameStarted == true);
         transform.DOMoveX(rightLimitX, timePeriod).SetEase(Ease.Linear);
 
         float _timeToMidScreen = timePeriod / 2;

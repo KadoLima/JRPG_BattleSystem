@@ -20,7 +20,6 @@ public class EnemyBehaviour : CharacterBehaviour
         originalPosition = transform.localPosition;
         currentHP = myStats.baseHP;
 
-        //ChangeBattleState(BattleState.RECHARGING);
     }
 
 
@@ -57,9 +56,7 @@ public class EnemyBehaviour : CharacterBehaviour
         yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true &&
                                          (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.combatQueue[0] == this.transform));
         ChangeBattleState(BattleState.EXECUTING_ACTION);
-        //SetToBusy();
         SetCurrentAction();
-        //CombatManager.instance.ResetGlobalEnemyAttackCD();
 
         if (currentExecutingAction.goToTarget)
         {
@@ -122,7 +119,6 @@ public class EnemyBehaviour : CharacterBehaviour
         else
         {
             currentExecutingAction = Skills[0];
-            //Debug.LogWarning(currentExecutingAction.actionType + ", " + currentExecutingAction.actionName);
             SkillNameScreen.instance.Show(currentExecutingAction.actionName);
         }
     }

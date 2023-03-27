@@ -27,7 +27,6 @@ public class BattleOption : MonoBehaviour
             GetComponentInParent<CharacterBehaviour>().ChangeBattleState(panelToOpen.battleState);
             panelToOpen.panel.SetActive(true);
             EventSystem.current.SetSelectedGameObject(GetFirstActiveChild());
-            //panelToOpen.GetComponent<SubPanels>().SetFirstSelected();
             return;
         }
     }

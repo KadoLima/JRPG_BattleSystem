@@ -49,27 +49,6 @@ public class SubPanels : MonoBehaviour
         itensSubpanel.SetActive(false);
     }
 
-    //void Update()
-    //{
-    //    BackIfKeyPressed();
-    //}
-
-    //private void BackIfKeyPressed()
-    //{
-    //    if (player.CurrentBattlePhase == BattleState.SELECTING_TECH ||
-    //        player.CurrentBattlePhase == BattleState.SELECTING_ITEM)
-    //    {
-    //        if (Input.GetKeyDown(KeyCode.Backspace) ||
-    //            Input.GetKeyDown(KeyCode.LeftArrow) ||
-    //            Input.GetKeyDown(KeyCode.A))
-    //        {
-    //            //techsSubPanel.SetActive(false);
-    //            //itensSubpanel.SetActive(false);
-    //            player.ChangeBattleState(BattleState.READY);
-    //        }
-    //    }
-    //}
-
     private void BuildTechItens()
     {
         for (int i = 0; i < player.Skills.Length; i++)
@@ -97,22 +76,6 @@ public class SubPanels : MonoBehaviour
         SetNavigation(itensList);
     }
     
-    //public void RefreshConsumableItensListUI()
-    //{
-    //    CharacterInventory playerInventory = player.GetComponent<CharacterInventory>();
-
-    //    for (int i = 0; i < playerInventory.inventoryItens.Count; i++)
-    //    {
-    //        itensList[i].GetComponent<ConsumableItem>().UpdateAmountText(playerInventory.inventoryItens[i].amount);
-
-    //        if (playerInventory.inventoryItens[i].amount <= 0)
-    //        {
-    //            itensList.Remove(itensList[i]);
-    //            Destroy(itensList[i].gameObject);
-    //        }
-    //    }
-
-    //}
 
     public void SetNavigation(List<Button> listItems)
     {

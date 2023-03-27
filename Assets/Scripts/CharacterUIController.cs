@@ -11,7 +11,6 @@ public class CharacterUIController : MonoBehaviour
     [SerializeField] CanvasGroup myCanvasGroup;
     [SerializeField] GameObject pointer;
     [SerializeField] BattlePanel battlePanel;
-    //[SerializeField] Transform techsPanel;
     [SerializeField] TextMeshProUGUI hpText;
     [SerializeField] TextMeshProUGUI mpText;
     [Header("Floating Combat Text")]
@@ -42,7 +41,6 @@ public class CharacterUIController : MonoBehaviour
 
         ResetFloatingText();
 
-        //SetSkillNames();
     }
 
     public void RefreshHPMP()
@@ -58,21 +56,7 @@ public class CharacterUIController : MonoBehaviour
         originalFloatingTextY = floatingText.rectTransform.anchoredPosition.y;
     }
 
-    //public void ShowCanvas()
-    //{
-    //    StartCoroutine(ShowMyCanvasCoroutine());
-    //}
-
-    //IEnumerator ShowMyCanvasCoroutine()
-    //{
-    //    while (myCanvasGroup.alpha < 1)
-    //    {
-    //        myCanvasGroup.alpha += Time.deltaTime * 10f;
-    //        yield return null;
-    //    }
-
-    //    myCanvasGroup.alpha = 1;
-    //}
+    
 
     public void HideCanvas(float speed = 10, float delay = 0)
     {
@@ -167,7 +151,6 @@ public class CharacterUIController : MonoBehaviour
 
     public void ShowFloatingDamageText(int damageAmount, DamageType dmgType)
     {
-        //Debug.LogWarning("SHOWING FLOATING COMBAT TEXT");
         StartCoroutine(FloatingTextCoroutine(damageAmount, dmgType));
     }
 
@@ -177,8 +160,6 @@ public class CharacterUIController : MonoBehaviour
         float _fadeTime = .2f;
         float yMovingAmount = 40f;
         float _showingTime = _popMovingTime + 1.5f;
-
-        //Color _finalColor;
 
         if (dmgType == DamageType.HEALING)
             SetTextColor_Heal();
@@ -193,10 +174,7 @@ public class CharacterUIController : MonoBehaviour
         floatingText.rectTransform.DOAnchorPosY(floatingText.rectTransform.anchoredPosition.y + yMovingAmount, _popMovingTime).OnComplete(BounceFloatingText);
         yield return new WaitForSeconds(_showingTime);
         floatingText.DOColor(new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 0), _fadeTime);
-        //yield return new WaitForSeconds(_fadeTime);
-        //floatingText.rectTransform.localPosition = floatingTextPos;
 
-        //new Color(0.18f, .63f, 1f); //light blue
     }
 
     void SetTextColor_Normal()
@@ -233,15 +211,4 @@ public class CharacterUIController : MonoBehaviour
         descriptionTooltipText.transform.parent.parent.gameObject.SetActive(false);
     }
 
-    //public void SetSkillNames()
-    //{
-    //    if (!techsPanel)
-    //        return;
-
-    //    for (int i = 0; i < characterBehaviour.Skills.Length; i++)
-    //    {
-    //        if (techsPanel.GetChild(0).GetChild(i).gameObject.activeSelf)
-    //            techsPanel.GetChild(0).GetChild(i).GetComponent<TextMeshProUGUI>().text = characterBehaviour.Skills[i].actionName;
-    //    }
-    //}
 }

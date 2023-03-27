@@ -7,10 +7,8 @@ using UnityEngine.EventSystems;
 
 public class IntroScreen : MonoBehaviour
 {
-    //[SerializeField] Image blackScreen;
     [SerializeField] GameObject content;
     [SerializeField] Image blackScreen;
-    //[SerializeField] GameObject okButton;
 
 
     // Start is called before the first frame update
@@ -36,13 +34,9 @@ public class IntroScreen : MonoBehaviour
 
     public void CloseContent()
     {
-        GameManager.gameStarted = true;
+        GameManager.instance.gameStarted = true;
         content.SetActive(false);
     }
 
-    //void FadeOut()
-    //{
-        //blackScreen.DOColor(new Color(0, 0, 0, 0), 1f);
-    //}
 
 }

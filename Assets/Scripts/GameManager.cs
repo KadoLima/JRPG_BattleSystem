@@ -6,7 +6,15 @@ using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour
 {
-    public static bool gameStarted;
+    public  bool gameStarted;
+    public  bool gameWon;
+
+    public static GameManager instance;
+
+    void Awake()
+    {
+        instance = this;
+    }
 
     // Start is called before the first frame update
     void Start()

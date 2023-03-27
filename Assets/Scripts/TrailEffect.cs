@@ -53,21 +53,4 @@ public class TrailEffect : MonoBehaviour
     {
         canShowTrail = false;
     }
-
-    //public void ShowTrailEffect()
-    //{
-    //    StartCoroutine(ShowTrailEffect_Coroutine(.5f));
-    //}
-
-    //IEnumerator ShowTrailEffect_Coroutine(float periodOfTime)
-    //{
-    //    while (periodOfTime >0)
-    //    {
-    //        GameObject g = Instantiate(echo, transform.position, Quaternion.identity);
-    //        g.GetComponentInChildren<SpriteRenderer>().DOColor(new Color(1, 1, 1, 0), .2f);
-    //        Destroy(g, 1f);
-    //        yield return new WaitForSeconds(timeBetweenSpawns);
-    //        periodOfTime -= Time.deltaTime;
-    //    }
-    //}
 }
