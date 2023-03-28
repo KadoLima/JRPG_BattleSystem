@@ -24,11 +24,11 @@ public class CombatEffects : MonoBehaviour
     public void ShakeCamera()
     {
         ScreenEffects.instance.ShakeCamera();
-        CharacterBehaviour player = GetComponentInParent<CharacterBehaviour>();
+        CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
 
-        if (player.CurrentTarget != null)
+        if (_player.CurrentTarget != null)
         {
-            if (player.CurrentPreAction.isAreaOfEffect)
+            if (_player.CurrentPreAction.isAreaOfEffect)
             {
                 for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
                 {
@@ -37,7 +37,7 @@ public class CombatEffects : MonoBehaviour
             }
             else
             {
-                player.CurrentTarget.GetComponentInChildren<CombatEffects>().FlashRed();
+                _player.CurrentTarget.GetComponentInChildren<CombatEffects>().FlashRed();
             }
             return;
         }
@@ -54,18 +54,18 @@ public class CombatEffects : MonoBehaviour
 
     IEnumerator FlashRedCoroutine()
     {
-        float x = this.transform.position.x;
+        //float x = this.transform.position.x;
         mySpriteRenderer.DOColor(takeDamageColor, .1f);
 
-        int pushDirection;
+        int _pushDirection;
         if (mySpriteRenderer.transform.position.x < 0)
-            pushDirection = -1;
-        else pushDirection = 1;
+            _pushDirection = -1;
+        else _pushDirection = 1;
 
-        mySpriteRenderer.transform.DOLocalMoveX(.2f * pushDirection, .2f);
+        mySpriteRenderer.transform.DOLocalMoveX(.2f * _pushDirection, .2f);
         yield return new WaitForSeconds(.2f);
         mySpriteRenderer.DOColor(Color.white, .1f);
-        mySpriteRenderer.transform.DOLocalMoveX(.2f * -pushDirection, .2f);
+        mySpriteRenderer.transform.DOLocalMoveX(.2f * -_pushDirection, .2f);
     }
 
     public void DieEffect()
@@ -88,11 +88,11 @@ public class CombatEffects : MonoBehaviour
 
     IEnumerator FadeOutShadowCoroutine()
     {
-        float counter = shadow.color.a;
-        while (counter>0)
+        float _counter = shadow.color.a;
+        while (_counter > 0)
         {
-            counter -= Time.fixedDeltaTime/20;
-            shadow.color = new Color(0, 0, 0, counter);
+            _counter -= Time.fixedDeltaTime / 20;
+            shadow.color = new Color(0, 0, 0, _counter);
             yield return null;
         }
     }

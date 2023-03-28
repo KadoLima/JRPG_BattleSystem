@@ -22,15 +22,15 @@ public class InventoryItemData : ScriptableObject
 
 public void ApplyItemEffect()
 {
-        CharacterBehaviour currentPlayer = CombatManager.instance.CurrentActivePlayer;
+        CharacterBehaviour _currentPlayer = CombatManager.instance.CurrentActivePlayer;
 
     switch (damageType)
         {
             case DamageType.HEALING:
-                currentPlayer.IncreaseHP(effectAmount);
+                _currentPlayer.IncreaseHP(effectAmount);
                 break;
             case DamageType.MANA:
-                currentPlayer.IncreaseMP(effectAmount);
+                _currentPlayer.IncreaseMP(effectAmount);
                 break;
         }
 }

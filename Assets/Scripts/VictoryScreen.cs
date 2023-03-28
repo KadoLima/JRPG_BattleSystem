@@ -41,25 +41,25 @@ public class VictoryScreen : MonoBehaviour
 
     IEnumerator ShowFoundItensCoroutine()
     {
-        int createdItensAmount = 3;
+        int _createdItensAmount = 3;
 
-        for (int i = 0; i < createdItensAmount; i++)
+        for (int i = 0; i < _createdItensAmount; i++)
         {
-            int randomIndex = Random.Range(0, foundItensPrefabs.Count);
-            GameObject g = Instantiate(foundItensPrefabs[randomIndex], foundItensContainer);
-            foundItensPrefabs.RemoveAt(randomIndex);
+            int _randomIndex = Random.Range(0, foundItensPrefabs.Count);
+            GameObject _randomLootItem = Instantiate(foundItensPrefabs[_randomIndex], foundItensContainer);
+            foundItensPrefabs.RemoveAt(_randomIndex);
 
-            CanvasGroup itemCanvas = g.GetComponent<CanvasGroup>();
+            CanvasGroup _itemCanvas = _randomLootItem.GetComponent<CanvasGroup>();
 
-            itemCanvas.alpha = 0;
+            _itemCanvas.alpha = 0;
 
-            while (itemCanvas.alpha < 1)
+            while (_itemCanvas.alpha < 1)
             {
-                itemCanvas.alpha += .1f;
+                _itemCanvas.alpha += .1f;
                 yield return null;
             }
 
-            g.transform.DOScale(new Vector3(1.1f, 1.1f, 1), .2f).SetEase(Ease.OutBack);
+            _randomLootItem.transform.DOScale(new Vector3(1.1f, 1.1f, 1), .2f).SetEase(Ease.OutBack);
 
             yield return new WaitForSeconds(.25f);
         }
@@ -77,9 +77,9 @@ public class VictoryScreen : MonoBehaviour
 
     void ShowXPEarned()
     {
-        int xpItensCreated = CombatManager.instance.playersOnField.Count;
+        int _xpItensCreated = CombatManager.instance.playersOnField.Count;
 
-        for (int i = 0; i < xpItensCreated; i++)
+        for (int i = 0; i < _xpItensCreated; i++)
         {
             GameObject g = Instantiate(playerXPItensPrefabs[i], playerXPItensContainer);
         }

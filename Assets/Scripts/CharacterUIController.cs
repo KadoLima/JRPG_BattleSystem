@@ -158,7 +158,7 @@ public class CharacterUIController : MonoBehaviour
     {
         float _popMovingTime = .2f;
         float _fadeTime = .2f;
-        float yMovingAmount = 40f;
+        float _yMovingAmount = 40f;
         float _showingTime = _popMovingTime + 1.5f;
 
         if (dmgType == DamageType.HEALING)
@@ -171,7 +171,7 @@ public class CharacterUIController : MonoBehaviour
         floatingText.text = damageAmount.ToString();
         floatingText.color = new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 0);
         floatingText.DOColor(new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 1), _fadeTime);
-        floatingText.rectTransform.DOAnchorPosY(floatingText.rectTransform.anchoredPosition.y + yMovingAmount, _popMovingTime).OnComplete(BounceFloatingText);
+        floatingText.rectTransform.DOAnchorPosY(floatingText.rectTransform.anchoredPosition.y + _yMovingAmount, _popMovingTime).OnComplete(BounceFloatingText);
         yield return new WaitForSeconds(_showingTime);
         floatingText.DOColor(new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 0), _fadeTime);
 

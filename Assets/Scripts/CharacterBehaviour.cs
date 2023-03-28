@@ -130,63 +130,89 @@ public class CharacterBehaviour : MonoBehaviour
             return;
 
         UIController.GetBattlePanel().ShowHideSwapCharsIndicator(CombatManager.instance.ReadyPlayersAmount() > 1);
-
-
-
     }
 
-    protected void SetToIdle()
+    public void ChangeBattleState(BattleState phase)
     {
-        StartCoroutine(SetToIdle_Coroutine());
-
+        StartCoroutine(ChangePhaseDelayed(phase));
     }
 
-    IEnumerator SetToIdle_Coroutine()
-    {
-        currentTarget = null;
-        uiController.ShowUI();
-        PlayAnimation(idleAnimation);
-        yield return new WaitForSeconds(CombatManager.instance.GlobalIntervalBetweenActions);
-        isBusy = false;
-    }
-
-    protected void SetToBusy()
-    {
-        isBusy = true;
-        uiController.HideBattlePanel();
-        uiController.HideUI();
-    }
-
-    public void SwapActiveCharacter()
-    {
-        StartCoroutine(SwapActiveCharacter_Coroutine());
-    }
-
-    IEnumerator SwapActiveCharacter_Coroutine()
+    IEnumerator ChangePhaseDelayed(BattleState p)
     {
         yield return new WaitForSeconds(0.02f);
-        UIController.HideBattlePanel();
-        CombatManager.instance.PickAnotherReadyCharacter();
-    }
+        CurrentBattlePhase = p;
 
-    IEnumerator RechargingCoroutine()
-    {
-        if (!uiController.cooldownBar)
-            yield break;
-
-        currentCooldown = 0;
-
-        yield return new WaitUntil(() => GameManager.instance.gameStarted);
-
-        while (currentCooldown < myStats.baseCooldown)
+        switch (CurrentBattlePhase)
         {
-            currentCooldown += Time.deltaTime;
-            uiController.cooldownBar.fillAmount = currentCooldown / myStats.baseCooldown;
-            yield return null;
-        }
-        ChangeBattleState(BattleState.READY);
-    }
+            case BattleState.RECHARGING:
+                currentPreAction.actionType = ActionType.NULL;
+                StartCoroutine(RechargingCoroutine());
+                SetToIdle();
+                break;
+            case BattleState.READY:
 
+                if (uiController.GetBattlePanel())
+                {
+                    CombatManager.instance.LookForReadyPlayer();
+
+
+                    if (CombatManager.instance.CurrentActivePlayer == this)
+                    {
+                        uiController.ShowHidePointer(false);
+                        uiController.ShowBattlePanel();
+                        uiController.GetBattlePanel().HideSubPanels();
+                    }
+                }
+
+                break;
+
+            case BattleState.PICKING_TARGET:
+                uiController.HideBattlePanel();
+                if (currentPreAction.IsHarmful)
+                    CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.isAreaOfEffect);
+                else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.isAreaOfEffect);
+                break;
+            case BattleState.EXECUTING_ACTION:
+                SetToBusy();
+                break;
+            case BattleState.SELECTING_TECH:
+                break;
+            case BattleState.SELECTING_ITEM:
+                break;
+            case BattleState.WAITING:
+                break;
+            case BattleState.DEAD:
+                myAnim.Play(deadAnimation);
+                StopAllCoroutines();
+
+                if (!GetComponent<EnemyBehaviour>())
+                {
+                    Material _mat = GetComponentInChildren<SpriteRenderer>().material;
+                    _mat.SetFloat("_GreyscaleBlend", 1);
+                    uiController.HideCanvas(10, 0);
+                    StartCoroutine(CombatManager.instance.ShowGameOverIfNeeded_Coroutine());
+
+                }
+                else
+                {
+                    uiController.HideCanvas(5, .25f);
+                    combatEffects.DieEffect();
+                    CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
+                }
+                break;
+
+            case BattleState.GAMEWIN:
+                GoBackToStartingPosition();
+                PlayAnimation(idleAnimation);
+                uiController.HideCanvas();
+                ScreenEffects.instance.HideDarkScreen();
+                break;
+            case BattleState.NULL:
+                break;
+            default:
+                break;
+        }
+    }
 
     public void ExecuteActionOn(CharacterBehaviour target)
     {
@@ -244,26 +270,25 @@ public class CharacterBehaviour : MonoBehaviour
                 _trailEffect.HideTrail();
         }
 
-
         PlayAnimation(currentExecutingAction.animationCycle.name);
 
         if (currentExecutingAction.projectile)
         {
             if (currentExecutingAction.isAreaOfEffect == false)
             {
-                GameObject p = Instantiate(currentExecutingAction.projectile.gameObject, projectileSpawnPoint.transform.position, Quaternion.identity);
-                p.transform.SetParent(gameObject.transform);
+                GameObject _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, projectileSpawnPoint.transform.position, Quaternion.identity);
+                _instantiatedProjectile.transform.SetParent(gameObject.transform);
                 yield return new WaitForSeconds(0.25f);
-                p.GetComponent<SpellBehaviour>().Execute(projectileSpawnPoint.position, target);
+                _instantiatedProjectile.GetComponent<SpellBehaviour>().Execute(projectileSpawnPoint.position, target);
             }
             else
             {
                 yield return new WaitForSeconds(0.25f);
                 for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
                 {
-                    GameObject p = Instantiate(currentExecutingAction.projectile.gameObject, projectileSpawnPoint.transform.position, Quaternion.identity);
-                    p.transform.SetParent(this.gameObject.transform);
-                    p.GetComponent<SpellBehaviour>().Execute(projectileSpawnPoint.position, CombatManager.instance.enemiesOnField[i]);
+                    GameObject _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, projectileSpawnPoint.transform.position, Quaternion.identity);
+                    _instantiatedProjectile.transform.SetParent(this.gameObject.transform);
+                    _instantiatedProjectile.GetComponent<SpellBehaviour>().Execute(projectileSpawnPoint.position, CombatManager.instance.enemiesOnField[i]);
                 }
                 yield return new WaitForSeconds(0.25f);
             }
@@ -277,9 +302,8 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.actionType == ActionType.ITEM)
         {
-
-            CharacterInventory inventory = GetComponent<CharacterInventory>();
-            inventory.ConsumeItem(currentConsumableItemIndex);
+            CharacterInventory _inventory = GetComponent<CharacterInventory>();
+            _inventory.ConsumeItem(currentConsumableItemIndex);
             PlayHealingEffect(target);
         }
 
@@ -296,6 +320,58 @@ public class CharacterBehaviour : MonoBehaviour
         CombatManager.instance.combatQueue.Remove(this.transform);
         CombatManager.instance.ResetInternalPlayerActionCD();
         ChangeBattleState(BattleState.RECHARGING);
+    }
+
+    protected void SetToIdle()
+    {
+        StartCoroutine(SetToIdle_Coroutine());
+
+    }
+
+    IEnumerator SetToIdle_Coroutine()
+    {
+        currentTarget = null;
+        uiController.ShowUI();
+        PlayAnimation(idleAnimation);
+        yield return new WaitForSeconds(CombatManager.instance.GlobalIntervalBetweenActions);
+        isBusy = false;
+    }
+
+    protected void SetToBusy()
+    {
+        isBusy = true;
+        uiController.HideBattlePanel();
+        uiController.HideUI();
+    }
+
+    public void SwapActiveCharacter()
+    {
+        StartCoroutine(SwapActiveCharacter_Coroutine());
+    }
+
+    IEnumerator SwapActiveCharacter_Coroutine()
+    {
+        yield return new WaitForSeconds(0.02f);
+        UIController.HideBattlePanel();
+        CombatManager.instance.PickAnotherReadyCharacter();
+    }
+
+    IEnumerator RechargingCoroutine()
+    {
+        if (!uiController.cooldownBar)
+            yield break;
+
+        currentCooldown = 0;
+
+        yield return new WaitUntil(() => GameManager.instance.gameStarted);
+
+        while (currentCooldown < myStats.baseCooldown)
+        {
+            currentCooldown += Time.deltaTime;
+            uiController.cooldownBar.fillAmount = currentCooldown / myStats.baseCooldown;
+            yield return null;
+        }
+        ChangeBattleState(BattleState.READY);
     }
 
     public void UseNormalAttack()
@@ -363,88 +439,6 @@ public class CharacterBehaviour : MonoBehaviour
         myAnim.Play(animString);
     }
 
-    public void ChangeBattleState(BattleState phase)
-    {
-        StartCoroutine(ChangePhaseDelayed(phase));
-    }
-
-    IEnumerator ChangePhaseDelayed(BattleState p)
-    {
-        yield return new WaitForSeconds(0.02f);
-        CurrentBattlePhase = p;
-
-        switch (CurrentBattlePhase)
-        {
-            case BattleState.RECHARGING:
-                currentPreAction.actionType = ActionType.NULL;
-                StartCoroutine(RechargingCoroutine());
-                SetToIdle();
-                break;
-            case BattleState.READY:
-
-                if (uiController.GetBattlePanel())
-                {
-                    CombatManager.instance.LookForReadyPlayer();
-
-
-                    if (CombatManager.instance.CurrentActivePlayer == this)
-                    {
-                        uiController.ShowHidePointer(false);
-                        uiController.ShowBattlePanel();
-                        uiController.GetBattlePanel().HideSubPanels();
-                    }
-                }
-
-                break;
-
-            case BattleState.PICKING_TARGET:
-                uiController.HideBattlePanel();
-                if (currentPreAction.IsHarmful)
-                    CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.isAreaOfEffect);
-                else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.isAreaOfEffect);
-                break;
-            case BattleState.EXECUTING_ACTION:
-                SetToBusy();
-                break;
-            case BattleState.SELECTING_TECH:
-                break;
-            case BattleState.SELECTING_ITEM:
-                break;
-            case BattleState.WAITING:
-                break;
-            case BattleState.DEAD:
-                myAnim.Play(deadAnimation);
-                StopAllCoroutines();
-
-                if (!GetComponent<EnemyBehaviour>())
-                {
-                    Material mat = GetComponentInChildren<SpriteRenderer>().material;
-                    mat.SetFloat("_GreyscaleBlend", 1);
-                    uiController.HideCanvas(10, 0);
-                    StartCoroutine(CombatManager.instance.ShowGameOverIfNeeded_Coroutine());
-
-                }
-                else
-                {
-                    uiController.HideCanvas(5, .25f);
-                    combatEffects.DieEffect();
-                    CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
-                }
-                break;
-
-            case BattleState.GAMEWIN:
-                GoBackToStartingPosition();
-                PlayAnimation(idleAnimation);
-                uiController.HideCanvas();
-                ScreenEffects.instance.HideDarkScreen();
-                break;
-            case BattleState.NULL:
-                break;
-            default:
-                break;
-        }
-    }
-
     public void PlayHealingEffect(CharacterBehaviour target)
     {
         target.healingEffect.Play();
@@ -463,8 +457,8 @@ public class CharacterBehaviour : MonoBehaviour
         {
             for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
             {
-                var dmg = CalculatedValue();
-                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(dmg, currentExecutingAction.damageType);
+                var _dmg = CalculatedValue();
+                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(_dmg, currentExecutingAction.damageType);
             }
         }
     }
@@ -506,13 +500,13 @@ public class CharacterBehaviour : MonoBehaviour
 
     private int CalculatedValue()
     {
-        int rawDamage = myStats.baseDamage();
+        int _rawDamage = myStats.baseDamage();
         if (currentExecutingAction.actionType != ActionType.ITEM)
-            return Mathf.RoundToInt(rawDamage * currentExecutingAction.damageMultiplier);
+            return Mathf.RoundToInt(_rawDamage * currentExecutingAction.damageMultiplier);
 
 
-        CharacterInventory inventory = GetComponent<CharacterInventory>();
-        return inventory.inventoryItens[currentConsumableItemIndex].itemData.effectAmount;
+        CharacterInventory _inventory = GetComponent<CharacterInventory>();
+        return _inventory.inventoryItens[currentConsumableItemIndex].itemData.effectAmount;
     }
 
     public void IncreaseHP(int amount)

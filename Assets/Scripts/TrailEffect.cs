@@ -30,12 +30,12 @@ public class TrailEffect : MonoBehaviour
         if (timeBetweenSpawns <= 0)
         {
 
-            GameObject g = Instantiate(echo, transform.position, Quaternion.identity);
+            GameObject _echo = Instantiate(echo, transform.position, Quaternion.identity);
 
-            SpriteRenderer _gSpriteRenderer = g.GetComponentInChildren<SpriteRenderer>();
+            SpriteRenderer _gSpriteRenderer = _echo.GetComponentInChildren<SpriteRenderer>();
             _gSpriteRenderer.sprite = mySpriteRenderer.sprite;
             _gSpriteRenderer.DOColor(new Color(1, 1, 1, 0), .2f);
-            Destroy(g, 1f);
+            Destroy(_echo, 1f);
             timeBetweenSpawns = startTimeBetweenSpawns;
         }
         else

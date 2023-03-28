@@ -8,12 +8,6 @@ public class InputManager : MonoBehaviour
     public void OnMenus_Confirm(InputValue value)
     {
 
-        // if (!GameManager.instance.gameStarted)
-        // {
-        //     FindObjectOfType<IntroScreen>().CloseContent();
-        //     return;
-        // }
-
         if (GameManager.instance.gameWon)
             return;
 
@@ -39,13 +33,6 @@ public class InputManager : MonoBehaviour
 
     public void OnMenus_Back(InputValue value)
     {
-
-        // if (!GameManager.instance.gameStarted)
-        // {
-        //     FindObjectOfType<IntroScreen>().CloseContent();
-        //     return;
-        // }
-
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer == null)

@@ -22,14 +22,14 @@ public class ConsumableItem : MonoBehaviour
 
     public void ShowDescription()
     {
-        CharacterBehaviour player = GetComponentInParent<CharacterBehaviour>();
-        player.ShowDescription(inventoryItemData.itemDescription);
+        CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
+        _player.ShowDescription(inventoryItemData.itemDescription);
     }
 
     public void UseItem()
     {
-        CharacterBehaviour player = GetComponentInParent<CharacterBehaviour>();
-        player.SelectConsumableItem(transform.GetSiblingIndex(), inventoryItemData.damageType);
+        CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
+        _player.SelectConsumableItem(transform.GetSiblingIndex(), inventoryItemData.damageType);
     }
 
     public void UpdateAmountText(int amount)

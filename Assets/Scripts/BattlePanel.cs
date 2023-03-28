@@ -10,7 +10,7 @@ public class BattlePanel : MonoBehaviour
     [SerializeField]EventSystem eventSystem;
     [SerializeField]GameObject darkOverlay;
     [SerializeField] GameObject swapCharacterIndicator;
-    public EventSystem _EventSystem => eventSystem;
+    public EventSystem MyEventSystem => eventSystem;
 
     [SerializeField] GameObject firstSelected;
     // Start is called before the first frame update
@@ -29,7 +29,7 @@ public class BattlePanel : MonoBehaviour
     public void SetFirstSelected()
     {
         HideDarkOverlay();
-        _EventSystem.SetSelectedGameObject(firstSelected);
+        MyEventSystem.SetSelectedGameObject(firstSelected);
     }
 
     public void ShowDarkOverlay()

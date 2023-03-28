@@ -14,12 +14,6 @@ public class BattleOption : MonoBehaviour
 
     [SerializeField] PanelToOpen panelToOpen;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     public void ExecuteAction()
     {
         if (panelToOpen.panel)
@@ -33,17 +27,17 @@ public class BattleOption : MonoBehaviour
 
     private GameObject GetFirstActiveChild()
     {
-        GameObject firstSelected = null;
+        GameObject _firstSelected = null;
 
         for (int i = 0; i < panelToOpen.panel.transform.GetChild(0).childCount; i++)
         {
             if (panelToOpen.panel.transform.GetChild(0).GetChild(i).gameObject.activeSelf)
             {
-                firstSelected = panelToOpen.panel.transform.GetChild(0).GetChild(i).gameObject;
+                _firstSelected = panelToOpen.panel.transform.GetChild(0).GetChild(i).gameObject;
                 break;
             }
         }
 
-        return firstSelected;
+        return _firstSelected;
     }
 }

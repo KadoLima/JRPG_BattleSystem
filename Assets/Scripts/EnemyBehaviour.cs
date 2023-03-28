@@ -26,14 +26,14 @@ public class EnemyBehaviour : CharacterBehaviour
 
     public CharacterBehaviour GetRandomPlayer()
     {
-        int randomPlayerIndex = Random.Range(0,CombatManager.instance.playersOnField.Count);
+        int _randomPlayerIndex = Random.Range(0,CombatManager.instance.playersOnField.Count);
 
-        while (CombatManager.instance.playersOnField[randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
+        while (CombatManager.instance.playersOnField[_randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
         {
-            randomPlayerIndex = Random.Range(0, CombatManager.instance.playersOnField.Count);
+            _randomPlayerIndex = Random.Range(0, CombatManager.instance.playersOnField.Count);
         }
 
-        currentPlayerTarget = CombatManager.instance.playersOnField[randomPlayerIndex];
+        currentPlayerTarget = CombatManager.instance.playersOnField[_randomPlayerIndex];
         return currentPlayerTarget;
     }
 
@@ -51,7 +51,7 @@ public class EnemyBehaviour : CharacterBehaviour
     IEnumerator AttackRandomPlayerCoroutine()
     {
         ChangeBattleState(BattleState.READY);
-        CharacterBehaviour currentTarget = GetRandomPlayer();
+        CharacterBehaviour _currentTarget = GetRandomPlayer();
 
         yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true &&
                                          (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.combatQueue[0] == this.transform));
@@ -60,7 +60,7 @@ public class EnemyBehaviour : CharacterBehaviour
 
         if (currentExecutingAction.goToTarget)
         {
-            MoveToTarget(currentTarget);
+            MoveToTarget(_currentTarget);
 
             if (currentExecutingAction.actionType == ActionType.SKILL)
                 ScreenEffects.instance.ShowDarkScreen();
@@ -71,7 +71,7 @@ public class EnemyBehaviour : CharacterBehaviour
 
             yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
-            ApplyDamageOrHeal(currentTarget);
+            ApplyDamageOrHeal(_currentTarget);
 
             yield return new WaitForSeconds(0.25f);
 
@@ -112,9 +112,9 @@ public class EnemyBehaviour : CharacterBehaviour
 
     private void SetCurrentAction()
     {
-        float randomValue = Random.value;
+        float _randomValue = Random.value;
 
-        if (randomValue > chanceToUseSkill)
+        if (_randomValue > chanceToUseSkill)
             currentExecutingAction = normalAttack;
         else
         {

@@ -11,7 +11,7 @@ public class TechItem : MonoBehaviour
 
     public void Initialize(int index, CombatAction combatAction)
     {
-        techIndex=index;
+        techIndex = index;
 
         GetComponent<TextMeshProUGUI>().text = combatAction.actionName;
         transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = combatAction.mpCost.ToString();
@@ -20,14 +20,14 @@ public class TechItem : MonoBehaviour
 
     public void ShowDescription()
     {
-        CharacterBehaviour player = GetComponentInParent<CharacterBehaviour>();
-        player.ShowDescription(techIndex);
+        CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
+        _player.ShowDescription(techIndex);
     }
 
     public void SelectTech()
     {
-        CharacterBehaviour player = GetComponentInParent<CharacterBehaviour>();
-        player.SelectTech(techIndex);
+        CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
+        _player.SelectTech(techIndex);
     }
 
 }

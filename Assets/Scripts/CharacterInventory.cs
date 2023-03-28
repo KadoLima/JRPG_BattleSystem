@@ -29,17 +29,17 @@ public class CharacterInventory : MonoBehaviour
             {
                 //Debug.LogWarning("CONSUMING " + inventoryItens[i].itemData.itemName);
                 inventoryItens[i].amount--;
-                var itemUI = characterSubPanels.ItensList[i];
+                var _itemUI = characterSubPanels.ItensList[i];
                 
                 if (inventoryItens[i].amount <= 0)
                 {
-                    Destroy(itemUI.gameObject);
-                    characterSubPanels.ItensList.Remove(itemUI);
+                    Destroy(_itemUI.gameObject);
+                    characterSubPanels.ItensList.Remove(_itemUI);
                     inventoryItens.Remove(inventoryItens[i]);
 
                     characterSubPanels.SetNavigation(characterSubPanels.ItensList);
                 }
-                else itemUI.GetComponent<ConsumableItem>().UpdateAmountText(inventoryItens[i].amount);
+                else _itemUI.GetComponent<ConsumableItem>().UpdateAmountText(inventoryItens[i].amount);
             }
         }
     }

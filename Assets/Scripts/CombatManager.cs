@@ -152,17 +152,17 @@ public class CombatManager : MonoBehaviour
 
     public int ReadyPlayersAmount()
     {
-        int _readyPlayers = 0;
+        int _playersReady = 0;
 
         foreach (CharacterBehaviour c in playersOnField)
         {
             if (c.CurrentBattlePhase == BattleState.READY && c.CurrentBattlePhase != BattleState.DEAD)
             {
-                _readyPlayers++;
+                _playersReady++;
             }
         }
 
-        return _readyPlayers;
+        return _playersReady;
     }
 
     public void LookForReadyPlayer()
@@ -213,13 +213,13 @@ public class CombatManager : MonoBehaviour
 
     public void PickAnotherReadyCharacter()
     {
-        int index = GetCurrentActivePlayerIndex();
-        index++;
+        int _index = GetCurrentActivePlayerIndex();
+        _index++;
 
-        if (index == playersOnField.Count)
-            index = 0;
+        if (_index == playersOnField.Count)
+            _index = 0;
 
-        SetCurrentActivePlayer(playersOnField[index]);
+        SetCurrentActivePlayer(playersOnField[_index]);
     }
 
     #region Enemy Target

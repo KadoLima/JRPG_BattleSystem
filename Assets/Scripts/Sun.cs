@@ -25,19 +25,19 @@ public class Sun : MonoBehaviour
         transform.DOMoveX(rightLimitX, timePeriod).SetEase(Ease.Linear);
 
         float _timeToMidScreen = timePeriod / 2;
-        float startingValue = light2D.size;
-        float finalValue = 100;
-        float incrementPerSecond = (finalValue - startingValue) / _timeToMidScreen;
-        float currentTime = 0;
+        float _startingValue = light2D.size;
+        float _finalValue = 100;
+        float _incrementPerSecond = (_finalValue - _startingValue) / _timeToMidScreen;
+        float _currentTime = 0;
 
         float _colorAlphaStartingValue = light2D.color.a;
         float _alphaIncrementPerSecond = (alphaTargetValue - _colorAlphaStartingValue) / _timeToMidScreen;
 
-        while (currentTime < _timeToMidScreen)
+        while (_currentTime < _timeToMidScreen)
         {
-            startingValue += incrementPerSecond * Time.deltaTime;
-            currentTime+= Time.deltaTime;
-            light2D.size = startingValue;
+            _startingValue += _incrementPerSecond * Time.deltaTime;
+            _currentTime+= Time.deltaTime;
+            light2D.size = _startingValue;
 
             _colorAlphaStartingValue += _alphaIncrementPerSecond * Time.deltaTime;
             light2D.color = new Color(light2D.color.r, light2D.color.g, light2D.color.b, _colorAlphaStartingValue);
@@ -46,20 +46,20 @@ public class Sun : MonoBehaviour
 
         yield return new WaitForSeconds(.25f);
 
-        startingValue = finalValue;
-        finalValue = 50;
-        incrementPerSecond = (finalValue - startingValue) / _timeToMidScreen;
-        currentTime = 0;
+        _startingValue = _finalValue;
+        _finalValue = 50;
+        _incrementPerSecond = (_finalValue - _startingValue) / _timeToMidScreen;
+        _currentTime = 0;
 
         _colorAlphaStartingValue = alphaTargetValue;
         alphaTargetValue = .6f;
         _alphaIncrementPerSecond = (alphaTargetValue - _colorAlphaStartingValue) / _timeToMidScreen;
 
-        while (currentTime < _timeToMidScreen)
+        while (_currentTime < _timeToMidScreen)
         {
-            startingValue += incrementPerSecond * Time.deltaTime;
-            currentTime += Time.deltaTime;
-            light2D.size = startingValue;
+            _startingValue += _incrementPerSecond * Time.deltaTime;
+            _currentTime += Time.deltaTime;
+            light2D.size = _startingValue;
 
             _colorAlphaStartingValue += _alphaIncrementPerSecond * Time.deltaTime;
             light2D.color = new Color(light2D.color.r, light2D.color.g, light2D.color.b, _colorAlphaStartingValue);

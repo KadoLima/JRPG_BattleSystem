@@ -51,15 +51,15 @@ public class PlayerXPItem : MonoBehaviour
 
     IEnumerator EarnXPCoroutine()
     {
-        int remainingValueToLevel = (int)(playerXPInfo.xpToLevel - playerXPInfo.currentXP);
-        int overflowXP = CombatManager.instance.TotalXPEarned() - remainingValueToLevel;
+        int _remainingValueToLevel = (int)(playerXPInfo.xpToLevel - playerXPInfo.currentXP);
+        int _overflowXP = CombatManager.instance.TotalXPEarned() - _remainingValueToLevel;
 
-        if (overflowXP <= 0) //NO OVERFLOW XP
+        if (_overflowXP <= 0) //NO OVERFLOW XP
         {
-            int resultXP = (int)(playerXPInfo.currentXP + CombatManager.instance.TotalXPEarned());
-            while (playerXPInfo.currentXP < resultXP)
+            int _resultXP = (int)(playerXPInfo.currentXP + CombatManager.instance.TotalXPEarned());
+            while (playerXPInfo.currentXP < _resultXP)
             {
-                AddToXP(resultXP);
+                AddToXP(_resultXP);
                 yield return null;
             }
         }
@@ -79,9 +79,9 @@ public class PlayerXPItem : MonoBehaviour
             playerXPInfo.currentXP = 0;
             UpdateXPText();
             
-            while (playerXPInfo.currentXP < overflowXP)
+            while (playerXPInfo.currentXP < _overflowXP)
             {
-                AddToXP(overflowXP);
+                AddToXP(_overflowXP);
                 yield return null;
             }
         }

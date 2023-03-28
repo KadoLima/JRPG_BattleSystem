@@ -53,10 +53,9 @@ public class SubPanels : MonoBehaviour
     {
         for (int i = 0; i < player.Skills.Length; i++)
         {
-            GameObject techItemPrefab = Instantiate(this.techItemPrefab, techsContent);
-            techItemPrefab.GetComponent<TechItem>().Initialize(i, player.Skills[i]);
-            //g.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = player.Skills[i].mpCost.ToString();
-            techItens.Add(techItemPrefab.GetComponent<Button>());
+            GameObject _techItemPrefab = Instantiate(this.techItemPrefab, techsContent);
+            _techItemPrefab.GetComponent<TechItem>().Initialize(i, player.Skills[i]);
+            techItens.Add(_techItemPrefab.GetComponent<Button>());
         }
 
         SetNavigation(techItens);
@@ -64,12 +63,12 @@ public class SubPanels : MonoBehaviour
 
     private void BuildComsumableItens()
     {
-        CharacterInventory playerInventory = player.GetComponent<CharacterInventory>();
+        CharacterInventory _playerInventory = player.GetComponent<CharacterInventory>();
 
-        for (int i = 0; i < playerInventory.inventoryItens.Count; i++)
+        for (int i = 0; i < _playerInventory.inventoryItens.Count; i++)
         {
             GameObject consumableItemPrefab = Instantiate(consumablePrefab, itensContent);
-            consumableItemPrefab.GetComponent<ConsumableItem>().Initialize(playerInventory.inventoryItens[i],i);
+            consumableItemPrefab.GetComponent<ConsumableItem>().Initialize(_playerInventory.inventoryItens[i],i);
             itensList.Add(consumableItemPrefab.GetComponent<Button>());
         }
 
@@ -81,20 +80,20 @@ public class SubPanels : MonoBehaviour
     {
         for (int i = 0; i < listItems.Count; i++)
         {
-            Navigation n = listItems[i].navigation;
-            n.mode = Navigation.Mode.Explicit;
+            Navigation _nav = listItems[i].navigation;
+            _nav.mode = Navigation.Mode.Explicit;
 
             if (i + 1 < listItems.Count && listItems[i + 1] != null)
             {
-                n.selectOnDown = listItems[i + 1];  
+                _nav.selectOnDown = listItems[i + 1];  
             }
 
             if (i - 1 >= 0 && listItems[i-1] != null)
             {
-                n.selectOnUp = listItems[i - 1];
+                _nav.selectOnUp = listItems[i - 1];
             }
 
-            listItems[i].navigation = n;
+            listItems[i].navigation = _nav;
 
         }
     }
@@ -102,7 +101,7 @@ public class SubPanels : MonoBehaviour
     public void SetFirstTechSelected()
     {
         battlePanel.ShowDarkOverlay();
-        battlePanel._EventSystem.SetSelectedGameObject(techItens[0].gameObject);
+        battlePanel.MyEventSystem.SetSelectedGameObject(techItens[0].gameObject);
     }
 
     public void SetFirstItemSelected()
@@ -110,7 +109,7 @@ public class SubPanels : MonoBehaviour
         battlePanel.ShowDarkOverlay();
 
         if (itensList.Count > 0)
-            battlePanel._EventSystem.SetSelectedGameObject(itensList[0].gameObject);
+            battlePanel.MyEventSystem.SetSelectedGameObject(itensList[0].gameObject);
     }
 
     public void HideSubPanels()
