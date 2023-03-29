@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 public class SubPanels : MonoBehaviour
 {
-    [SerializeField] BattlePanel battlePanel;
+    MainBattlePanel mainBattlePanel;
     [Header("TECHS SUBPANEL")]
     [SerializeField] List<Button> techItens = new List<Button>();
     [SerializeField] GameObject techItemPrefab;
@@ -41,6 +41,11 @@ public class SubPanels : MonoBehaviour
         }
     }
 
+    void Awake()
+    {
+        mainBattlePanel = GetComponent<MainBattlePanel>();
+    }
+
     private void Start()
     {
         player = GetComponentInParent<CharacterBehaviour>();
@@ -63,7 +68,7 @@ public class SubPanels : MonoBehaviour
 
     private void BuildComsumableItens()
     {
-        CharacterInventory _playerInventory = player.GetComponent<CharacterInventory>();
+        CharacterInventory _playerInventory = player.GetComponentInChildren<CharacterInventory>();
 
         for (int i = 0; i < _playerInventory.inventoryItens.Count; i++)
         {
@@ -100,16 +105,16 @@ public class SubPanels : MonoBehaviour
 
     public void SetFirstTechSelected()
     {
-        battlePanel.ShowDarkOverlay();
-        battlePanel.MyEventSystem.SetSelectedGameObject(techItens[0].gameObject);
+        mainBattlePanel.ShowDarkOverlay();
+        mainBattlePanel.MyEventSystem.SetSelectedGameObject(techItens[0].gameObject);
     }
 
     public void SetFirstItemSelected()
     {
-        battlePanel.ShowDarkOverlay();
+        mainBattlePanel.ShowDarkOverlay();
 
         if (itensList.Count > 0)
-            battlePanel.MyEventSystem.SetSelectedGameObject(itensList[0].gameObject);
+            mainBattlePanel.MyEventSystem.SetSelectedGameObject(itensList[0].gameObject);
     }
 
     public void HideSubPanels()

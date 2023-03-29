@@ -5,17 +5,19 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG.Tweening;
 
-public class BattlePanel : MonoBehaviour
+public class MainBattlePanel : MonoBehaviour
 {
-    [SerializeField]EventSystem eventSystem;
-    [SerializeField]GameObject darkOverlay;
-    [SerializeField] GameObject swapCharacterIndicator;
+    EventSystem eventSystem;
     public EventSystem MyEventSystem => eventSystem;
 
+    [SerializeField]GameObject darkOverlay;
+    [SerializeField] GameObject swapCharacterIndicator;
+
     [SerializeField] GameObject firstSelected;
-    // Start is called before the first frame update
-    void Start()
+
+    void Awake()
     {
+        eventSystem = EventSystem.current;
     }
 
     private void OnEnable()
@@ -29,7 +31,7 @@ public class BattlePanel : MonoBehaviour
     public void SetFirstSelected()
     {
         HideDarkOverlay();
-        MyEventSystem.SetSelectedGameObject(firstSelected);
+        eventSystem.SetSelectedGameObject(firstSelected);
     }
 
     public void ShowDarkOverlay()
@@ -44,11 +46,11 @@ public class BattlePanel : MonoBehaviour
 
     public void HideSubPanels()
     {
-        SubPanels subPanels = GetComponent<SubPanels>();
-        subPanels.HideSubPanels();
+        SubPanels _subPanels = GetComponent<SubPanels>();
+        _subPanels.HideSubPanels();
     }
 
-    public SubPanels GetSubPanels()
+    public SubPanels SubPanels()
     {
         return GetComponent<SubPanels>();
     }

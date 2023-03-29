@@ -15,9 +15,9 @@ public enum ActionType
 
 public enum DamageType
 {
-    HARMFUL, 
-    HEALING, 
-    MANA, 
+    HARMFUL,
+    HEALING,
+    MANA,
     UNDEFINED
 }
 
@@ -72,13 +72,12 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] string deadAnimation;
     [SerializeField] Transform projectileSpawnPoint;
     [SerializeField] ParticleSystem healingEffect;
+
     [Header("ANIMATION ACTIONS")]
     [SerializeField] protected CombatAction normalAttack;
     [SerializeField] CombatAction[] skills;
-    [SerializeField] CombatAction useItem;
-
-    int currentConsumableItemIndex;
     public CombatAction[] Skills => skills;
+    [SerializeField] CombatAction useItem;
 
     protected CharacterUIController uiController;
     public CharacterUIController UIController => uiController;
@@ -87,6 +86,7 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] protected Stats myStats;
     public Stats MyStats => myStats;
 
+    int currentConsumableItemIndex;
     float currentCooldown;
     protected int currentHP;
     protected int currentMP;
@@ -115,7 +115,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         originalPosition = this.transform.localPosition;
 
-        uiController = GetComponent<CharacterUIController>();
+        uiController = GetComponentInChildren<CharacterUIController>();
 
         ChangeBattleState(BattleState.RECHARGING);
 
@@ -149,6 +149,7 @@ public class CharacterBehaviour : MonoBehaviour
                 StartCoroutine(RechargingCoroutine());
                 SetToIdle();
                 break;
+
             case BattleState.READY:
 
                 if (uiController.GetBattlePanel())
@@ -172,9 +173,11 @@ public class CharacterBehaviour : MonoBehaviour
                     CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.isAreaOfEffect);
                 else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.isAreaOfEffect);
                 break;
+
             case BattleState.EXECUTING_ACTION:
                 SetToBusy();
                 break;
+
             case BattleState.SELECTING_TECH:
                 break;
             case BattleState.SELECTING_ITEM:
@@ -207,6 +210,7 @@ public class CharacterBehaviour : MonoBehaviour
                 uiController.HideCanvas();
                 ScreenEffects.instance.HideDarkScreen();
                 break;
+
             case BattleState.NULL:
                 break;
             default:
@@ -233,11 +237,11 @@ public class CharacterBehaviour : MonoBehaviour
 
         CombatManager.instance.HideAllEnemyPointers();
 
-        yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true && CombatManager.instance.PlayerCanAttack() && 
-                                         (CombatManager.instance.combatQueue.Count>0 && CombatManager.instance.combatQueue[0] == this.transform));
+        yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true && CombatManager.instance.PlayerCanAttack() &&
+                                         (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.combatQueue[0] == this.transform));
 
         ChangeBattleState(BattleState.EXECUTING_ACTION);
-        
+
 
         if (target.CurrentBattlePhase == BattleState.DEAD)
         {
@@ -302,7 +306,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.actionType == ActionType.ITEM)
         {
-            CharacterInventory _inventory = GetComponent<CharacterInventory>();
+            CharacterInventory _inventory = GetComponentInChildren<CharacterInventory>();
             _inventory.ConsumeItem(currentConsumableItemIndex);
             PlayHealingEffect(target);
         }
@@ -505,7 +509,7 @@ public class CharacterBehaviour : MonoBehaviour
             return Mathf.RoundToInt(_rawDamage * currentExecutingAction.damageMultiplier);
 
 
-        CharacterInventory _inventory = GetComponent<CharacterInventory>();
+        CharacterInventory _inventory = GetComponentInChildren<CharacterInventory>();
         return _inventory.inventoryItens[currentConsumableItemIndex].itemData.effectAmount;
     }
 
@@ -539,5 +543,5 @@ public class CharacterBehaviour : MonoBehaviour
 
     }
 
-    
+
 }

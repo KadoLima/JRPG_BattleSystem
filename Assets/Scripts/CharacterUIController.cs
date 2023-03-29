@@ -10,7 +10,7 @@ public class CharacterUIController : MonoBehaviour
 {
     [SerializeField] CanvasGroup myCanvasGroup;
     [SerializeField] GameObject pointer;
-    [SerializeField] BattlePanel battlePanel;
+    [SerializeField] MainBattlePanel battlePanel;
     [SerializeField] TextMeshProUGUI hpText;
     [SerializeField] TextMeshProUGUI mpText;
     [Header("Floating Combat Text")]
@@ -31,7 +31,7 @@ public class CharacterUIController : MonoBehaviour
         if (cooldownBar)
             cooldownBar.fillAmount = 0;
 
-        characterBehaviour = GetComponent<CharacterBehaviour>();
+        characterBehaviour = GetComponentInParent<CharacterBehaviour>();
 
         if (battlePanel)
             battlePanel.gameObject.SetActive(false);
@@ -77,7 +77,7 @@ public class CharacterUIController : MonoBehaviour
         myCanvasGroup.alpha = 0;
     }
 
-    public BattlePanel GetBattlePanel()
+    public MainBattlePanel GetBattlePanel()
     {
         if (!battlePanel)
             return null;
