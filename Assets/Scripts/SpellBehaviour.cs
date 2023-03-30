@@ -44,10 +44,10 @@ public class SpellBehaviour : MonoBehaviour
         {
             case SpellType.PROJECTILE:
                 if (myAnim) myAnim.enabled = true;
-                transform.DOMove(target.GetComponentInChildren<CombatEffects>().SpotsToGetHit[0].position, projectileLifetime - .2f).SetEase(Ease.InOutExpo);
+                transform.DOMove(target.GetComponentInChildren<SpriteEffects>().SpotsToGetHit[0].position, projectileLifetime - .2f).SetEase(Ease.InOutExpo);
                 break;
             case SpellType.ONTARGET_GROUND:
-                transform.DOMove(target.GetComponentInChildren<CombatEffects>().SpotsToGetHit[1].position, 0);
+                transform.DOMove(target.GetComponentInChildren<SpriteEffects>().SpotsToGetHit[1].position, 0);
                 if (myAnim) myAnim.enabled = true;
 
                 break;

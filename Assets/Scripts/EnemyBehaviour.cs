@@ -15,7 +15,7 @@ public class EnemyBehaviour : CharacterBehaviour
     // Start is called before the first frame update
     public override void Start()
     {
-        uiController = GetComponent<CharacterUIController>();
+        uiController = GetComponentInChildren<CharacterUIController>();
         CombatManager.instance.enemiesOnField.Add(this);
         originalPosition = transform.localPosition;
         currentHP = myStats.baseHP;
@@ -54,7 +54,7 @@ public class EnemyBehaviour : CharacterBehaviour
         CharacterBehaviour _currentTarget = GetRandomPlayer();
 
         yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true &&
-                                         (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.combatQueue[0] == this.transform));
+                                         (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.IsMyTurn(transform)));
         ChangeBattleState(BattleState.EXECUTING_ACTION);
         SetCurrentAction();
 
@@ -83,7 +83,7 @@ public class EnemyBehaviour : CharacterBehaviour
             yield return new WaitForSeconds(.2f);
             PlayAnimation(idleAnimation);
 
-            //yield return new WaitForSeconds(.25f);
+            yield return new WaitForSeconds(.25f);
             CombatManager.instance.combatQueue.Remove(this.transform);
             CombatManager.instance.ResetGlobalEnemyAttackCD();
             ChangeBattleState(BattleState.RECHARGING);

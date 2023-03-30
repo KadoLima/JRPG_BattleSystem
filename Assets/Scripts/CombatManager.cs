@@ -99,7 +99,7 @@ public class CombatManager : MonoBehaviour
             if (enemiesOnField.Count == 0)
                 return;
 
-            if (!GameManager.instance.gameStarted)
+            if (!GameManager.instance.GameStarted)
                 return;
 
             currentGlobalEnemyAttackCD -= Time.deltaTime;
@@ -116,6 +116,11 @@ public class CombatManager : MonoBehaviour
             }
         }
 
+    }
+
+    public bool IsMyTurn(Transform t)
+    {
+        return combatQueue[0] = t;
     }
 
     public void ResetGlobalEnemyAttackCD()
@@ -311,7 +316,7 @@ public class CombatManager : MonoBehaviour
 
         if (enemiesOnField.Count == 0)
         {
-            GameManager.instance.gameWon = true;
+            GameManager.instance.GameWon = true;
 
             foreach (CharacterBehaviour p in playersOnField)
             {

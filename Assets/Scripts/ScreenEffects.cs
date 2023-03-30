@@ -14,6 +14,8 @@ public class ScreenEffects : MonoBehaviour
         instance = this;
 
         skillDarkScreen.color = new Color(0, 0, 0, 0);
+
+        SpriteEffects.OnTargetGotHit += ShakeCamera;
     }
 
     // Start is called before the first frame update
@@ -22,8 +24,9 @@ public class ScreenEffects : MonoBehaviour
         mainCamera = Camera.main;
     }
 
-    public void ShakeCamera()
+    public void ShakeCamera(int a)
     {
+        //Debug.LogWarning("SHAKE SHAKE!");
         mainCamera.DOShakePosition(.35f, .4f, 50);
     }
 

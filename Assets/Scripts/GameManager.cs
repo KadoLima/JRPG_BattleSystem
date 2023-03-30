@@ -6,8 +6,18 @@ using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour
 {
-    public  bool gameStarted;
-    public  bool gameWon;
+    bool gameStarted;
+    public bool GameStarted
+    {
+        get => gameStarted;
+        set => gameStarted = value;
+    }
+    bool gameWon;
+    public bool GameWon
+    {
+        get => gameWon;
+        set => gameWon = value;
+    }
 
     public static GameManager instance;
 

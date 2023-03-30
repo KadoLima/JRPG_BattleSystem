@@ -21,7 +21,7 @@ public class IntroScreen : MonoBehaviour
     {
         if (Input.anyKeyDown)
         {
-            if (!GameManager.instance.gameStarted)
+            if (!GameManager.instance.GameStarted)
                 CloseContent();
             
         }
@@ -44,7 +44,7 @@ public class IntroScreen : MonoBehaviour
 
     public void CloseContent()
     {
-        GameManager.instance.gameStarted = true;
+        GameManager.instance.GameStarted = true;
         content.SetActive(false);
     }
 

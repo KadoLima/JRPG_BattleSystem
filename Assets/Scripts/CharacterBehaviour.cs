@@ -60,7 +60,7 @@ public struct Stats
 public class CharacterBehaviour : MonoBehaviour
 {
     [field: SerializeField] public Transform GetAttackedPos { get; private set; }
-    [SerializeField] protected CombatEffects combatEffects;
+    [SerializeField] protected SpriteEffects combatEffects;
     [field: SerializeField] public BattleState CurrentBattlePhase { get; set; }
 
 
@@ -238,7 +238,7 @@ public class CharacterBehaviour : MonoBehaviour
         CombatManager.instance.HideAllEnemyPointers();
 
         yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true && CombatManager.instance.PlayerCanAttack() &&
-                                         (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.combatQueue[0] == this.transform));
+                                         (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.IsMyTurn(transform)));
 
         ChangeBattleState(BattleState.EXECUTING_ACTION);
 
@@ -367,7 +367,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         currentCooldown = 0;
 
-        yield return new WaitUntil(() => GameManager.instance.gameStarted);
+        yield return new WaitUntil(() => GameManager.instance.GameStarted);
 
         while (currentCooldown < myStats.baseCooldown)
         {

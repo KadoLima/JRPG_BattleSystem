@@ -8,7 +8,7 @@ public class InputManager : MonoBehaviour
     public void OnMenus_Confirm(InputValue value)
     {
 
-        if (GameManager.instance.gameWon)
+        if (GameManager.instance.GameWon)
             return;
 
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
