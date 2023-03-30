@@ -34,24 +34,25 @@ public class CombatManager : MonoBehaviour
 
     EnemyBehaviour currentActiveEnemy = null;
 
-    [SerializeField] float globalIntervalBetweenActions = 1f;
-    public float GlobalIntervalBetweenActions => globalIntervalBetweenActions;
+    //[SerializeField] float globalIntervalBetweenActions = 1f;
+    //public float GlobalIntervalBetweenActions => globalIntervalBetweenActions;
+
 
     [SerializeField] float globalEnemyAttackCD = 5f;
     float originalGlobalEnemyAttackCDValue;
     float currentGlobalEnemyAttackCD;
-
-    [SerializeField] float internalPlayerCD = 2f;
-    float currentInternalPlayerCD;
+    [SerializeField] float globalPlayerAttackCD = 2f;
+    float currentGlobalPlayerAttackCD;
 
     [SerializeField]int totalXPEarned = 0;
-    [SerializeField] VictoryScreen victoryScreen;
+    //[SerializeField] VictoryScreen victoryScreen;
     [SerializeField] GameOverScreen gameOverScreen;
 
     [Header("COMBAT QUEUE")]
-    public List<Transform> combatQueue = new List<Transform>();
+    [SerializeField] List<CharacterBehaviour> combatQueue = new List<CharacterBehaviour>();
+    [SerializeField] float delayToLeaveQueue = 1;
 
-    public bool FieldIsClear()
+    public bool IsFieldClear()
     {
         foreach (var p in playersOnField)
         {
@@ -88,61 +89,99 @@ public class CombatManager : MonoBehaviour
     void Start()
     {
         currentGlobalEnemyAttackCD = originalGlobalEnemyAttackCDValue = globalEnemyAttackCD;
-        currentInternalPlayerCD = 0;
+        currentGlobalPlayerAttackCD = 0;
     }
 
     private void Update()
     {
 
-        if (FieldIsClear())
+        //if (IsFieldClear())
+        //
+        if (enemiesOnField.Count == 0)
+            return;
+
+        if (!GameManager.instance.GameStarted)
+            return;
+
+        currentGlobalEnemyAttackCD -= Time.deltaTime;
+        //currentGlobalEnemyAttackCD = Mathf.Clamp(currentGlobalEnemyAttackCD, 0, globalEnemyAttackCD);
+
+        currentGlobalPlayerAttackCD -= Time.deltaTime;
+        currentGlobalPlayerAttackCD = Mathf.Clamp(currentGlobalPlayerAttackCD, 0, globalPlayerAttackCD);
+
+        if (!IsGameOver() && EnemyCanAttack())
         {
-            if (enemiesOnField.Count == 0)
-                return;
+            currentActiveEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
+            currentActiveEnemy.ExecuteActionOn(GetRandomPlayer());
+            ResetGlobalEnemyAttackCD();
+        }
+        //}
 
-            if (!GameManager.instance.GameStarted)
-                return;
+    }
 
-            currentGlobalEnemyAttackCD -= Time.deltaTime;
-            currentGlobalEnemyAttackCD = Mathf.Clamp(currentGlobalEnemyAttackCD, 0, globalEnemyAttackCD);
+    public CharacterBehaviour GetRandomPlayer()
+    {
+        int _randomPlayerIndex = Random.Range(0, playersOnField.Count);
 
-            currentInternalPlayerCD -= Time.deltaTime;
-            currentInternalPlayerCD = Mathf.Clamp(currentInternalPlayerCD, 0, internalPlayerCD);
-
-            if (EnemyCanAttack() && !IsGameOver())
-            {
-                currentActiveEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
-                currentActiveEnemy.AttackRandomPlayer();
-
-            }
+        while (playersOnField[_randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
+        {
+            _randomPlayerIndex = Random.Range(0, playersOnField.Count);
         }
 
+        var _currentPlayerTarget = playersOnField[_randomPlayerIndex];
+        return _currentPlayerTarget;
     }
 
-    public bool IsMyTurn(Transform t)
+    public bool IsMyTurn(CharacterBehaviour c)
     {
-        return combatQueue[0] = t;
+        if (combatQueue.Count == 0)
+            return false;
+
+        //Debug.LogWarning($"Is it my turn? I'm {combatQueue[0].name}. ---> {combatQueue[0] == c}");
+        return combatQueue[0] == c;
     }
+
+    public void AddToCombatQueue(CharacterBehaviour characterToAdd)
+    {
+        //Debug.LogWarning(characterToAdd.name);
+        combatQueue.Add(characterToAdd);
+    }
+
+    public void RemoveFromCombatQueue(CharacterBehaviour characterToRemove)
+    {
+        StartCoroutine(RemoveFromQueueCoroutine(characterToRemove));
+    }
+
+    IEnumerator RemoveFromQueueCoroutine(CharacterBehaviour characterToRemove)
+    {
+        yield return new WaitForSeconds(delayToLeaveQueue);
+        combatQueue.Remove(characterToRemove);
+    }
+
 
     public void ResetGlobalEnemyAttackCD()
     {
+        Debug.LogWarning("RESETTING");
         currentActiveEnemy = null;
-        globalEnemyAttackCD = Random.Range(originalGlobalEnemyAttackCDValue - 0.5f, originalGlobalEnemyAttackCDValue + 1f);
+        globalEnemyAttackCD = originalGlobalEnemyAttackCDValue;
+        //globalEnemyAttackCD = Random.Range(originalGlobalEnemyAttackCDValue - 0.5f, originalGlobalEnemyAttackCDValue + 1f);
         currentGlobalEnemyAttackCD = globalEnemyAttackCD;
     }
 
     public void ResetInternalPlayerActionCD()
     {
-        currentInternalPlayerCD = internalPlayerCD;
+        currentGlobalPlayerAttackCD = globalPlayerAttackCD;
     }
 
     public bool EnemyCanAttack()
     {
-        return currentGlobalEnemyAttackCD <= 0 && currentActiveEnemy == null;
+        return currentGlobalEnemyAttackCD <= 0;
+        //return currentGlobalEnemyAttackCD <= 0 && currentActiveEnemy == null;
     }
 
     public bool PlayerCanAttack()
     {
-        return currentInternalPlayerCD <= 0;
+        return currentGlobalPlayerAttackCD <= 0;
     }
 
     public void AddToTotalXP(int amount)
@@ -306,24 +345,26 @@ public class CombatManager : MonoBehaviour
         if (c.GetComponent<EnemyBehaviour>())
         {
             enemiesOnField.Remove(c.GetComponent<EnemyBehaviour>());
-            StartCoroutine(CheckWinConditionCoroutine());
+            CheckWinConditionCoroutine();
+            //StartCoroutine(CheckWinConditionCoroutine());
         }
         else playersOnField.Remove(c);
     }
 
-    IEnumerator CheckWinConditionCoroutine()
+    void CheckWinConditionCoroutine()
     {
 
         if (enemiesOnField.Count == 0)
         {
-            GameManager.instance.GameWon = true;
+            //GameManager.instance.GameWon = true;
 
-            foreach (CharacterBehaviour p in playersOnField)
-            {
-                p.GameOver_Win();
-            }
-            yield return new WaitForSeconds(2.75f);
-            victoryScreen.ShowScreen();
+            //foreach (CharacterBehaviour p in playersOnField)
+            //{
+            //    p.GameOver_Win();
+            //}
+            GameManager.instance.EndGame();
+            //yield return new WaitForSeconds(2.75f);
+            //victoryScreen.ShowScreen();
         }
     }
 

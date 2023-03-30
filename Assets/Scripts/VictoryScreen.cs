@@ -21,9 +21,17 @@ public class VictoryScreen : MonoBehaviour
     [SerializeField] GameObject restartButton;
     [SerializeField] GameObject quitButton;
 
+    private void OnEnable()
+    {
+        GameManager.OnGameWon += ShowScreen;
+    }
 
+    private void OnDisable()
+    {
+        GameManager.OnGameWon -= ShowScreen;
 
-    // Start is called before the first frame update
+    }
+
     void Start()
     {
         restartButton.SetActive(false);
@@ -33,14 +41,16 @@ public class VictoryScreen : MonoBehaviour
 
     public void ShowScreen()
     {
-        screen.SetActive(true);
-
-        StartCoroutine(ShowFoundItensCoroutine());
+        StartCoroutine(ShowScreenCoroutine());
         ShowXPEarned();
     }
 
-    IEnumerator ShowFoundItensCoroutine()
+    IEnumerator ShowScreenCoroutine()
     {
+        yield return new WaitForSeconds(2.75f);
+        screen.SetActive(true);
+
+
         int _createdItensAmount = 3;
 
         for (int i = 0; i < _createdItensAmount; i++)

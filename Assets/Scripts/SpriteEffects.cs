@@ -7,7 +7,7 @@ using System;
 public class SpriteEffects : MonoBehaviour
 {
     SpriteRenderer mySpriteRenderer;
-    [SerializeField] int id;
+    int id;
     [SerializeField] Color takeDamageColor;
     [SerializeField] SpriteRenderer shadow;
 
@@ -17,16 +17,18 @@ public class SpriteEffects : MonoBehaviour
 
     Material myMaterial;
 
-    public static Action<int> OnTargetGotHit;
+    public static Action<int> OnHit;
 
     private void OnEnable()
     {
-        OnTargetGotHit += HitEffect;
+        id = GetComponentInParent<CharacterBehaviour>().ID;
+
+        OnHit += HitEffect;
     }
 
     private void OnDisable()
     {
-        OnTargetGotHit -= HitEffect;
+        OnHit -= HitEffect;
     }
 
     private void Start()
@@ -38,7 +40,7 @@ public class SpriteEffects : MonoBehaviour
 
     public void HitAction() //called as an Animation Event through the Animator
     {
-        OnTargetGotHit?.Invoke(id);
+        OnHit?.Invoke(id);
     }
 
     public void HitEffect(int id) 

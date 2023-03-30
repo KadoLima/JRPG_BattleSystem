@@ -5,7 +5,6 @@ using UnityEngine;
 public class EnemyBehaviour : CharacterBehaviour
 {
     [Header("ENEMY SPECIFIC PARAMETERS")]
-    [SerializeField] bool isAggressive = true;
     [SerializeField] int xpRewarded;
     [SerializeField] float chanceToUseSkill;
     public float ChanceToUseSkill => chanceToUseSkill;
@@ -24,46 +23,55 @@ public class EnemyBehaviour : CharacterBehaviour
 
 
 
-    public CharacterBehaviour GetRandomPlayer()
+    //public CharacterBehaviour GetRandomPlayer()
+    //{
+    //    int _randomPlayerIndex = Random.Range(0,CombatManager.instance.playersOnField.Count);
+
+    //    while (CombatManager.instance.playersOnField[_randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
+    //    {
+    //        _randomPlayerIndex = Random.Range(0, CombatManager.instance.playersOnField.Count);
+    //    }
+
+    //    currentPlayerTarget = CombatManager.instance.playersOnField[_randomPlayerIndex];
+    //    return currentPlayerTarget;
+    //}
+
+    public override void ExecuteActionOn(CharacterBehaviour target)
     {
-        int _randomPlayerIndex = Random.Range(0,CombatManager.instance.playersOnField.Count);
-
-        while (CombatManager.instance.playersOnField[_randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
-        {
-            _randomPlayerIndex = Random.Range(0, CombatManager.instance.playersOnField.Count);
-        }
-
-        currentPlayerTarget = CombatManager.instance.playersOnField[_randomPlayerIndex];
-        return currentPlayerTarget;
+        //Debug.LogWarning($"I'm {gameObject.name} and I'm starting action");
+        currentPlayerTarget = target;
+        StartCoroutine(AttackRandomPlayerCoroutine(target));
+        CombatManager.instance.AddToCombatQueue(this);
     }
 
-    public void AttackRandomPlayer()
-    {
-        CombatManager.instance.combatQueue.Add(this.transform);
+    //public void AttackRandomPlayer()
+    //{
+    //    Debug.LogWarning("ADDING THIS GUY TO COMBATQ -> " + this.gameObject.name);
+    //    //CombatManager.instance.combatQueue.Add(this.gameObject.transform);
 
-        if (isAggressive)
-        {
-            StartCoroutine(AttackRandomPlayerCoroutine());
-        }
-    }
+    //    StartCoroutine(AttackRandomPlayerCoroutine());
+
+    //}
 
 
-    IEnumerator AttackRandomPlayerCoroutine()
+    IEnumerator AttackRandomPlayerCoroutine(CharacterBehaviour targetPlayer)
     {
         ChangeBattleState(BattleState.READY);
-        CharacterBehaviour _currentTarget = GetRandomPlayer();
 
-        yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true &&
-                                         (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.IsMyTurn(transform)));
+        yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() && 
+                                         CombatManager.instance.IsMyTurn(this));
         ChangeBattleState(BattleState.EXECUTING_ACTION);
         SetCurrentAction();
 
         if (currentExecutingAction.goToTarget)
         {
-            MoveToTarget(_currentTarget);
+            MoveToTarget(targetPlayer);
 
             if (currentExecutingAction.actionType == ActionType.SKILL)
-                ScreenEffects.instance.ShowDarkScreen();
+            {
+                OnUsedSkill?.Invoke();
+                //ScreenEffects.instance.ShowDarkScreen();
+            }
 
             yield return new WaitForSeconds(secondsToReachTarget);
 
@@ -71,21 +79,23 @@ public class EnemyBehaviour : CharacterBehaviour
 
             yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
-            ApplyDamageOrHeal(_currentTarget);
+            ApplyDamageOrHeal(targetPlayer);
 
             yield return new WaitForSeconds(0.25f);
 
             if (currentExecutingAction.goToTarget)
                 GoBackToStartingPosition();
 
-            ScreenEffects.instance.HideDarkScreen();
+            OnSkillEnded?.Invoke();
+            //ScreenEffects.instance.HideDarkScreen();
 
             yield return new WaitForSeconds(.2f);
             PlayAnimation(idleAnimation);
 
             yield return new WaitForSeconds(.25f);
-            CombatManager.instance.combatQueue.Remove(this.transform);
-            CombatManager.instance.ResetGlobalEnemyAttackCD();
+            //CombatManager.instance.combatQueue.RemoveAt(0);
+            //CombatManager.instance.ResetGlobalEnemyAttackCD();
+            CombatManager.instance.RemoveFromCombatQueue(this);
             ChangeBattleState(BattleState.RECHARGING);
         }
     }

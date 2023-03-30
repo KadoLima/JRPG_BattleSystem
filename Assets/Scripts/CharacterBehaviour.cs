@@ -63,6 +63,9 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] protected SpriteEffects combatEffects;
     [field: SerializeField] public BattleState CurrentBattlePhase { get; set; }
 
+    [Header("Character ID")]
+    [SerializeField] int id;
+    public int ID => id;
 
     [Header("ANIMATION PARAMETERS")]
     [SerializeField] Animator myAnim;
@@ -107,6 +110,19 @@ public class CharacterBehaviour : MonoBehaviour
 
     bool isBusy = false;
     public bool IsBusy() => isBusy;
+
+    public static Action OnUsedSkill;
+    public static Action OnSkillEnded;
+
+    private void OnEnable()
+    {
+        GameManager.OnGameWon += GameOver_Win;
+    }
+
+    private void OnDisable()
+    {
+        GameManager.OnGameWon -= GameOver_Win;
+    }
 
     // Start is called before the first frame update
     public virtual void Start()
@@ -208,7 +224,7 @@ public class CharacterBehaviour : MonoBehaviour
                 GoBackToStartingPosition();
                 PlayAnimation(idleAnimation);
                 uiController.HideCanvas();
-                ScreenEffects.instance.HideDarkScreen();
+                //ScreenEffects.instance.HideDarkScreen();
                 break;
 
             case BattleState.NULL:
@@ -218,11 +234,11 @@ public class CharacterBehaviour : MonoBehaviour
         }
     }
 
-    public void ExecuteActionOn(CharacterBehaviour target)
+    public virtual void ExecuteActionOn(CharacterBehaviour target)
     {
+        CombatManager.instance.AddToCombatQueue(this);
         currentTarget = target;
         StartCoroutine(ActionCoroutine(target));
-
     }
 
     IEnumerator ActionCoroutine(CharacterBehaviour target)
@@ -237,8 +253,9 @@ public class CharacterBehaviour : MonoBehaviour
 
         CombatManager.instance.HideAllEnemyPointers();
 
-        yield return new WaitUntil(() => CombatManager.instance.FieldIsClear() == true && CombatManager.instance.PlayerCanAttack() &&
-                                         (CombatManager.instance.combatQueue.Count > 0 && CombatManager.instance.IsMyTurn(transform)));
+        yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() && 
+                                         CombatManager.instance.PlayerCanAttack() &&
+                                         CombatManager.instance.IsMyTurn(this));
 
         ChangeBattleState(BattleState.EXECUTING_ACTION);
 
@@ -253,10 +270,11 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.actionType == ActionType.SKILL)
         {
-            SkillNameScreen.instance.Show(currentExecutingAction.actionName);
-            currentMP -= currentExecutingAction.mpCost;
-            uiController.RefreshMP(currentMP, myStats.baseMP);
-            ScreenEffects.instance.ShowDarkScreen();
+            OnUsedSkill?.Invoke();
+            DecreaseMP(currentExecutingAction.mpCost);
+            //SkillNameScreen.instance.Show(currentExecutingAction.actionName);
+            //DecreaseMP(currentExecutingAction.mpCost);
+            //ScreenEffects.instance.ShowDarkScreen();
         }
 
         if (currentExecutingAction.goToTarget)
@@ -314,17 +332,18 @@ public class CharacterBehaviour : MonoBehaviour
 
         yield return new WaitForSeconds(0.25f);
 
-
-        if (currentExecutingAction.goToTarget)
-            GoBackToStartingPositionAndSetToIdle();
-
-        ScreenEffects.instance.HideDarkScreen();
+        GoBackToStartingPositionAndSetToIdle();
+        //ScreenEffects.instance.HideDarkScreen();
+        OnSkillEnded?.Invoke();
 
         yield return new WaitForSeconds(0.2f);
-        CombatManager.instance.combatQueue.Remove(this.transform);
+        //CombatManager.instance.combatQueue.RemoveAt(0);
         CombatManager.instance.ResetInternalPlayerActionCD();
+        CombatManager.instance.RemoveFromCombatQueue(this);
         ChangeBattleState(BattleState.RECHARGING);
     }
+
+
 
     protected void SetToIdle()
     {
@@ -337,7 +356,8 @@ public class CharacterBehaviour : MonoBehaviour
         currentTarget = null;
         uiController.ShowUI();
         PlayAnimation(idleAnimation);
-        yield return new WaitForSeconds(CombatManager.instance.GlobalIntervalBetweenActions);
+        yield return new WaitForSeconds(0.001f);
+        //yield return new WaitForSeconds(CombatManager.instance.GlobalIntervalBetweenActions);
         isBusy = false;
     }
 
@@ -435,7 +455,8 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void GoBackToStartingPositionAndSetToIdle()
     {
-        transform.DOLocalMove(originalPosition, secondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
+        if (currentExecutingAction.goToTarget)
+            transform.DOLocalMove(originalPosition, secondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
     }
 
     protected void PlayAnimation(string animString)
@@ -525,6 +546,12 @@ public class CharacterBehaviour : MonoBehaviour
         if (currentMP > myStats.baseMP) currentMP = myStats.baseMP;
     }
 
+    private void DecreaseMP(int amount)
+    {
+        currentMP -= amount;
+        //uiController.RefreshMP(currentMP, myStats.baseMP);
+    }
+
     public void ShowPointer()
     {
         uiController.ShowHidePointer(true);
@@ -539,8 +566,6 @@ public class CharacterBehaviour : MonoBehaviour
     {
         StopAllCoroutines();
         ChangeBattleState(BattleState.GAMEWIN);
-
-
     }
 
 

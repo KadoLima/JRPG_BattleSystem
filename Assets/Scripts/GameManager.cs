@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,10 +17,13 @@ public class GameManager : MonoBehaviour
     public bool GameWon
     {
         get => gameWon;
-        set => gameWon = value;
     }
 
     public static GameManager instance;
+
+    public static Action OnGameWon;
+
+
 
     void Awake()
     {
@@ -31,5 +35,10 @@ public class GameManager : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    public void EndGame()
+    {
+        OnGameWon?.Invoke();
     }
 }
