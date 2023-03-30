@@ -32,15 +32,15 @@ public class CombatManager : MonoBehaviour
     CharacterBehaviour currentActivePlayer = null;
     public CharacterBehaviour CurrentActivePlayer => currentActivePlayer;
 
-    EnemyBehaviour currentActiveEnemy = null;
+    //EnemyBehaviour currentActiveEnemy = null;
 
     //[SerializeField] float globalIntervalBetweenActions = 1f;
     //public float GlobalIntervalBetweenActions => globalIntervalBetweenActions;
 
 
-    [SerializeField] float globalEnemyAttackCD = 5f;
-    float originalGlobalEnemyAttackCDValue;
-    float currentGlobalEnemyAttackCD;
+    //[SerializeField] float globalEnemyAttackCD = 5f;
+    //float originalGlobalEnemyAttackCDValue;
+    //float currentGlobalEnemyAttackCD;
     [SerializeField] float globalPlayerAttackCD = 2f;
     float currentGlobalPlayerAttackCD;
 
@@ -88,7 +88,7 @@ public class CombatManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        currentGlobalEnemyAttackCD = originalGlobalEnemyAttackCDValue = globalEnemyAttackCD;
+        //currentGlobalEnemyAttackCD = originalGlobalEnemyAttackCDValue = globalEnemyAttackCD;
         currentGlobalPlayerAttackCD = 0;
     }
 
@@ -103,21 +103,43 @@ public class CombatManager : MonoBehaviour
         if (!GameManager.instance.GameStarted)
             return;
 
-        currentGlobalEnemyAttackCD -= Time.deltaTime;
+        //currentGlobalEnemyAttackCD -= Time.deltaTime;
         //currentGlobalEnemyAttackCD = Mathf.Clamp(currentGlobalEnemyAttackCD, 0, globalEnemyAttackCD);
 
         currentGlobalPlayerAttackCD -= Time.deltaTime;
         currentGlobalPlayerAttackCD = Mathf.Clamp(currentGlobalPlayerAttackCD, 0, globalPlayerAttackCD);
 
-        if (!IsGameOver() && EnemyCanAttack())
-        {
-            currentActiveEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
-            currentActiveEnemy.ExecuteActionOn(GetRandomPlayer());
-            ResetGlobalEnemyAttackCD();
-        }
+        //if (!IsGameOver() && EnemyCanAttack())
+        //if (!IsGameOver())
+        //{
+        //    //currentActiveEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
+        //    CurrentReadyEnemy().ExecuteActionOn(GetRandomPlayer());
+        //    ResetGlobalEnemyAttackCD();
+        //}
         //}
 
     }
+
+    public EnemyBehaviour CurrentReadyEnemy()
+    {
+        if (enemiesOnField.Count == 1)
+            return enemiesOnField[0];
+
+        int _randomEnemyIndex = Random.Range(0, enemiesOnField.Count);
+
+        Debug.LogWarning(_randomEnemyIndex);
+
+
+        while (enemiesOnField[_randomEnemyIndex].CurrentBattlePhase == BattleState.EXECUTING_ACTION)
+        {
+            _randomEnemyIndex = Random.Range(0, enemiesOnField.Count);
+        }
+
+        var _currentEnemy = enemiesOnField[_randomEnemyIndex];
+        return _currentEnemy;
+    }
+
+
 
     public CharacterBehaviour GetRandomPlayer()
     {
@@ -159,25 +181,25 @@ public class CombatManager : MonoBehaviour
     }
 
 
-    public void ResetGlobalEnemyAttackCD()
-    {
-        Debug.LogWarning("RESETTING");
-        currentActiveEnemy = null;
-        globalEnemyAttackCD = originalGlobalEnemyAttackCDValue;
-        //globalEnemyAttackCD = Random.Range(originalGlobalEnemyAttackCDValue - 0.5f, originalGlobalEnemyAttackCDValue + 1f);
-        currentGlobalEnemyAttackCD = globalEnemyAttackCD;
-    }
+    //public void ResetGlobalEnemyAttackCD()
+    //{
+    //    Debug.LogWarning("RESETTING");
+    //    currentActiveEnemy = null;
+    //    //globalEnemyAttackCD = originalGlobalEnemyAttackCDValue;
+    //    //globalEnemyAttackCD = Random.Range(originalGlobalEnemyAttackCDValue - 0.5f, originalGlobalEnemyAttackCDValue + 1f);
+    //    //currentGlobalEnemyAttackCD = globalEnemyAttackCD;
+    //}
 
     public void ResetInternalPlayerActionCD()
     {
         currentGlobalPlayerAttackCD = globalPlayerAttackCD;
     }
 
-    public bool EnemyCanAttack()
-    {
-        return currentGlobalEnemyAttackCD <= 0;
+    //public bool EnemyCanAttack()
+    //{
+        //return currentGlobalEnemyAttackCD <= 0;
         //return currentGlobalEnemyAttackCD <= 0 && currentActiveEnemy == null;
-    }
+    //}
 
     public bool PlayerCanAttack()
     {

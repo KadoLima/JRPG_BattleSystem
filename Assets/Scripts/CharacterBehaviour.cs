@@ -202,6 +202,7 @@ public class CharacterBehaviour : MonoBehaviour
                 break;
             case BattleState.DEAD:
                 myAnim.Play(deadAnimation);
+                CombatManager.instance.RemoveFromCombatQueue(this);
                 StopAllCoroutines();
 
                 if (!GetComponent<EnemyBehaviour>())
@@ -467,11 +468,6 @@ public class CharacterBehaviour : MonoBehaviour
     public void PlayHealingEffect(CharacterBehaviour target)
     {
         target.healingEffect.Play();
-    }
-
-    bool IsReady()
-    {
-        return currentCooldown >= myStats.baseCooldown;
     }
 
     protected void ApplyDamageOrHeal(CharacterBehaviour target)
