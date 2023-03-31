@@ -54,8 +54,10 @@ public class InputManager : MonoBehaviour
 
         if (_activePlayer == null)
             return;
-            
-        CharacterUIController _uiController = _activePlayer.GetComponent<CharacterUIController>();
+
+
+        CharacterUIController _uiController = _activePlayer.GetComponentInChildren<CharacterUIController>();
+
 
         if (_activePlayer.CurrentBattlePhase == BattleState.DEAD || CombatManager.instance.ReadyPlayersAmount() <= 1 || !_uiController)
             return;

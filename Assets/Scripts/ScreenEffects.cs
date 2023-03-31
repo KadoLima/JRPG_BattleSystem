@@ -20,14 +20,18 @@ public class ScreenEffects : MonoBehaviour
 
     private void OnEnable()
     {
-        CharacterBehaviour.OnUsedSkill += ShowDarkScreen;
+        CharacterBehaviour.OnSkillUsed += ShowDarkScreen;
         CharacterBehaviour.OnSkillEnded += HideDarkScreen;
+
+        EnemyBehaviour.OnEnemyUsedSkill += ShowDarkScreen;
     }
 
     private void OnDisable()
     {
-        CharacterBehaviour.OnUsedSkill -= ShowDarkScreen;
+        CharacterBehaviour.OnSkillUsed -= ShowDarkScreen;
         CharacterBehaviour.OnSkillEnded -= HideDarkScreen;
+
+        EnemyBehaviour.OnEnemyUsedSkill -= ShowDarkScreen;
     }
 
     // Start is called before the first frame update
@@ -42,7 +46,7 @@ public class ScreenEffects : MonoBehaviour
         mainCamera.DOShakePosition(.35f, .4f, 50);
     }
 
-    public void ShowDarkScreen()
+    public void ShowDarkScreen(string s)
     {
         skillDarkScreen.DOColor(new Color(0, 0, 0, .6f), .25f);
     }

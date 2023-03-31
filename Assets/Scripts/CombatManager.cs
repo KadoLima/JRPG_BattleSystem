@@ -50,7 +50,7 @@ public class CombatManager : MonoBehaviour
 
     [Header("COMBAT QUEUE")]
     [SerializeField] List<CharacterBehaviour> combatQueue = new List<CharacterBehaviour>();
-    [SerializeField] float delayToLeaveQueue = 1;
+    //[SerializeField] float delayToLeaveQueue = 1;
 
     public bool IsFieldClear()
     {
@@ -165,20 +165,19 @@ public class CombatManager : MonoBehaviour
 
     public void AddToCombatQueue(CharacterBehaviour characterToAdd)
     {
-        //Debug.LogWarning(characterToAdd.name);
         combatQueue.Add(characterToAdd);
     }
 
     public void RemoveFromCombatQueue(CharacterBehaviour characterToRemove)
     {
-        StartCoroutine(RemoveFromQueueCoroutine(characterToRemove));
-    }
-
-    IEnumerator RemoveFromQueueCoroutine(CharacterBehaviour characterToRemove)
-    {
-        yield return new WaitForSeconds(delayToLeaveQueue);
         combatQueue.Remove(characterToRemove);
     }
+
+    //IEnumerator RemoveFromQueueCoroutine(CharacterBehaviour characterToRemove)
+    //{
+    //    yield return new WaitForSeconds(delayToLeaveQueue);
+    //    combatQueue.Remove(characterToRemove);
+    //}
 
 
     //public void ResetGlobalEnemyAttackCD()
@@ -240,8 +239,9 @@ public class CombatManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.02f);
 
-        if (currentActivePlayer != null)
+        if (currentActivePlayer != null && currentActivePlayer.CurrentBattlePhase != BattleState.DEAD)
         {
+            //Debug.LogWarning("current Active Player: " +  currentActivePlayer);
             yield break;
         }
 
@@ -249,6 +249,7 @@ public class CombatManager : MonoBehaviour
         {
             if (c.CurrentBattlePhase == BattleState.READY)
             {
+                //Debug.LogWarning("2222");
                 SetCurrentActivePlayer(c);
                 yield break;
             }
@@ -259,8 +260,8 @@ public class CombatManager : MonoBehaviour
 
     public void SetCurrentActivePlayer(CharacterBehaviour c)
     {
-        //Debug.LogWarning("SETTING CURRENT ACTIVE PLAYER: " + c);
         currentActivePlayer = c;
+        //Debug.LogWarning("SETTING CURRENT ACTIVE PLAYER: " + c);
 
         if (c != null)
             c.UIController.ShowBattlePanel();

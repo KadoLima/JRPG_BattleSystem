@@ -60,6 +60,7 @@ public class CharacterUIController : MonoBehaviour
 
     public void HideCanvas(float speed = 10, float delay = 0)
     {
+        //Debug.LogWarning("Hiding my canvas. " + transform.parent.name);
         StartCoroutine(HideMyCanvasCoroutine(speed, delay));
     }
 
@@ -90,6 +91,7 @@ public class CharacterUIController : MonoBehaviour
         if (!battlePanel)
             return;
 
+        //Debug.LogWarning("showing my panel! " + transform.parent.name);
         battlePanel.gameObject.SetActive(true);
         battlePanel.SetFirstSelected();
         HideDescriptionTooltip();
@@ -97,6 +99,7 @@ public class CharacterUIController : MonoBehaviour
 
     public void HideBattlePanel()
     {
+
         if (!battlePanel)
             return;
 

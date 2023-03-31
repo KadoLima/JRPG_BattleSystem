@@ -52,7 +52,7 @@ public struct Stats
     public int baseMP;
     public int minDamage;
     public int maxDamage;
-    public float baseCooldown;
+    public float rechargeRate;
 
     public int baseDamage() => UnityEngine.Random.Range(minDamage, maxDamage);
 }
@@ -111,15 +111,15 @@ public class CharacterBehaviour : MonoBehaviour
     bool isBusy = false;
     public bool IsBusy() => isBusy;
 
-    public static Action OnUsedSkill;
+    public static Action<string> OnSkillUsed;
     public static Action OnSkillEnded;
 
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
         GameManager.OnGameWon += GameOver_Win;
     }
 
-    private void OnDisable()
+    protected virtual void OnDisable()
     {
         GameManager.OnGameWon -= GameOver_Win;
     }
@@ -201,20 +201,23 @@ public class CharacterBehaviour : MonoBehaviour
             case BattleState.WAITING:
                 break;
             case BattleState.DEAD:
-                myAnim.Play(deadAnimation);
+                //Debug.LogWarning(this.gameObject.name + " is Dead!");
                 CombatManager.instance.RemoveFromCombatQueue(this);
                 StopAllCoroutines();
 
                 if (!GetComponent<EnemyBehaviour>())
                 {
+                    myAnim.Play(deadAnimation);
                     Material _mat = GetComponentInChildren<SpriteRenderer>().material;
                     _mat.SetFloat("_GreyscaleBlend", 1);
                     uiController.HideCanvas(10, 0);
+                    CombatManager.instance.LookForReadyPlayer();
                     StartCoroutine(CombatManager.instance.ShowGameOverIfNeeded_Coroutine());
 
                 }
                 else
                 {
+                    myAnim.enabled = false;
                     uiController.HideCanvas(5, .25f);
                     combatEffects.DieEffect();
                     CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
@@ -271,7 +274,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.actionType == ActionType.SKILL)
         {
-            OnUsedSkill?.Invoke();
+            OnSkillUsed?.Invoke(currentExecutingAction.actionName);
             DecreaseMP(currentExecutingAction.mpCost);
             //SkillNameScreen.instance.Show(currentExecutingAction.actionName);
             //DecreaseMP(currentExecutingAction.mpCost);
@@ -390,13 +393,14 @@ public class CharacterBehaviour : MonoBehaviour
 
         yield return new WaitUntil(() => GameManager.instance.GameStarted);
 
-        while (currentCooldown < myStats.baseCooldown)
+        while (currentCooldown < myStats.rechargeRate)
         {
             currentCooldown += Time.deltaTime;
-            uiController.cooldownBar.fillAmount = currentCooldown / myStats.baseCooldown;
+            uiController.cooldownBar.fillAmount = currentCooldown / myStats.rechargeRate;
             yield return null;
         }
         ChangeBattleState(BattleState.READY);
+        //Debug.LogWarning(gameObject.name + " is ready!");
     }
 
     public void UseNormalAttack()

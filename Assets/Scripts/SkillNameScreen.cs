@@ -13,11 +13,23 @@ public class SkillNameScreen : MonoBehaviour
 
     RectTransform rectTransform;
 
-    public static SkillNameScreen instance;
+    //public static SkillNameScreen instance;
 
-    private void Awake()
+    //private void Awake()
+    //{
+    //    instance = this;
+    //}
+
+    private void OnEnable()
     {
-        instance = this;
+        CharacterBehaviour.OnSkillUsed += Show;
+        EnemyBehaviour.OnEnemyUsedSkill += Show;
+    }
+
+    private void OnDisable()
+    {
+        CharacterBehaviour.OnSkillUsed -= Show;
+        EnemyBehaviour.OnEnemyUsedSkill -= Show;
     }
 
     // Start is called before the first frame update
@@ -30,6 +42,9 @@ public class SkillNameScreen : MonoBehaviour
 
     public void Show(string textToShow)
     {
+        if (string.IsNullOrEmpty(textToShow))
+            return;
+
         StartCoroutine(Show_Coroutine(textToShow));
     }
 
