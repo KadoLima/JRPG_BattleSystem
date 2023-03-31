@@ -32,25 +32,15 @@ public class CombatManager : MonoBehaviour
     CharacterBehaviour currentActivePlayer = null;
     public CharacterBehaviour CurrentActivePlayer => currentActivePlayer;
 
-    //EnemyBehaviour currentActiveEnemy = null;
-
-    //[SerializeField] float globalIntervalBetweenActions = 1f;
-    //public float GlobalIntervalBetweenActions => globalIntervalBetweenActions;
-
-
-    //[SerializeField] float globalEnemyAttackCD = 5f;
-    //float originalGlobalEnemyAttackCDValue;
-    //float currentGlobalEnemyAttackCD;
     [SerializeField] float globalPlayerAttackCD = 2f;
     float currentGlobalPlayerAttackCD;
 
     [SerializeField]int totalXPEarned = 0;
-    //[SerializeField] VictoryScreen victoryScreen;
+
     [SerializeField] GameOverScreen gameOverScreen;
 
     [Header("COMBAT QUEUE")]
     [SerializeField] List<CharacterBehaviour> combatQueue = new List<CharacterBehaviour>();
-    //[SerializeField] float delayToLeaveQueue = 1;
 
     public bool IsFieldClear()
     {
@@ -85,38 +75,21 @@ public class CombatManager : MonoBehaviour
         instance = this;
     }
 
-    // Start is called before the first frame update
     void Start()
     {
-        //currentGlobalEnemyAttackCD = originalGlobalEnemyAttackCDValue = globalEnemyAttackCD;
         currentGlobalPlayerAttackCD = 0;
     }
 
     private void Update()
     {
-
-        //if (IsFieldClear())
-        //
         if (enemiesOnField.Count == 0)
             return;
 
         if (!GameManager.instance.GameStarted)
             return;
 
-        //currentGlobalEnemyAttackCD -= Time.deltaTime;
-        //currentGlobalEnemyAttackCD = Mathf.Clamp(currentGlobalEnemyAttackCD, 0, globalEnemyAttackCD);
-
         currentGlobalPlayerAttackCD -= Time.deltaTime;
         currentGlobalPlayerAttackCD = Mathf.Clamp(currentGlobalPlayerAttackCD, 0, globalPlayerAttackCD);
-
-        //if (!IsGameOver() && EnemyCanAttack())
-        //if (!IsGameOver())
-        //{
-        //    //currentActiveEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
-        //    CurrentReadyEnemy().ExecuteActionOn(GetRandomPlayer());
-        //    ResetGlobalEnemyAttackCD();
-        //}
-        //}
 
     }
 
@@ -159,7 +132,6 @@ public class CombatManager : MonoBehaviour
         if (combatQueue.Count == 0)
             return false;
 
-        //Debug.LogWarning($"Is it my turn? I'm {combatQueue[0].name}. ---> {combatQueue[0] == c}");
         return combatQueue[0] == c;
     }
 
@@ -173,32 +145,10 @@ public class CombatManager : MonoBehaviour
         combatQueue.Remove(characterToRemove);
     }
 
-    //IEnumerator RemoveFromQueueCoroutine(CharacterBehaviour characterToRemove)
-    //{
-    //    yield return new WaitForSeconds(delayToLeaveQueue);
-    //    combatQueue.Remove(characterToRemove);
-    //}
-
-
-    //public void ResetGlobalEnemyAttackCD()
-    //{
-    //    Debug.LogWarning("RESETTING");
-    //    currentActiveEnemy = null;
-    //    //globalEnemyAttackCD = originalGlobalEnemyAttackCDValue;
-    //    //globalEnemyAttackCD = Random.Range(originalGlobalEnemyAttackCDValue - 0.5f, originalGlobalEnemyAttackCDValue + 1f);
-    //    //currentGlobalEnemyAttackCD = globalEnemyAttackCD;
-    //}
-
     public void ResetInternalPlayerActionCD()
     {
         currentGlobalPlayerAttackCD = globalPlayerAttackCD;
     }
-
-    //public bool EnemyCanAttack()
-    //{
-        //return currentGlobalEnemyAttackCD <= 0;
-        //return currentGlobalEnemyAttackCD <= 0 && currentActiveEnemy == null;
-    //}
 
     public bool PlayerCanAttack()
     {
@@ -241,7 +191,6 @@ public class CombatManager : MonoBehaviour
 
         if (currentActivePlayer != null && currentActivePlayer.CurrentBattlePhase != BattleState.DEAD)
         {
-            //Debug.LogWarning("current Active Player: " +  currentActivePlayer);
             yield break;
         }
 
@@ -249,7 +198,6 @@ public class CombatManager : MonoBehaviour
         {
             if (c.CurrentBattlePhase == BattleState.READY)
             {
-                //Debug.LogWarning("2222");
                 SetCurrentActivePlayer(c);
                 yield break;
             }
@@ -261,7 +209,6 @@ public class CombatManager : MonoBehaviour
     public void SetCurrentActivePlayer(CharacterBehaviour c)
     {
         currentActivePlayer = c;
-        //Debug.LogWarning("SETTING CURRENT ACTIVE PLAYER: " + c);
 
         if (c != null)
             c.UIController.ShowBattlePanel();
@@ -302,7 +249,6 @@ public class CombatManager : MonoBehaviour
 
     public void SetTargetedEnemyByIndex(int index, bool isAreaOfEffect = false)
     {
-        //Debug.LogWarning("Selecting enemy...");
         if (isAreaOfEffect)
         {
             currentTargetEnemyIndex = index;
@@ -356,7 +302,6 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-
     public void RemoveFromField_Delayed(CharacterBehaviour c)
     {
         StartCoroutine(RemoveFromField_Delayed_Coroutine(c));
@@ -379,15 +324,7 @@ public class CombatManager : MonoBehaviour
 
         if (enemiesOnField.Count == 0)
         {
-            //GameManager.instance.GameWon = true;
-
-            //foreach (CharacterBehaviour p in playersOnField)
-            //{
-            //    p.GameOver_Win();
-            //}
             GameManager.instance.EndGame();
-            //yield return new WaitForSeconds(2.75f);
-            //victoryScreen.ShowScreen();
         }
     }
 
@@ -424,8 +361,6 @@ public class CombatManager : MonoBehaviour
 
     public void SetTargetedFriendlyTargetByIndex(int index, bool isAreaOfEffect = false)
     {
-        //Debug.LogWarning("SELECTING FRIENDLY TARGET");
-
         if (isAreaOfEffect)
         {
             currentFriendlyTargetIndex = index;
@@ -442,7 +377,6 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-
     public void IncreaseFriendlyTargetIndex()
     {
         currentFriendlyTargetIndex++;
@@ -456,7 +390,6 @@ public class CombatManager : MonoBehaviour
 
     public void DecreaseFriendlyTargetIndex()
     {
-        //Debug.LogWarning(currentFriendlyTargetIndex);
         currentFriendlyTargetIndex--;
 
         if (currentFriendlyTargetIndex < 0)
@@ -464,9 +397,6 @@ public class CombatManager : MonoBehaviour
 
         SetTargetedFriendlyTargetByIndex(currentFriendlyTargetIndex);
     }
-
-
-
 
     public void ShowAllFriendlyTargetPointers()
     {

@@ -17,7 +17,6 @@ public class EnemyBehaviour : CharacterBehaviour
 
     public static Action<string> OnEnemyUsedSkill; 
 
-    // Start is called before the first frame update
     public override void Start()
     {
         uiController = GetComponentInChildren<CharacterUIController>();
@@ -33,7 +32,6 @@ public class EnemyBehaviour : CharacterBehaviour
     public CharacterBehaviour GetRandomPlayer()
     {
         int _randomPlayerIndex = UnityEngine.Random.Range(0, CombatManager.instance.playersOnField.Count);
-        //Debug.LogWarning("count: " + CombatManager.instance.playersOnField.Count + ", chosen is: " + _randomPlayerIndex);
 
         while (CombatManager.instance.playersOnField[_randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
         {
@@ -46,20 +44,8 @@ public class EnemyBehaviour : CharacterBehaviour
 
     public override void ExecuteActionOn(CharacterBehaviour target)
     {
-        //Debug.LogWarning($"I'm {gameObject.name} and I'm starting action");
         StartCoroutine(AttackRandomPlayerCoroutine(target));
-        //CombatManager.instance.AddToCombatQueue(this);
     }
-
-    //public void AttackRandomPlayer()
-    //{
-    //    Debug.LogWarning("ADDING THIS GUY TO COMBATQ -> " + this.gameObject.name);
-    //    //CombatManager.instance.combatQueue.Add(this.gameObject.transform);
-
-    //    StartCoroutine(AttackRandomPlayerCoroutine());
-
-    //}
-
 
     IEnumerator AttackRandomPlayerCoroutine(CharacterBehaviour target)
     {
@@ -74,7 +60,6 @@ public class EnemyBehaviour : CharacterBehaviour
             else currentPlayerTarget = target;
 
             CombatManager.instance.AddToCombatQueue(this);
-            //Debug.LogWarning("Queueing " + this.gameObject.name);
 
             ChangeBattleState(BattleState.WAITING);
 
@@ -84,8 +69,6 @@ public class EnemyBehaviour : CharacterBehaviour
             ChangeBattleState(BattleState.EXECUTING_ACTION);
             SetCurrentAction();
 
-            //Debug.LogWarning(currentExecutingAction.actionType.ToString().ToUpper());
-
             if (currentExecutingAction.goToTarget)
             {
                 MoveToTarget(currentPlayerTarget);
@@ -94,7 +77,6 @@ public class EnemyBehaviour : CharacterBehaviour
                 {
                     Debug.LogWarning(gameObject.name + " is using a skill named " + currentExecutingAction.actionName.ToUpper());
                     OnEnemyUsedSkill?.Invoke(currentExecutingAction.actionName);
-                    //ScreenEffects.instance.ShowDarkScreen();
                 }
 
                 yield return new WaitForSeconds(secondsToReachTarget);
@@ -111,14 +93,11 @@ public class EnemyBehaviour : CharacterBehaviour
                     GoBackToStartingPosition();
 
                 OnSkillEnded?.Invoke();
-                //ScreenEffects.instance.HideDarkScreen();
 
                 yield return new WaitForSeconds(.2f);
                 PlayAnimation(idleAnimation);
 
                 yield return new WaitForSeconds(.25f);
-                //CombatManager.instance.combatQueue.RemoveAt(0);
-                //CombatManager.instance.ResetGlobalEnemyAttackCD();
                 CombatManager.instance.RemoveFromCombatQueue(this);
                 ChangeBattleState(BattleState.RECHARGING);
                 currentPlayerTarget = null;
@@ -156,13 +135,10 @@ public class EnemyBehaviour : CharacterBehaviour
         if (_randomValue > chanceToUseSkill)
         {
             currentExecutingAction = normalAttack;
-            //currentExecutingAction.actionType = ActionType.NORMAL_ATTACK;
         }
         else
         {
             currentExecutingAction = Skills[0];
-            //currentExecutingAction.actionType = ActionType.SKILL;
-            //SkillNameScreen.instance.Show(currentExecutingAction.actionName);
         }
     }
 }

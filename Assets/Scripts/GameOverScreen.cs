@@ -12,12 +12,10 @@ public class GameOverScreen : MonoBehaviour
     [SerializeField] Transform gameOverPanel;
     [SerializeField] GameObject firstSelected;
 
-    // Start is called before the first frame update
     void Start()
     {
         screen.SetActive(false);
     }
-
 
     public void ShowGameOverScreen()
     {
@@ -39,8 +37,6 @@ public class GameOverScreen : MonoBehaviour
             _canvasGroup.alpha += Time.deltaTime * 5f;
             yield return null;
         }
-
-
     }
 
     public void Retry()

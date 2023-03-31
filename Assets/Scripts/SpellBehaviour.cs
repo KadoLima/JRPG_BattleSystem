@@ -21,7 +21,6 @@ public class SpellBehaviour : MonoBehaviour
     [SerializeField] SpellType spellType;
     Animator myAnim;
 
-    // Start is called before the first frame update
     void Start()
     {
         myAnim = GetComponent<Animator>();
@@ -68,7 +67,6 @@ public class SpellBehaviour : MonoBehaviour
         this.transform.DOScale(new Vector2(finalScale, finalScale), .5f);
     }
 
-    // Update is called once per frame
     void Update()
     {
         transform.Rotate(new Vector3(0, 0, -rotateSpeed));

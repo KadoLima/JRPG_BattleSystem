@@ -5,14 +5,11 @@ using DG.Tweening;
 
 public class ScreenEffects : MonoBehaviour
 {
-    //public static ScreenEffects instance;
     Camera mainCamera;
     [SerializeField] SpriteRenderer skillDarkScreen;
 
     void Awake()
     {
-        //instance = this;
-
         skillDarkScreen.color = new Color(0, 0, 0, 0);
 
         SpriteEffects.OnHit += ShakeCamera;
@@ -34,7 +31,6 @@ public class ScreenEffects : MonoBehaviour
         EnemyBehaviour.OnEnemyUsedSkill -= ShowDarkScreen;
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         mainCamera = Camera.main;
@@ -42,7 +38,6 @@ public class ScreenEffects : MonoBehaviour
 
     public void ShakeCamera(int a)
     {
-        //Debug.LogWarning("SHAKE SHAKE!");
         mainCamera.DOShakePosition(.35f, .4f, 50);
     }
 

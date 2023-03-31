@@ -23,7 +23,6 @@ public class PlayerXPItem : MonoBehaviour
     [SerializeField] TextMeshProUGUI xpText;
     [SerializeField] TextMeshProUGUI levelText;
 
-    // Start is called before the first frame update
     void Start()
     {
         levelUpWarning.SetActive(false);
@@ -33,7 +32,6 @@ public class PlayerXPItem : MonoBehaviour
     {
         UpdateXPText();
         UpdateLevelText();
-        //Debug.LogWarning(playerXPInfo.currentXP / playerXPInfo.xpToLevel);
         xpBarFill.fillAmount = playerXPInfo.currentXP / playerXPInfo.xpToLevel;
 
         StartCoroutine(EarnXPCoroutine());

@@ -13,7 +13,6 @@ public class Sun : MonoBehaviour
     [SerializeField] float alphaTargetValue = .77f;
     [SerializeField] Light2D light2D;
 
-    // Start is called before the first frame update
     void Start()
     {
         StartCoroutine(MoveCoroutine());

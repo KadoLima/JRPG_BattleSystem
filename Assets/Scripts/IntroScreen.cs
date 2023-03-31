@@ -11,7 +11,6 @@ public class IntroScreen : MonoBehaviour
     [SerializeField] Image blackScreen;
 
 
-    // Start is called before the first frame update
     void Awake()
     {
         StartCoroutine(ShowContent_Coroutine());

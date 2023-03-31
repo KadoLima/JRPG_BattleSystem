@@ -26,8 +26,6 @@ public class InputManager : MonoBehaviour
             {
                 _activePlayer.ExecuteActionOn(CombatManager.instance.playersOnField[CombatManager.instance.CurrentFriendlyTargetIndex]);
             }
-
-            //CombatManager.instance.combatQueue.Add(_activePlayer.gameObject.transform);
         }
     }
 

@@ -15,7 +15,6 @@ public class TechItem : MonoBehaviour
 
         GetComponent<TextMeshProUGUI>().text = combatAction.actionName;
         transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = combatAction.mpCost.ToString();
-
     }
 
     public void ShowDescription()

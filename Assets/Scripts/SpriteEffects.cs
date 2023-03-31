@@ -48,7 +48,6 @@ public class SpriteEffects : MonoBehaviour
         if (this.id != id)
             return;
 
-        //ScreenEffects.instance.ShakeCamera();
         CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
 
         if (_player.CurrentTarget != null)
@@ -90,17 +89,6 @@ public class SpriteEffects : MonoBehaviour
         _moveTween = mySpriteRenderer.transform.DOLocalMoveX(.2f * -_pushDirection, .2f);
 
         yield return _moveTween.WaitForCompletion();
-        //mySpriteRenderer.DOColor(takeDamageColor, .1f);
-
-        //int _pushDirection;
-        //if (mySpriteRenderer.transform.position.x < 0)
-        //    _pushDirection = -1;
-        //else _pushDirection = 1;
-
-        //mySpriteRenderer.transform.DOLocalMoveX(.2f * _pushDirection, .2f);
-        //yield return new WaitForSeconds(.2f);
-        //mySpriteRenderer.DOColor(Color.white, .1f);
-        //mySpriteRenderer.transform.DOLocalMoveX(.2f * -_pushDirection, .2f);
     }
 
     public void DieEffect()

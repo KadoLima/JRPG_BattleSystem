@@ -13,13 +13,6 @@ public class SkillNameScreen : MonoBehaviour
 
     RectTransform rectTransform;
 
-    //public static SkillNameScreen instance;
-
-    //private void Awake()
-    //{
-    //    instance = this;
-    //}
-
     private void OnEnable()
     {
         CharacterBehaviour.OnSkillUsed += Show;
@@ -32,13 +25,11 @@ public class SkillNameScreen : MonoBehaviour
         EnemyBehaviour.OnEnemyUsedSkill -= Show;
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();
         rectTransform.DOAnchorPos(new Vector2(this.rectTransform.anchoredPosition.x,startPosY), 0);
     }
-
 
     public void Show(string textToShow)
     {

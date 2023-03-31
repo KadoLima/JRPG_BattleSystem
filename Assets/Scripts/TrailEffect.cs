@@ -14,14 +14,12 @@ public class TrailEffect : MonoBehaviour
 
     bool canShowTrail = false;
 
-    // Start is called before the first frame update
     void Start()
     {
         mySpriteRenderer = GetComponent<SpriteRenderer>();
         characterBehaviour = GetComponentInParent<CharacterBehaviour>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (!canShowTrail)

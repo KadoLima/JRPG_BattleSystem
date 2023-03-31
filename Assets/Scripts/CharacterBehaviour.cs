@@ -124,7 +124,6 @@ public class CharacterBehaviour : MonoBehaviour
         GameManager.OnGameWon -= GameOver_Win;
     }
 
-    // Start is called before the first frame update
     public virtual void Start()
     {
         CombatManager.instance.playersOnField.Add(this);
@@ -201,7 +200,6 @@ public class CharacterBehaviour : MonoBehaviour
             case BattleState.WAITING:
                 break;
             case BattleState.DEAD:
-                //Debug.LogWarning(this.gameObject.name + " is Dead!");
                 CombatManager.instance.RemoveFromCombatQueue(this);
                 StopAllCoroutines();
 
@@ -228,7 +226,6 @@ public class CharacterBehaviour : MonoBehaviour
                 GoBackToStartingPosition();
                 PlayAnimation(idleAnimation);
                 uiController.HideCanvas();
-                //ScreenEffects.instance.HideDarkScreen();
                 break;
 
             case BattleState.NULL:
@@ -276,9 +273,6 @@ public class CharacterBehaviour : MonoBehaviour
         {
             OnSkillUsed?.Invoke(currentExecutingAction.actionName);
             DecreaseMP(currentExecutingAction.mpCost);
-            //SkillNameScreen.instance.Show(currentExecutingAction.actionName);
-            //DecreaseMP(currentExecutingAction.mpCost);
-            //ScreenEffects.instance.ShowDarkScreen();
         }
 
         if (currentExecutingAction.goToTarget)
@@ -337,11 +331,9 @@ public class CharacterBehaviour : MonoBehaviour
         yield return new WaitForSeconds(0.25f);
 
         GoBackToStartingPositionAndSetToIdle();
-        //ScreenEffects.instance.HideDarkScreen();
         OnSkillEnded?.Invoke();
 
         yield return new WaitForSeconds(0.2f);
-        //CombatManager.instance.combatQueue.RemoveAt(0);
         CombatManager.instance.ResetInternalPlayerActionCD();
         CombatManager.instance.RemoveFromCombatQueue(this);
         ChangeBattleState(BattleState.RECHARGING);
@@ -361,7 +353,6 @@ public class CharacterBehaviour : MonoBehaviour
         uiController.ShowUI();
         PlayAnimation(idleAnimation);
         yield return new WaitForSeconds(0.001f);
-        //yield return new WaitForSeconds(CombatManager.instance.GlobalIntervalBetweenActions);
         isBusy = false;
     }
 
@@ -400,7 +391,6 @@ public class CharacterBehaviour : MonoBehaviour
             yield return null;
         }
         ChangeBattleState(BattleState.READY);
-        //Debug.LogWarning(gameObject.name + " is ready!");
     }
 
     public void UseNormalAttack()
@@ -430,7 +420,6 @@ public class CharacterBehaviour : MonoBehaviour
         if (CombatManager.instance.CurrentActivePlayer != this)
             return;
 
-        //Debug.LogWarning("player selected a consumable item...");
         currentPreAction = useItem;
         currentPreAction.damageType = dmgType;
         currentConsumableItemIndex = itemIndex;
@@ -549,7 +538,6 @@ public class CharacterBehaviour : MonoBehaviour
     private void DecreaseMP(int amount)
     {
         currentMP -= amount;
-        //uiController.RefreshMP(currentMP, myStats.baseMP);
     }
 
     public void ShowPointer()

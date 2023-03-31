@@ -27,7 +27,6 @@ public class CharacterInventory : MonoBehaviour
         {
             if (i == itemIndex)
             {
-                //Debug.LogWarning("CONSUMING " + inventoryItens[i].itemData.itemName);
                 inventoryItens[i].amount--;
                 var _itemUI = characterSubPanels.ItensList[i];
                 

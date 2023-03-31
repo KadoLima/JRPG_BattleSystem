@@ -13,7 +13,6 @@ public class ConsumableItem : MonoBehaviour
 
     public void Initialize(Item item, int index)
     {
-        //consumableIndex = index;
         inventoryItemData = item.itemData;
         GetComponent<TextMeshProUGUI>().text = item.itemData.name;
         image.sprite = item.itemData.itemSprite;
@@ -34,7 +33,6 @@ public class ConsumableItem : MonoBehaviour
 
     public void UpdateAmountText(int amount)
     {
-        //Debug.LogWarning("Updating amount...");
         amountText.text = amount.ToString();
     }
 }
