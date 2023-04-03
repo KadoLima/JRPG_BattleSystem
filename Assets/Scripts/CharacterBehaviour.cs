@@ -499,20 +499,14 @@ public class CharacterBehaviour : MonoBehaviour
 
         else if (dmgType == DamageType.HEALING)
         {
-            currentHP += amount;
-
-            if (currentHP > myStats.baseHP)
-                currentHP = myStats.baseHP;
+            IncreaseHP(amount);
 
         }
         else if (dmgType == DamageType.MANA)
         {
-            currentMP += amount;
-
-            if (currentMP > myStats.baseMP)
-                currentMP = myStats.baseMP;
-
+            IncreaseMP(amount);
         }
+
         uiController.ShowFloatingDamageText(amount, dmgType);
         uiController.RefreshHPMP();
     }

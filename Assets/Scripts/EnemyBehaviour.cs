@@ -78,10 +78,7 @@ public class EnemyBehaviour : CharacterBehaviour
                 MoveToTarget(currentPlayerTarget);
 
                 if (currentExecutingAction.actionType == ActionType.SKILL)
-                {
-                    Debug.LogWarning(gameObject.name + " is using a skill named " + currentExecutingAction.actionName.ToUpper());
                     OnEnemyUsedSkill?.Invoke(currentExecutingAction.actionName);
-                }
 
                 yield return new WaitForSeconds(secondsToReachTarget);
 
