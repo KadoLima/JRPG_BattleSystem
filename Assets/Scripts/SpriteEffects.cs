@@ -17,7 +17,7 @@ public class SpriteEffects : MonoBehaviour
 
     Material myMaterial;
 
-    public static Action<int> OnHit;
+    public static Action<CharacterBehaviour> OnHit;
 
     private void OnEnable()
     {
@@ -40,18 +40,19 @@ public class SpriteEffects : MonoBehaviour
 
     public void HitAction() //called as an Animation Event through the Animator
     {
-        OnHit?.Invoke(id);
+        OnHit?.Invoke(GetComponentInParent<CharacterBehaviour>());
     }
 
-    public void HitEffect(int id) 
+    public void HitEffect(CharacterBehaviour attackingCharacter) 
     {
-        if (this.id != id)
-            return;
+        //if (this.id != id)
+        //    return;
 
-        CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
+        CharacterBehaviour _player = attackingCharacter;
 
         if (_player.CurrentTarget != null)
         {
+
             if (_player.CurrentPreAction.isAreaOfEffect)
             {
                 for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
@@ -63,7 +64,7 @@ public class SpriteEffects : MonoBehaviour
             return;
         }
 
-        var _enemyBehaviour = GetComponentInParent<EnemyBehaviour>();
+        var _enemyBehaviour = attackingCharacter.GetComponent<EnemyBehaviour>();
 
         if (_enemyBehaviour == null)
             return;

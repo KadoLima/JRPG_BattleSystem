@@ -72,6 +72,8 @@ public class EnemyBehaviour : CharacterBehaviour
             ChangeBattleState(BattleState.EXECUTING_ACTION);
             SetCurrentAction();
 
+            //Debug.LogWarning(currentExecutingAction.actionType);
+
             if (currentExecutingAction.goToTarget)
             {
                 GetComponentInChildren<SpriteRenderer>().sortingOrder++;
@@ -79,6 +81,13 @@ public class EnemyBehaviour : CharacterBehaviour
 
                 if (currentExecutingAction.actionType == ActionType.SKILL)
                     OnEnemyUsedSkill?.Invoke(currentExecutingAction.actionName);
+
+                else if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
+                {
+                    var _rndValue = UnityEngine.Random.value;
+                    isDoingCritDamageAction =  _rndValue > myStats.critChance ? false : true;
+                    //Debug.LogWarning("ENEMY CRIT? " + isDoingCritDamageAction);
+                }
 
                 yield return new WaitForSeconds(secondsToReachTarget);
 
@@ -101,7 +110,7 @@ public class EnemyBehaviour : CharacterBehaviour
                 yield return new WaitForSeconds(.2f);
                 PlayAnimation(idleAnimation);
 
-                yield return new WaitForSeconds(.25f);
+                isDoingCritDamageAction = false;
                 CombatManager.instance.RemoveFromCombatQueue(this);
                 ChangeBattleState(BattleState.RECHARGING);
                 currentPlayerTarget = null;

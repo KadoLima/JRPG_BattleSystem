@@ -39,6 +39,7 @@ public struct CombatAction
     public GameObject projectile;
     public bool goToTarget;
     public bool isAreaOfEffect;
+    //public float critChance;
     public float damageMultiplier;
     public AnimationCycle animationCycle;
 
@@ -53,6 +54,7 @@ public struct Stats
     public int minDamage;
     public int maxDamage;
     public float rechargeRate;
+    public float critChance;
 
     public int baseDamage() => UnityEngine.Random.Range(minDamage, maxDamage);
 }
@@ -66,6 +68,9 @@ public class CharacterBehaviour : MonoBehaviour
     [Header("Character ID")]
     [SerializeField] int id;
     public int ID => id;
+
+    [Header("STATS")]
+    [SerializeField] protected Stats myStats;
 
     [Header("ANIMATION PARAMETERS")]
     [SerializeField] Animator myAnim;
@@ -85,8 +90,7 @@ public class CharacterBehaviour : MonoBehaviour
     protected CharacterUIController uiController;
     public CharacterUIController UIController => uiController;
 
-    [Header("STATS")]
-    [SerializeField] protected Stats myStats;
+
     public Stats MyStats => myStats;
 
     int currentConsumableItemIndex;
@@ -113,6 +117,9 @@ public class CharacterBehaviour : MonoBehaviour
 
     public static Action<string> OnSkillUsed;
     public static Action OnSkillEnded;
+
+    protected bool isDoingCritDamageAction;
+    public bool IsDoingCritDamageAction => isDoingCritDamageAction;
 
     protected virtual void OnEnable()
     {
@@ -257,7 +264,6 @@ public class CharacterBehaviour : MonoBehaviour
         target.uiController.HidePointer();
 
         yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() && 
-                                         CombatManager.instance.PlayerCanAttack() &&
                                          CombatManager.instance.IsMyTurn(this));
 
         ChangeBattleState(BattleState.EXECUTING_ACTION);
@@ -276,6 +282,13 @@ public class CharacterBehaviour : MonoBehaviour
             OnSkillUsed?.Invoke(currentExecutingAction.actionName);
             DecreaseMP(currentExecutingAction.mpCost);
         }
+        else if (CurrentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
+        {
+            var _rndValue = UnityEngine.Random.value;
+            isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
+            Debug.LogWarning("PLAYER CRIT? " + isDoingCritDamageAction);
+        }
+        
 
         if (currentExecutingAction.goToTarget)
         {
@@ -335,9 +348,10 @@ public class CharacterBehaviour : MonoBehaviour
         GoBackToStartingPositionAndSetToIdle();
         OnSkillEnded?.Invoke();
 
-        yield return new WaitForSeconds(0.2f);
-        CombatManager.instance.ResetInternalPlayerActionCD();
+        //yield return new WaitForSeconds(0.2f);
+        //CombatManager.instance.ResetInternalPlayerActionCD();
         CombatManager.instance.RemoveFromCombatQueue(this);
+        isDoingCritDamageAction = false;
         ChangeBattleState(BattleState.RECHARGING);
     }
 
@@ -471,13 +485,12 @@ public class CharacterBehaviour : MonoBehaviour
     protected void ApplyDamageOrHeal(CharacterBehaviour target)
     {
         if (!currentExecutingAction.isAreaOfEffect)
-            target.TakeDamageOrHeal(CalculatedValue(), this.currentExecutingAction.damageType);
+            target.TakeDamageOrHeal(CalculatedValue(), currentExecutingAction.damageType);
         else
         {
             for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
             {
-                var _dmg = CalculatedValue();
-                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(_dmg, currentExecutingAction.damageType);
+                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(CalculatedValue(), currentExecutingAction.damageType);
             }
         }
     }
@@ -514,12 +527,25 @@ public class CharacterBehaviour : MonoBehaviour
     private int CalculatedValue()
     {
         int _rawDamage = myStats.baseDamage();
+
+
         if (currentExecutingAction.actionType != ActionType.ITEM)
-            return Mathf.RoundToInt(_rawDamage * currentExecutingAction.damageMultiplier);
+        {
+            //Debug.LogWarning(_rawDamage + " x " + CritDamageMultiplier() + " x " + currentExecutingAction.damageMultiplier);
+            return Mathf.RoundToInt(_rawDamage * CritDamageMultiplier() *currentExecutingAction.damageMultiplier);
+        }
 
 
         CharacterInventory _inventory = GetComponentInChildren<CharacterInventory>();
         return _inventory.inventoryItens[currentConsumableItemIndex].itemData.effectAmount;
+    }
+
+    public int CritDamageMultiplier()
+    {
+        if (currentExecutingAction.actionType == ActionType.SKILL)
+            return 1;
+
+        return isDoingCritDamageAction ? 2 : 1;
     }
 
     public void IncreaseHP(int amount)

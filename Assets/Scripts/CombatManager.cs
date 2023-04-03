@@ -32,11 +32,15 @@ public class CombatManager : MonoBehaviour
     CharacterBehaviour currentActivePlayer = null;
     public CharacterBehaviour CurrentActivePlayer => currentActivePlayer;
 
-    [SerializeField] float globalPlayerAttackCD = 2f;
-    float currentGlobalPlayerAttackCD;
+    [Header("Global cooldown between actions")]
+    [SerializeField] float globalCooldown = .75f;
 
-    [SerializeField]int totalXPEarned = 0;
+    //[SerializeField] float globalPlayerAttackCD = 2f;
+    //float currentGlobalPlayerAttackCD;
 
+    int totalXPEarned = 0;
+
+    [Space(20)]
     [SerializeField] GameOverScreen gameOverScreen;
 
     [Header("COMBAT QUEUE")]
@@ -75,10 +79,10 @@ public class CombatManager : MonoBehaviour
         instance = this;
     }
 
-    void Start()
-    {
-        currentGlobalPlayerAttackCD = 0;
-    }
+    //void Start()
+    //{
+    //    currentGlobalPlayerAttackCD = 0;
+    //}
 
     private void Update()
     {
@@ -88,8 +92,8 @@ public class CombatManager : MonoBehaviour
         if (!GameManager.instance.GameStarted)
             return;
 
-        currentGlobalPlayerAttackCD -= Time.deltaTime;
-        currentGlobalPlayerAttackCD = Mathf.Clamp(currentGlobalPlayerAttackCD, 0, globalPlayerAttackCD);
+        //currentGlobalPlayerAttackCD -= Time.deltaTime;
+        //currentGlobalPlayerAttackCD = Mathf.Clamp(currentGlobalPlayerAttackCD, 0, globalPlayerAttackCD);
 
     }
 
@@ -142,18 +146,24 @@ public class CombatManager : MonoBehaviour
 
     public void RemoveFromCombatQueue(CharacterBehaviour characterToRemove)
     {
+        StartCoroutine(RemoveFromCombatQueueCoroutine(characterToRemove));
+    }
+
+    IEnumerator RemoveFromCombatQueueCoroutine(CharacterBehaviour characterToRemove)
+    {
+        yield return new WaitForSeconds(globalCooldown);
         combatQueue.Remove(characterToRemove);
     }
 
-    public void ResetInternalPlayerActionCD()
-    {
-        currentGlobalPlayerAttackCD = globalPlayerAttackCD;
-    }
+    //public void ResetInternalPlayerActionCD()
+    //{
+    //    currentGlobalPlayerAttackCD = globalPlayerAttackCD;
+    //}
 
-    public bool PlayerCanAttack()
-    {
-        return currentGlobalPlayerAttackCD <= 0;
-    }
+    //public bool PlayerCanAttack()
+    //{
+    //    return currentGlobalPlayerAttackCD <= 0;
+    //}
 
     public void AddToTotalXP(int amount)
     {
