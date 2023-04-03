@@ -279,7 +279,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.goToTarget)
         {
-
+            GetComponentInChildren<SpriteRenderer>().sortingOrder++;
             TrailEffect _trailEffect = GetComponentInChildren<TrailEffect>();
 
             if (_trailEffect)
@@ -452,7 +452,10 @@ public class CharacterBehaviour : MonoBehaviour
     public void GoBackToStartingPositionAndSetToIdle()
     {
         if (currentExecutingAction.goToTarget)
+        {
+            GetComponentInChildren<SpriteRenderer>().sortingOrder--;
             transform.DOLocalMove(originalPosition, secondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
+        }
     }
 
     protected void PlayAnimation(string animString)
@@ -529,17 +532,22 @@ public class CharacterBehaviour : MonoBehaviour
     {
         currentHP += amount;
         if (currentHP > myStats.baseHP) currentHP = myStats.baseHP;
+
+        uiController.RefreshHPMP();
     }
 
     public void IncreaseMP(int amount)
     {
         currentMP += amount;
         if (currentMP > myStats.baseMP) currentMP = myStats.baseMP;
+
+        uiController.RefreshHPMP();
     }
 
     private void DecreaseMP(int amount)
     {
         currentMP -= amount;
+        uiController.RefreshHPMP();
     }
 
     //public void ShowPointer()

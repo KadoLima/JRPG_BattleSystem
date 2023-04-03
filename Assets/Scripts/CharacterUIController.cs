@@ -45,6 +45,7 @@ public class CharacterUIController : MonoBehaviour
 
     public void RefreshHPMP()
     {
+        Debug.LogWarning("REFRESHING HP AND MP STATS!");
         RefreshHP(characterBehaviour.CurrentHP, characterBehaviour.MyStats.baseHP);
         RefreshMP(characterBehaviour.CurrentMP, characterBehaviour.MyStats.baseMP);
     }

@@ -74,6 +74,7 @@ public class EnemyBehaviour : CharacterBehaviour
 
             if (currentExecutingAction.goToTarget)
             {
+                GetComponentInChildren<SpriteRenderer>().sortingOrder++;
                 MoveToTarget(currentPlayerTarget);
 
                 if (currentExecutingAction.actionType == ActionType.SKILL)
@@ -93,7 +94,10 @@ public class EnemyBehaviour : CharacterBehaviour
                 yield return new WaitForSeconds(0.25f);
 
                 if (currentExecutingAction.goToTarget)
+                {
+                    GetComponentInChildren<SpriteRenderer>().sortingOrder--;
                     GoBackToStartingPosition();
+                }
 
                 OnSkillEnded?.Invoke();
 
