@@ -254,7 +254,7 @@ public class CharacterBehaviour : MonoBehaviour
         currentExecutingAction = currentPreAction;
 
         CombatManager.instance.HideAllEnemyPointers();
-        uiController.HidePointer();
+        target.uiController.HidePointer();
 
         yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() && 
                                          CombatManager.instance.PlayerCanAttack() &&
