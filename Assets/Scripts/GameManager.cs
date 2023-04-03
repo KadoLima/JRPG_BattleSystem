@@ -23,6 +23,10 @@ public class GameManager : MonoBehaviour
 
     public static Action OnGameWon;
 
+    [Header("DEBUG TOOLS")]
+    [SerializeField] bool debug_EnemiesDontAttack;
+    public bool Debug_EnemiesDontAttack => debug_EnemiesDontAttack;
+
 
 
     void Awake()

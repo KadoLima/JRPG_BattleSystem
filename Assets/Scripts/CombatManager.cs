@@ -260,8 +260,8 @@ public class CombatManager : MonoBehaviour
         for (int i = 0; i < enemiesOnField.Count; i++)
         {
             if (i == index)
-                enemiesOnField[i].ShowPointer();
-            else enemiesOnField[i].HidePointer();
+                enemiesOnField[i].UIController.ShowPointer();
+            else enemiesOnField[i].UIController.HidePointer();
         }
     }
 
@@ -290,7 +290,7 @@ public class CombatManager : MonoBehaviour
     {
         foreach (EnemyBehaviour enemy in enemiesOnField)
         {
-            enemy.ShowPointer();
+            enemy.UIController.ShowPointer();
         }
     }
 
@@ -298,7 +298,7 @@ public class CombatManager : MonoBehaviour
     {
         foreach (EnemyBehaviour enemy in enemiesOnField)
         {
-            enemy.HidePointer();
+            enemy.UIController.HidePointer();
         }
     }
 
@@ -372,8 +372,8 @@ public class CombatManager : MonoBehaviour
         for (int i = 0; i < playersOnField.Count; i++)
         {
             if (i == index)
-                playersOnField[i].ShowPointer();
-            else playersOnField[i].HidePointer();
+                playersOnField[i].UIController.ShowPointer();
+            else playersOnField[i].UIController.HidePointer();
         }
     }
 
@@ -401,17 +401,14 @@ public class CombatManager : MonoBehaviour
     public void ShowAllFriendlyTargetPointers()
     {
         foreach (CharacterBehaviour character in playersOnField)
-        {
-            character.ShowPointer();
-        }
+            character.UIController.ShowPointer();
     }
 
     public void HideAllFriendlyTargetPointers()
     {
         foreach (CharacterBehaviour character in playersOnField)
-        {
-            character.HidePointer();
-        }
+            character.UIController.HidePointer();
+
     }
 
 

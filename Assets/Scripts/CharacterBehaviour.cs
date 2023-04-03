@@ -174,7 +174,8 @@ public class CharacterBehaviour : MonoBehaviour
 
                     if (CombatManager.instance.CurrentActivePlayer == this)
                     {
-                        uiController.ShowHidePointer(false);
+                        //uiController.ShowHidePointer(false);
+                        uiController.HidePointer();
                         uiController.ShowBattlePanel();
                         uiController.GetBattlePanel().HideSubPanels();
                     }
@@ -253,6 +254,7 @@ public class CharacterBehaviour : MonoBehaviour
         currentExecutingAction = currentPreAction;
 
         CombatManager.instance.HideAllEnemyPointers();
+        uiController.HidePointer();
 
         yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() && 
                                          CombatManager.instance.PlayerCanAttack() &&
@@ -540,15 +542,15 @@ public class CharacterBehaviour : MonoBehaviour
         currentMP -= amount;
     }
 
-    public void ShowPointer()
-    {
-        uiController.ShowHidePointer(true);
-    }
+    //public void ShowPointer()
+    //{
+    //    uiController.ShowHidePointer(true);
+    //}
 
-    public void HidePointer()
-    {
-        uiController.ShowHidePointer(false);
-    }
+    //public void HidePointer()
+    //{
+    //    uiController.ShowHidePointer(false);
+    //}
 
     public void GameOver_Win()
     {

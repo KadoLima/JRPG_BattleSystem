@@ -24,7 +24,10 @@ public class EnemyBehaviour : CharacterBehaviour
         originalPosition = transform.localPosition;
         currentHP = myStats.baseHP;
 
-        ExecuteActionOn(null);
+        if (GameManager.instance.Debug_EnemiesDontAttack)
+            return;
+
+        ExecuteActionOn();
     }
 
 
@@ -42,7 +45,7 @@ public class EnemyBehaviour : CharacterBehaviour
         return currentPlayerTarget;
     }
 
-    public override void ExecuteActionOn(CharacterBehaviour target)
+    public override void ExecuteActionOn(CharacterBehaviour target=null)
     {
         StartCoroutine(AttackRandomPlayerCoroutine(target));
     }
@@ -80,7 +83,7 @@ public class EnemyBehaviour : CharacterBehaviour
                 }
 
                 yield return new WaitForSeconds(secondsToReachTarget);
-                Debug.LogWarning(currentExecutingAction.animationCycle.name);
+
                 PlayAnimation(currentExecutingAction.animationCycle.name);
 
                 yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
@@ -129,7 +132,6 @@ public class EnemyBehaviour : CharacterBehaviour
 
     private void SetCurrentAction(string s=null)
     {
-        Debug.LogWarning("1111");
         float _randomValue = UnityEngine.Random.value;
 
         if (_randomValue > chanceToUseSkill)

@@ -105,10 +105,13 @@ public class CharacterUIController : MonoBehaviour
         battlePanel.gameObject.SetActive(false);
     }
 
-    public void ShowHidePointer(bool s)
-    {
-        pointer.SetActive(s);
-    }
+    //public void ShowHidePointer(bool s)
+    //{
+    //    pointer.SetActive(s);
+    //}
+
+    public void ShowPointer() => pointer.SetActive(true);
+    public void HidePointer() => pointer.SetActive(false);
 
     public void HideUI()
     {
