@@ -15,6 +15,7 @@ public class CharacterUIController : MonoBehaviour
     [SerializeField] TextMeshProUGUI mpText;
     [Header("Floating Combat Text")]
     [SerializeField] TextMeshProUGUI floatingText;
+    GameObject criticalText;
     [SerializeField] Color healColor;
     [SerializeField] Color manaColor;
     [Space(10)]
@@ -27,6 +28,8 @@ public class CharacterUIController : MonoBehaviour
     void Start()
     {
         pointer.SetActive(false);
+        criticalText = floatingText.transform.GetChild(0).gameObject;
+        criticalText.SetActive(false);
 
         if (cooldownBar)
             cooldownBar.fillAmount = 0;
@@ -153,17 +156,17 @@ public class CharacterUIController : MonoBehaviour
         else mpText.text = "M: " + 0 + "/" + baseMP;
     }
 
-    public void ShowFloatingDamageText(int damageAmount, DamageType dmgType)
+    public void ShowFloatingDamageText(int damageAmount, DamageType dmgType, bool isCrit)
     {
-        StartCoroutine(FloatingTextCoroutine(damageAmount, dmgType));
+        StartCoroutine(FloatingTextCoroutine(damageAmount, dmgType, isCrit));
     }
 
-    IEnumerator FloatingTextCoroutine(int damageAmount, DamageType dmgType)
+    IEnumerator FloatingTextCoroutine(int damageAmount, DamageType dmgType, bool isCrit)
     {
         float _popMovingTime = .2f;
         float _fadeTime = .2f;
         float _yMovingAmount = 40f;
-        float _showingTime = _popMovingTime + 1.5f;
+        float _showingTime = _popMovingTime + 1f;
 
         if (dmgType == DamageType.HEALING)
             SetTextColor_Heal();
@@ -172,12 +175,14 @@ public class CharacterUIController : MonoBehaviour
         else
             SetTextColor_Normal();
 
+        CanvasGroup _canvasGroup = floatingText.GetComponent<CanvasGroup>();
         floatingText.text = damageAmount.ToString();
-        floatingText.color = new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 0);
-        floatingText.DOColor(new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 1), _fadeTime);
+        _canvasGroup.DOFade(0, 0);
+        _canvasGroup.DOFade(1, _fadeTime);
+        criticalText.SetActive(isCrit);
         floatingText.rectTransform.DOAnchorPosY(floatingText.rectTransform.anchoredPosition.y + _yMovingAmount, _popMovingTime).OnComplete(BounceFloatingText);
         yield return new WaitForSeconds(_showingTime);
-        floatingText.DOColor(new Color(floatingText.color.r, floatingText.color.g, floatingText.color.b, 0), _fadeTime);
+        _canvasGroup.DOFade(0, _fadeTime);
 
     }
 

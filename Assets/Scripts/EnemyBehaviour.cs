@@ -120,13 +120,12 @@ public class EnemyBehaviour : CharacterBehaviour
         }
     }
 
-    public override void TakeDamageOrHeal(int amount, DamageType dmgType)
+    public override void TakeDamageOrHeal(int amount, DamageType dmgType, bool isCrit)
     {
-
         if (dmgType == DamageType.HARMFUL)
         {
             currentHP -= amount;
-            uiController.ShowFloatingDamageText(amount, dmgType);
+            uiController.ShowFloatingDamageText(amount, dmgType, isCrit);
 
             if (currentHP <= 0)
             {

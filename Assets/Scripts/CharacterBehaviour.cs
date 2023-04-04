@@ -286,7 +286,7 @@ public class CharacterBehaviour : MonoBehaviour
         {
             var _rndValue = UnityEngine.Random.value;
             isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
-            Debug.LogWarning("PLAYER CRIT? " + isDoingCritDamageAction);
+            Debug.LogWarning("CRIT? " + isDoingCritDamageAction);
         }
         
 
@@ -485,24 +485,24 @@ public class CharacterBehaviour : MonoBehaviour
     protected void ApplyDamageOrHeal(CharacterBehaviour target)
     {
         if (!currentExecutingAction.isAreaOfEffect)
-            target.TakeDamageOrHeal(CalculatedValue(), currentExecutingAction.damageType);
+            target.TakeDamageOrHeal(CalculatedValue(), currentExecutingAction.damageType, isDoingCritDamageAction);
         else
         {
             for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
             {
-                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(CalculatedValue(), currentExecutingAction.damageType);
+                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(CalculatedValue(), currentExecutingAction.damageType, isDoingCritDamageAction);
             }
         }
     }
 
 
-    public virtual void TakeDamageOrHeal(int amount, DamageType dmgType)
+    public virtual void TakeDamageOrHeal(int amount, DamageType dmgType, bool isCrit)
     {
 
         if (dmgType == DamageType.HARMFUL)
         {
             currentHP -= amount;
-            uiController.ShowFloatingDamageText(amount, dmgType);
+            uiController.ShowFloatingDamageText(amount, dmgType, isCrit);
 
             if (currentHP <= 0)
             {
@@ -520,7 +520,7 @@ public class CharacterBehaviour : MonoBehaviour
             IncreaseMP(amount);
         }
 
-        uiController.ShowFloatingDamageText(amount, dmgType);
+        uiController.ShowFloatingDamageText(amount, dmgType, isCrit);
         uiController.RefreshHPMP();
     }
 
