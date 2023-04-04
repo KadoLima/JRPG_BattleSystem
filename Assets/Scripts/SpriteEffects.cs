@@ -45,9 +45,6 @@ public class SpriteEffects : MonoBehaviour
 
     public void HitEffect(CharacterBehaviour attackingCharacter) 
     {
-        //if (this.id != id)
-        //    return;
-
         CharacterBehaviour _player = attackingCharacter;
 
         if (_player.CurrentTarget != null)

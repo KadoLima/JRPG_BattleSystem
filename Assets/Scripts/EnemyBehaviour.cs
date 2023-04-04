@@ -72,8 +72,6 @@ public class EnemyBehaviour : CharacterBehaviour
             ChangeBattleState(BattleState.EXECUTING_ACTION);
             SetCurrentAction();
 
-            //Debug.LogWarning(currentExecutingAction.actionType);
-
             if (currentExecutingAction.goToTarget)
             {
                 GetComponentInChildren<SpriteRenderer>().sortingOrder++;
@@ -86,7 +84,6 @@ public class EnemyBehaviour : CharacterBehaviour
                 {
                     var _rndValue = UnityEngine.Random.value;
                     isDoingCritDamageAction =  _rndValue > myStats.critChance ? false : true;
-                    //Debug.LogWarning("ENEMY CRIT? " + isDoingCritDamageAction);
                 }
 
                 yield return new WaitForSeconds(secondsToReachTarget);

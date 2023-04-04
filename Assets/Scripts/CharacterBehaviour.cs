@@ -39,7 +39,6 @@ public struct CombatAction
     public GameObject projectile;
     public bool goToTarget;
     public bool isAreaOfEffect;
-    //public float critChance;
     public float damageMultiplier;
     public AnimationCycle animationCycle;
 
@@ -181,7 +180,6 @@ public class CharacterBehaviour : MonoBehaviour
 
                     if (CombatManager.instance.CurrentActivePlayer == this)
                     {
-                        //uiController.ShowHidePointer(false);
                         uiController.HidePointer();
                         uiController.ShowBattlePanel();
                         uiController.GetBattlePanel().HideSubPanels();
@@ -347,9 +345,6 @@ public class CharacterBehaviour : MonoBehaviour
 
         GoBackToStartingPositionAndSetToIdle();
         OnSkillEnded?.Invoke();
-
-        //yield return new WaitForSeconds(0.2f);
-        //CombatManager.instance.ResetInternalPlayerActionCD();
         CombatManager.instance.RemoveFromCombatQueue(this);
         isDoingCritDamageAction = false;
         ChangeBattleState(BattleState.RECHARGING);
@@ -531,7 +526,6 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.actionType != ActionType.ITEM)
         {
-            //Debug.LogWarning(_rawDamage + " x " + CritDamageMultiplier() + " x " + currentExecutingAction.damageMultiplier);
             return Mathf.RoundToInt(_rawDamage * CritDamageMultiplier() *currentExecutingAction.damageMultiplier);
         }
 
@@ -569,16 +563,6 @@ public class CharacterBehaviour : MonoBehaviour
         currentMP -= amount;
         uiController.RefreshHPMP();
     }
-
-    //public void ShowPointer()
-    //{
-    //    uiController.ShowHidePointer(true);
-    //}
-
-    //public void HidePointer()
-    //{
-    //    uiController.ShowHidePointer(false);
-    //}
 
     public void GameOver_Win()
     {

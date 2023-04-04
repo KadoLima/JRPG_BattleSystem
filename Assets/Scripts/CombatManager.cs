@@ -35,9 +35,6 @@ public class CombatManager : MonoBehaviour
     [Header("Global cooldown between actions")]
     [SerializeField] float globalCooldown = .75f;
 
-    //[SerializeField] float globalPlayerAttackCD = 2f;
-    //float currentGlobalPlayerAttackCD;
-
     int totalXPEarned = 0;
 
     [Space(20)]
@@ -79,11 +76,6 @@ public class CombatManager : MonoBehaviour
         instance = this;
     }
 
-    //void Start()
-    //{
-    //    currentGlobalPlayerAttackCD = 0;
-    //}
-
     private void Update()
     {
         if (enemiesOnField.Count == 0)
@@ -91,9 +83,6 @@ public class CombatManager : MonoBehaviour
 
         if (!GameManager.instance.GameStarted)
             return;
-
-        //currentGlobalPlayerAttackCD -= Time.deltaTime;
-        //currentGlobalPlayerAttackCD = Mathf.Clamp(currentGlobalPlayerAttackCD, 0, globalPlayerAttackCD);
 
     }
 
@@ -154,16 +143,6 @@ public class CombatManager : MonoBehaviour
         yield return new WaitForSeconds(globalCooldown);
         combatQueue.Remove(characterToRemove);
     }
-
-    //public void ResetInternalPlayerActionCD()
-    //{
-    //    currentGlobalPlayerAttackCD = globalPlayerAttackCD;
-    //}
-
-    //public bool PlayerCanAttack()
-    //{
-    //    return currentGlobalPlayerAttackCD <= 0;
-    //}
 
     public void AddToTotalXP(int amount)
     {
