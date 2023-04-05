@@ -45,18 +45,6 @@ public struct CombatAction
     public bool IsHarmful => this.damageType == DamageType.HARMFUL;
 }
 
-[System.Serializable]
-public struct Stats
-{
-    public int baseHP;
-    public int baseMP;
-    public int minDamage;
-    public int maxDamage;
-    public float rechargeRate;
-    public float critChance;
-
-    public int baseDamage() => UnityEngine.Random.Range(minDamage, maxDamage);
-}
 
 public class CharacterBehaviour : MonoBehaviour
 {
@@ -69,7 +57,9 @@ public class CharacterBehaviour : MonoBehaviour
     public int ID => id;
 
     [Header("STATS")]
-    [SerializeField] protected Stats myStats;
+    //[SerializeField] protected Stats myStats;
+    [SerializeField] protected CharacterStats myStats;
+    public CharacterStats MyStats => myStats;
 
     [Header("ANIMATION PARAMETERS")]
     [SerializeField] Animator myAnim;
@@ -90,7 +80,7 @@ public class CharacterBehaviour : MonoBehaviour
     public CharacterUIController UIController => uiController;
 
 
-    public Stats MyStats => myStats;
+    //public Stats MyStats => myStats;
 
     int currentConsumableItemIndex;
     float currentCooldown;
