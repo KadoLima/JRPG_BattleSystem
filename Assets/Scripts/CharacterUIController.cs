@@ -75,12 +75,12 @@ public class CharacterUIController : MonoBehaviour
             yield return null;
         }
 
-        HideBattlePanel();
+        HideMainBattlePanel();
 
         myCanvasGroup.alpha = 0;
     }
 
-    public MainBattlePanel GetBattlePanel()
+    public MainBattlePanel FindMainBattlePanel()
     {
         if (!battlePanel)
             return null;
@@ -88,17 +88,19 @@ public class CharacterUIController : MonoBehaviour
         return battlePanel;
     }
 
-     public void ShowBattlePanel()
+     public void ShowMainBattlePanel()
     {
         if (!battlePanel)
             return;
 
         battlePanel.gameObject.SetActive(true);
         battlePanel.SetFirstSelected();
+        battlePanel.HideSubPanels();
         HideDescriptionTooltip();
+        HidePointer();
     }
 
-    public void HideBattlePanel()
+    public void HideMainBattlePanel()
     {
 
         if (!battlePanel)

@@ -22,13 +22,6 @@ public enum DamageType
 }
 
 [System.Serializable]
-public struct AnimationCycle
-{
-    public string name;
-    public float cycleTime;
-}
-
-[System.Serializable]
 public struct CombatAction
 {
     public ActionType actionType;
@@ -45,18 +38,6 @@ public struct CombatAction
     public bool IsHarmful => this.damageType == DamageType.HARMFUL;
 }
 
-[System.Serializable]
-public struct Stats
-{
-    public int baseHP;
-    public int baseMP;
-    public int minDamage;
-    public int maxDamage;
-    public float rechargeRate;
-    public float critChance;
-
-    public int baseDamage() => UnityEngine.Random.Range(minDamage, maxDamage);
-}
 
 public class CharacterBehaviour : MonoBehaviour
 {
@@ -69,18 +50,15 @@ public class CharacterBehaviour : MonoBehaviour
     public int ID => id;
 
     [Header("STATS")]
-    [SerializeField] protected Stats myStats;
+    //[SerializeField] protected Stats myStats;
+    [SerializeField] protected CharacterStats myStats;
+    public CharacterStats MyStats => myStats;
 
-    [Header("ANIMATION PARAMETERS")]
-    [SerializeField] Animator myAnim;
-    [SerializeField] protected float secondsToReachTarget = .75f;
-    [SerializeField] protected float secondsToGoBack = .45f;
-    [SerializeField] protected string idleAnimation;
-    [SerializeField] string deadAnimation;
-    [SerializeField] Transform projectileSpawnPoint;
-    [SerializeField] ParticleSystem healingEffect;
+    [Header("Anim Controller")]
+    [SerializeField] protected CharacterAnimationController myAnimController;
 
-    [Header("ANIMATION ACTIONS")]
+    [Space(20)]
+
     [SerializeField] protected CombatAction normalAttack;
     [SerializeField] CombatAction[] skills;
     public CombatAction[] Skills => skills;
@@ -90,7 +68,7 @@ public class CharacterBehaviour : MonoBehaviour
     public CharacterUIController UIController => uiController;
 
 
-    public Stats MyStats => myStats;
+    //public Stats MyStats => myStats;
 
     int currentConsumableItemIndex;
     float currentCooldown;
@@ -150,7 +128,7 @@ public class CharacterBehaviour : MonoBehaviour
         if (CurrentBattlePhase == BattleState.DEAD || CombatManager.instance.CurrentActivePlayer != this)
             return;
 
-        UIController.GetBattlePanel().ShowHideSwapCharsIndicator(CombatManager.instance.ReadyPlayersAmount() > 1);
+        UIController.FindMainBattlePanel().ShowHideSwapCharsIndicator(CombatManager.instance.ReadyPlayersAmount() > 1);
     }
 
     public void ChangeBattleState(BattleState phase)
@@ -173,23 +151,23 @@ public class CharacterBehaviour : MonoBehaviour
 
             case BattleState.READY:
 
-                if (uiController.GetBattlePanel())
+                if (uiController.FindMainBattlePanel())
                 {
                     CombatManager.instance.LookForReadyPlayer();
 
 
                     if (CombatManager.instance.CurrentActivePlayer == this)
                     {
-                        uiController.HidePointer();
-                        uiController.ShowBattlePanel();
-                        uiController.GetBattlePanel().HideSubPanels();
+                        //uiController.HidePointer();
+                        uiController.ShowMainBattlePanel();
+                        //uiController.GetBattlePanel().HideSubPanels();
                     }
                 }
 
                 break;
 
             case BattleState.PICKING_TARGET:
-                uiController.HideBattlePanel();
+                uiController.HideMainBattlePanel();
                 if (currentPreAction.IsHarmful)
                     CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.isAreaOfEffect);
                 else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.isAreaOfEffect);
@@ -211,7 +189,7 @@ public class CharacterBehaviour : MonoBehaviour
 
                 if (!GetComponent<EnemyBehaviour>())
                 {
-                    myAnim.Play(deadAnimation);
+                    myAnimController.PlayAnimation(myAnimController.DeadAnimationName);
                     Material _mat = GetComponentInChildren<SpriteRenderer>().material;
                     _mat.SetFloat("_GreyscaleBlend", 1);
                     uiController.HideCanvas(10, 0);
@@ -221,7 +199,7 @@ public class CharacterBehaviour : MonoBehaviour
                 }
                 else
                 {
-                    myAnim.enabled = false;
+                    myAnimController.DisableAnimator();
                     uiController.HideCanvas(5, .25f);
                     combatEffects.DieEffect();
                     CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
@@ -230,7 +208,7 @@ public class CharacterBehaviour : MonoBehaviour
 
             case BattleState.GAMEWIN:
                 GoBackToStartingPosition();
-                PlayAnimation(idleAnimation);
+                myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
                 uiController.HideCanvas();
                 break;
 
@@ -261,7 +239,7 @@ public class CharacterBehaviour : MonoBehaviour
         CombatManager.instance.HideAllEnemyPointers();
         target.uiController.HidePointer();
 
-        yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() && 
+        yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() &&
                                          CombatManager.instance.IsMyTurn(this));
 
         ChangeBattleState(BattleState.EXECUTING_ACTION);
@@ -286,7 +264,7 @@ public class CharacterBehaviour : MonoBehaviour
             isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
             Debug.LogWarning("CRIT? " + isDoingCritDamageAction);
         }
-        
+
 
         if (currentExecutingAction.goToTarget)
         {
@@ -297,31 +275,31 @@ public class CharacterBehaviour : MonoBehaviour
                 _trailEffect.ShowTrail();
 
             MoveToTarget(target);
-            yield return new WaitForSeconds(secondsToReachTarget);
+            yield return new WaitForSeconds(myAnimController.SecondsToReachTarget);
 
             if (_trailEffect)
                 _trailEffect.HideTrail();
         }
 
-        PlayAnimation(currentExecutingAction.animationCycle.name);
+        myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
 
         if (currentExecutingAction.projectile)
         {
             if (currentExecutingAction.isAreaOfEffect == false)
             {
-                GameObject _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, projectileSpawnPoint.transform.position, Quaternion.identity);
+                GameObject _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, myAnimController.ProjectileSpawnPoint.transform.position, Quaternion.identity);
                 _instantiatedProjectile.transform.SetParent(gameObject.transform);
                 yield return new WaitForSeconds(0.25f);
-                _instantiatedProjectile.GetComponent<SpellBehaviour>().Execute(projectileSpawnPoint.position, target);
+                _instantiatedProjectile.GetComponent<SpellBehaviour>().Execute(myAnimController.ProjectileSpawnPoint.position, target);
             }
             else
             {
                 yield return new WaitForSeconds(0.25f);
                 for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
                 {
-                    GameObject _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, projectileSpawnPoint.transform.position, Quaternion.identity);
+                    GameObject _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, myAnimController.ProjectileSpawnPoint.position, Quaternion.identity);
                     _instantiatedProjectile.transform.SetParent(this.gameObject.transform);
-                    _instantiatedProjectile.GetComponent<SpellBehaviour>().Execute(projectileSpawnPoint.position, CombatManager.instance.enemiesOnField[i]);
+                    _instantiatedProjectile.GetComponent<SpellBehaviour>().Execute(myAnimController.ProjectileSpawnPoint.position, CombatManager.instance.enemiesOnField[i]);
                 }
                 yield return new WaitForSeconds(0.25f);
             }
@@ -337,7 +315,7 @@ public class CharacterBehaviour : MonoBehaviour
         {
             CharacterInventory _inventory = GetComponentInChildren<CharacterInventory>();
             _inventory.ConsumeItem(currentConsumableItemIndex);
-            PlayHealingEffect(target);
+            target.myAnimController.PlayHealingEffect();
         }
 
 
@@ -350,8 +328,6 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.RECHARGING);
     }
 
-
-
     protected void SetToIdle()
     {
         StartCoroutine(SetToIdle_Coroutine());
@@ -362,7 +338,7 @@ public class CharacterBehaviour : MonoBehaviour
     {
         currentTarget = null;
         uiController.ShowUI();
-        PlayAnimation(idleAnimation);
+        myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
         yield return new WaitForSeconds(0.001f);
         isBusy = false;
     }
@@ -370,7 +346,7 @@ public class CharacterBehaviour : MonoBehaviour
     protected void SetToBusy()
     {
         isBusy = true;
-        uiController.HideBattlePanel();
+        uiController.HideMainBattlePanel();
         uiController.HideUI();
     }
 
@@ -382,7 +358,7 @@ public class CharacterBehaviour : MonoBehaviour
     IEnumerator SwapActiveCharacter_Coroutine()
     {
         yield return new WaitForSeconds(0.02f);
-        UIController.HideBattlePanel();
+        UIController.HideMainBattlePanel();
         CombatManager.instance.PickAnotherReadyCharacter();
     }
 
@@ -443,19 +419,14 @@ public class CharacterBehaviour : MonoBehaviour
         uiController.ShowDescriptionTooltip(skills[skillIndex].description);
     }
 
-    public void ShowDescription(string text)
-    {
-        uiController.ShowDescriptionTooltip(text);
-    }
-
     public void MoveToTarget(CharacterBehaviour enemy)
     {
-        transform.DOMove(enemy.GetAttackedPos.position, secondsToReachTarget).SetEase(Ease.InOutExpo);
+        transform.DOMove(enemy.GetAttackedPos.position, myAnimController.SecondsToReachTarget).SetEase(Ease.InOutExpo);
     }
 
     public void GoBackToStartingPosition()
     {
-        transform.DOLocalMove(originalPosition, secondsToGoBack).SetEase(Ease.OutExpo);
+        transform.DOLocalMove(originalPosition, myAnimController.SecondsToGoBack).SetEase(Ease.OutExpo);
     }
 
     public void GoBackToStartingPositionAndSetToIdle()
@@ -463,18 +434,8 @@ public class CharacterBehaviour : MonoBehaviour
         if (currentExecutingAction.goToTarget)
         {
             GetComponentInChildren<SpriteRenderer>().sortingOrder--;
-            transform.DOLocalMove(originalPosition, secondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
+            transform.DOLocalMove(originalPosition, myAnimController.SecondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
         }
-    }
-
-    protected void PlayAnimation(string animString)
-    {
-        myAnim.Play(animString);
-    }
-
-    public void PlayHealingEffect(CharacterBehaviour target)
-    {
-        target.healingEffect.Play();
     }
 
     protected void ApplyDamageOrHeal(CharacterBehaviour target)
@@ -526,7 +487,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.actionType != ActionType.ITEM)
         {
-            return Mathf.RoundToInt(_rawDamage * CritDamageMultiplier() *currentExecutingAction.damageMultiplier);
+            return Mathf.RoundToInt(_rawDamage * CritDamageMultiplier() * currentExecutingAction.damageMultiplier);
         }
 
 

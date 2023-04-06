@@ -200,7 +200,7 @@ public class CombatManager : MonoBehaviour
         currentActivePlayer = c;
 
         if (c != null)
-            c.UIController.ShowBattlePanel();
+            c.UIController.ShowMainBattlePanel();
     }
 
     public int GetCurrentActivePlayerIndex()
@@ -291,21 +291,21 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    public void RemoveFromField_Delayed(CharacterBehaviour c)
+    public void RemoveFromField_Delayed(EnemyBehaviour enemyToRemove)
     {
-        StartCoroutine(RemoveFromField_Delayed_Coroutine(c));
+        StartCoroutine(RemoveFromField_Delayed_Coroutine(enemyToRemove));
     }
 
-    IEnumerator RemoveFromField_Delayed_Coroutine(CharacterBehaviour c)
+    IEnumerator RemoveFromField_Delayed_Coroutine(EnemyBehaviour enemy)
     {
         yield return new WaitForSeconds(0.02f);
-        if (c.GetComponent<EnemyBehaviour>())
+        if (enemy.GetComponent<EnemyBehaviour>())
         {
-            enemiesOnField.Remove(c.GetComponent<EnemyBehaviour>());
+            enemiesOnField.Remove(enemy.GetComponent<EnemyBehaviour>());
             CheckWinConditionCoroutine();
             //StartCoroutine(CheckWinConditionCoroutine());
         }
-        else playersOnField.Remove(c);
+        else playersOnField.Remove(enemy);
     }
 
     void CheckWinConditionCoroutine()

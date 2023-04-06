@@ -26,6 +26,7 @@ public class MainBattlePanel : MonoBehaviour
         transform.DOScale(1, .2f).SetEase(Ease.OutBack);
 
         SetFirstSelected();
+        HideSubPanels();
     }
 
     public void SetFirstSelected()

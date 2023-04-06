@@ -16,7 +16,7 @@ public class CharacterInventory : MonoBehaviour
 
     private void Start()
     {
-        characterSubPanels = transform.parent.GetComponentInChildren<CharacterUIController>().GetBattlePanel().SubPanels();
+        characterSubPanels = transform.parent.GetComponentInChildren<CharacterUIController>().FindMainBattlePanel().SubPanels();
     }
 
     public void ConsumeItem(int itemIndex)
