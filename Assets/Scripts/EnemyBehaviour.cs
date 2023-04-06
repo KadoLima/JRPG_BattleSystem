@@ -30,9 +30,7 @@ public class EnemyBehaviour : CharacterBehaviour
         ExecuteActionOn();
     }
 
-
-
-    public CharacterBehaviour GetRandomPlayer()
+    public CharacterBehaviour FindRandomPlayer()
     {
         int _randomPlayerIndex = UnityEngine.Random.Range(0, CombatManager.instance.playersOnField.Count);
 
@@ -59,7 +57,7 @@ public class EnemyBehaviour : CharacterBehaviour
         while (CurrentBattlePhase != BattleState.DEAD)
         {
             if (currentPlayerTarget == null)
-                currentPlayerTarget = GetRandomPlayer();
+                currentPlayerTarget = FindRandomPlayer();
             else currentPlayerTarget = target;
 
             CombatManager.instance.AddToCombatQueue(this);
@@ -86,9 +84,9 @@ public class EnemyBehaviour : CharacterBehaviour
                     isDoingCritDamageAction =  _rndValue > myStats.critChance ? false : true;
                 }
 
-                yield return new WaitForSeconds(secondsToReachTarget);
+                yield return new WaitForSeconds(myAnimController.SecondsToReachTarget);
 
-                PlayAnimation(currentExecutingAction.animationCycle.name);
+                myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
 
                 yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
@@ -105,7 +103,7 @@ public class EnemyBehaviour : CharacterBehaviour
                 OnSkillEnded?.Invoke();
 
                 yield return new WaitForSeconds(.2f);
-                PlayAnimation(idleAnimation);
+                myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
 
                 isDoingCritDamageAction = false;
                 CombatManager.instance.RemoveFromCombatQueue(this);

@@ -21,8 +21,8 @@ public class ConsumableItem : MonoBehaviour
 
     public void ShowDescription()
     {
-        CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
-        _player.ShowDescription(inventoryItemData.itemDescription);
+        CharacterUIController _playerUI = GetComponentInParent<CharacterBehaviour>().UIController;
+        _playerUI.ShowDescriptionTooltip(inventoryItemData.itemDescription);
     }
 
     public void UseItem()

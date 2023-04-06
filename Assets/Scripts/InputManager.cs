@@ -60,7 +60,7 @@ public class InputManager : MonoBehaviour
         if (_activePlayer.CurrentBattlePhase == BattleState.DEAD || CombatManager.instance.ReadyPlayersAmount() <= 1 || !_uiController)
             return;
 
-        if (_uiController.GetBattlePanel() && _activePlayer.CurrentBattlePhase == BattleState.READY)
+        if (_uiController.FindMainBattlePanel() && _activePlayer.CurrentBattlePhase == BattleState.READY)
         {
             _activePlayer.SwapActiveCharacter();
         }
