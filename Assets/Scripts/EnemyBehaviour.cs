@@ -15,10 +15,13 @@ public class EnemyBehaviour : CharacterBehaviour
     CharacterBehaviour currentPlayerTarget;
     public CharacterBehaviour CurrentPlayerTarget => currentPlayerTarget;
 
-    public static Action<string> OnEnemyUsedSkill; 
+    public static Action<string> OnEnemyUsedSkill;
+
+    int defaultSortingOrder;
 
     public override void Start()
     {
+        defaultSortingOrder = GetComponentInChildren<SpriteRenderer>().sortingOrder;
         uiController = GetComponentInChildren<CharacterUIController>();
         CombatManager.instance.enemiesOnField.Add(this);
         originalPosition = transform.localPosition;
@@ -72,7 +75,6 @@ public class EnemyBehaviour : CharacterBehaviour
 
             if (currentExecutingAction.goToTarget)
             {
-                GetComponentInChildren<SpriteRenderer>().sortingOrder++;
                 MoveToTarget(currentPlayerTarget);
 
                 if (currentExecutingAction.actionType == ActionType.SKILL)
@@ -87,6 +89,7 @@ public class EnemyBehaviour : CharacterBehaviour
                 yield return new WaitForSeconds(myAnimController.SecondsToReachTarget);
 
                 myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
+                GetComponentInChildren<SpriteRenderer>().sortingOrder = currentPlayerTarget.GetComponentInChildren<SpriteRenderer>().sortingOrder + 1;
 
                 yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
@@ -96,7 +99,7 @@ public class EnemyBehaviour : CharacterBehaviour
 
                 if (currentExecutingAction.goToTarget)
                 {
-                    GetComponentInChildren<SpriteRenderer>().sortingOrder--;
+                    GetComponentInChildren<SpriteRenderer>().sortingOrder = defaultSortingOrder;
                     GoBackToStartingPosition();
                 }
 

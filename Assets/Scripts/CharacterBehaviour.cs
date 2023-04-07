@@ -98,6 +98,8 @@ public class CharacterBehaviour : MonoBehaviour
     protected bool isDoingCritDamageAction;
     public bool IsDoingCritDamageAction => isDoingCritDamageAction;
 
+    //int defaultSortingOrder;
+
     protected virtual void OnEnable()
     {
         GameManager.OnGameWon += GameOver_Win;
@@ -110,6 +112,8 @@ public class CharacterBehaviour : MonoBehaviour
 
     public virtual void Start()
     {
+        //defaultSortingOrder = GetComponentInChildren<SpriteRenderer>().sortingOrder;
+
         CombatManager.instance.playersOnField.Add(this);
 
         originalPosition = this.transform.localPosition;
@@ -268,7 +272,6 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (currentExecutingAction.goToTarget)
         {
-            GetComponentInChildren<SpriteRenderer>().sortingOrder++;
             TrailEffect _trailEffect = GetComponentInChildren<TrailEffect>();
 
             if (_trailEffect)
@@ -276,6 +279,8 @@ public class CharacterBehaviour : MonoBehaviour
 
             MoveToTarget(target);
             yield return new WaitForSeconds(myAnimController.SecondsToReachTarget);
+
+            //GetComponentInChildren<SpriteRenderer>().sortingOrder = target.GetComponentInChildren<SpriteRenderer>().sortingOrder + 1 ;
 
             if (_trailEffect)
                 _trailEffect.HideTrail();
@@ -337,6 +342,7 @@ public class CharacterBehaviour : MonoBehaviour
     IEnumerator SetToIdle_Coroutine()
     {
         currentTarget = null;
+        //GetComponentInChildren<SpriteRenderer>().sortingOrder = defaultSortingOrder;
         uiController.ShowUI();
         myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
         yield return new WaitForSeconds(0.001f);
@@ -433,7 +439,7 @@ public class CharacterBehaviour : MonoBehaviour
     {
         if (currentExecutingAction.goToTarget)
         {
-            GetComponentInChildren<SpriteRenderer>().sortingOrder--;
+            //GetComponentInChildren<SpriteRenderer>().sortingOrder--;
             transform.DOLocalMove(originalPosition, myAnimController.SecondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
         }
     }
