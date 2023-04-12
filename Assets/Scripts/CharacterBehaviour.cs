@@ -4,7 +4,6 @@ using UnityEngine;
 using DG.Tweening;
 using System;
 using UnityEngine.InputSystem;
-
 public enum ActionType
 {
     NORMAL_ATTACK,
@@ -128,7 +127,6 @@ public class CharacterBehaviour : MonoBehaviour
 
     public virtual void Update()
     {
-
         if (CurrentBattlePhase == BattleState.DEAD || CombatManager.instance.CurrentActivePlayer != this)
             return;
 
@@ -162,6 +160,7 @@ public class CharacterBehaviour : MonoBehaviour
 
                     if (CombatManager.instance.CurrentActivePlayer == this)
                     {
+                        //Debug.LogWarning("Showing UI for " + this.gameObject.name + " because I'm owner = " + IsOwner);
                         //uiController.HidePointer();
                         uiController.ShowMainBattlePanel();
                         //uiController.GetBattlePanel().HideSubPanels();

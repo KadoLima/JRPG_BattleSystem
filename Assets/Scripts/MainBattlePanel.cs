@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG.Tweening;
-
 public class MainBattlePanel : MonoBehaviour
 {
     EventSystem eventSystem;

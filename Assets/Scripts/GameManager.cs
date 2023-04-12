@@ -23,6 +23,10 @@ public class GameManager : MonoBehaviour
 
     public static Action OnGameWon;
 
+    [Header("GAME MODES")]
+    [SerializeField] bool isOnlineCoop;
+    public bool IsOnlineCoop => isOnlineCoop;
+
     [Header("DEBUG TOOLS")]
     [SerializeField] bool debug_EnemiesDontAttack;
     public bool Debug_EnemiesDontAttack => debug_EnemiesDontAttack;
@@ -34,14 +38,9 @@ public class GameManager : MonoBehaviour
         instance = this;
     }
 
-    void Start()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
-
     public void EndGame()
     {
         OnGameWon?.Invoke();
     }
+
 }

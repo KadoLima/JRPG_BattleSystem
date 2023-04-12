@@ -31,6 +31,8 @@ public class InputManager : MonoBehaviour
 
     public void OnMenus_Back(InputValue value)
     {
+
+
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer == null)
