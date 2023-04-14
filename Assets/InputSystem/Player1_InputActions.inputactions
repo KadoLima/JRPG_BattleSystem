@@ -1,5 +1,5 @@
 {
-    "name": "PlayerInputActions",
+    "name": "Player1_InputActions",
     "maps": [
         {
             "name": "PlayerActions",
@@ -269,6 +269,45 @@
                     "processors": "",
                     "groups": "Gamepad;Keyboard",
                     "action": "TargetNavigation - DOWN",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "StartMenuActions",
+            "id": "b7f9686f-45fe-4744-8951-1420a4c3fb07",
+            "actions": [
+                {
+                    "name": "Menus_Back",
+                    "type": "Button",
+                    "id": "df9ef59c-ff43-4612-a23b-0411003d2b9f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d54395a8-6d5b-40ae-9839-653c035654b3",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard;Gamepad",
+                    "action": "Menus_Back",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "94849eba-1f5b-48f6-b388-ec2e380c1a1b",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad;Keyboard",
+                    "action": "Menus_Back",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

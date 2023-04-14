@@ -38,6 +38,11 @@ public class GameManager : MonoBehaviour
         instance = this;
     }
 
+    private void Start()
+    {
+        gameStarted = true;
+    }
+
     public void EndGame()
     {
         OnGameWon?.Invoke();
