@@ -19,7 +19,14 @@ public enum BattleState
 
 public class CombatManager : MonoBehaviour
 {
+    [SerializeField] Transform playersParent;
+    public Transform PlayersParent => playersParent;
+
     public List<CharacterBehaviour> playersOnField = new List<CharacterBehaviour>();
+
+    [SerializeField] Transform enemiesParent;
+    public Transform EnemiesParent => enemiesParent;
+
     public List<EnemyBehaviour> enemiesOnField = new List<EnemyBehaviour>();
 
     public static CombatManager instance;

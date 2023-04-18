@@ -15,17 +15,17 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         instance = this;
     }
 
-    public override void OnEnable()
-    {
-        base.OnEnable();
-        //StartMenuUIController.OnPlayerChoseCoop += InitializeConnectionToServer;
-    }
+    //public override void OnEnable()
+    //{
+    //    base.OnEnable();
+    //    //StartMenuUIController.OnPlayerChoseCoop += InitializeConnectionToServer;
+    //}
 
-    public override void OnDisable()
-    {
-        base.OnDisable();
-        //StartMenuUIController.OnPlayerChoseCoop -= InitializeConnectionToServer;
-    }
+    //public override void OnDisable()
+    //{
+    //    base.OnDisable();
+    //    //StartMenuUIController.OnPlayerChoseCoop -= InitializeConnectionToServer;
+    //}
 
     public void InitializeConnectionToServer()
     {
@@ -52,7 +52,9 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     public void CreateRoom(string roomName)
     {
         if (!string.IsNullOrEmpty(roomName))
-            PhotonNetwork.CreateRoom(roomName);
+        {
+            PhotonNetwork.CreateRoom(roomName,new Photon.Realtime.RoomOptions { MaxPlayers = 2 });
+        }
     }
 
     public void JoinRoom(string roomName)

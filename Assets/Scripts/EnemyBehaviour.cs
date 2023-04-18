@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class EnemyBehaviour : CharacterBehaviour
 {
@@ -19,21 +20,45 @@ public class EnemyBehaviour : CharacterBehaviour
 
     int defaultSortingOrder;
 
+    PhotonView photonView;
+
     public override void Start()
     {
+        photonView = GetComponent<PhotonView>();
+
         defaultSortingOrder = GetComponentInChildren<SpriteRenderer>().sortingOrder;
         uiController = GetComponentInChildren<CharacterUIController>();
         CombatManager.instance.enemiesOnField.Add(this);
         originalPosition = transform.localPosition;
         currentHP = myStats.baseHP;
 
-        if (GameManager.instance.Debug_EnemiesDontAttack)
+        transform.SetParent(CombatManager.instance.EnemiesParent);
+
+        if (GameManager.instance.EnemiesWontAttack)
             return;
 
         ExecuteActionOn();
     }
 
-    public CharacterBehaviour FindRandomPlayer()
+    public void SetTarget(CharacterBehaviour target)
+    {
+        currentPlayerTarget = target;
+
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.InRoom)
+        {
+            photonView.RPC("UpdateTarget", RpcTarget.Others, target.photonView.ViewID);
+            Debug.LogWarning("Im master client, sending RPC target -> " + target.photonView.ViewID);
+        }
+    }
+
+    [PunRPC]
+    void UpdateTarget(int viewID)
+    {
+        currentPlayerTarget = PhotonView.Find(viewID).GetComponent<CharacterBehaviour>();
+        Debug.LogWarning("Updating current target via RPC! Current target is " + currentPlayerTarget);
+    }
+
+    public void SetRandomTarget()
     {
         int _randomPlayerIndex = UnityEngine.Random.Range(0, CombatManager.instance.playersOnField.Count);
 
@@ -42,8 +67,9 @@ public class EnemyBehaviour : CharacterBehaviour
             _randomPlayerIndex = UnityEngine.Random.Range(0, CombatManager.instance.playersOnField.Count);
         }
 
-        currentPlayerTarget = CombatManager.instance.playersOnField[_randomPlayerIndex];
-        return currentPlayerTarget;
+        SetTarget(CombatManager.instance.playersOnField[_randomPlayerIndex]);
+        //currentPlayerTarget = CombatManager.instance.playersOnField[_randomPlayerIndex];
+        //return currentPlayerTarget;
     }
 
     public override void ExecuteActionOn(CharacterBehaviour target=null)
@@ -59,19 +85,36 @@ public class EnemyBehaviour : CharacterBehaviour
 
         while (CurrentBattlePhase != BattleState.DEAD)
         {
-            if (currentPlayerTarget == null)
-                currentPlayerTarget = FindRandomPlayer();
-            else currentPlayerTarget = target;
+            //if (currentPlayerTarget == null)
+            //    currentPlayerTarget = FindRandomPlayer();
+            //if (currentPlayerTarget == null)
+            //SetRandomTarget();
+            //else SetTarget(target);
+            //else currentPlayerTarget = target;
+
+            if (!PhotonNetwork.InRoom || PhotonNetwork.IsMasterClient)
+            {
+                if (currentPlayerTarget == null)
+                    SetRandomTarget();
+                else SetTarget(target);
+            }
+
+            //else if (PhotonNetwork.IsMasterClient)
+            //    SetRandomTarget();
+
 
             CombatManager.instance.AddToCombatQueue(this);
 
             ChangeBattleState(BattleState.WAITING);
 
             yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() &&
-                                             CombatManager.instance.IsMyTurn(this));
+                                             CombatManager.instance.IsMyTurn(this) &&
+                                             currentPlayerTarget != null);
 
             ChangeBattleState(BattleState.EXECUTING_ACTION);
             SetCurrentAction();
+
+            Debug.LogWarning("My target is: " + currentPlayerTarget);
 
             if (currentExecutingAction.goToTarget)
             {
@@ -87,7 +130,6 @@ public class EnemyBehaviour : CharacterBehaviour
                 }
 
                 yield return new WaitForSeconds(myAnimController.SecondsToReachTarget);
-
                 myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
                 GetComponentInChildren<SpriteRenderer>().sortingOrder = currentPlayerTarget.GetComponentInChildren<SpriteRenderer>().sortingOrder + 1;
 
@@ -148,6 +190,26 @@ public class EnemyBehaviour : CharacterBehaviour
         else
         {
             currentExecutingAction = Skills[0];
+        }
+    }
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // Envie o target atual do inimigo apenas se este é o Master Client
+            if (PhotonNetwork.IsMasterClient)
+            {
+                stream.SendNext(currentPlayerTarget);
+            }
+        }
+        else
+        {
+            // Atualize o target do inimigo recebendo a informação do Master Client
+            if (!PhotonNetwork.IsMasterClient)
+            {
+                currentPlayerTarget = (CharacterBehaviour)stream.ReceiveNext();
+            }
         }
     }
 }

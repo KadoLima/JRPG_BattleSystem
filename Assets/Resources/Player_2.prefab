@@ -1916,6 +1916,7 @@ GameObject:
   - component: {fileID: 2416545803011836598}
   - component: {fileID: 2416545803011836599}
   - component: {fileID: 2416545803011836601}
+  - component: {fileID: 6270700201061002773}
   m_Layer: 0
   m_Name: Player_2
   m_TagString: Untagged
@@ -1930,7 +1931,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2416545803011836594}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -5.31, y: -2.63, z: 0}
   m_LocalScale: {x: 0.885, y: 0.885, z: 0.885}
   m_ConstrainProportionsScale: 0
@@ -2031,6 +2032,28 @@ MonoBehaviour:
   deadAnimation: Player2_Dead
   projectileSpawnPoint: {fileID: 2416545802546986450}
   healingEffect: {fileID: 2416545803692069029}
+--- !u!114 &6270700201061002773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2416545803011836594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &2416545803012402485
 GameObject:
   m_ObjectHideFlags: 0
@@ -8113,6 +8136,7 @@ GameObject:
   - component: {fileID: 2416545803760403612}
   - component: {fileID: 2416545803760403680}
   - component: {fileID: 2416545803760403615}
+  - component: {fileID: 2417901239693519842}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -8158,7 +8182,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 92d239a03038df746b4a9e8677d91bab, type: 2}
+  - {fileID: 2100000, guid: cc460e5b1c6c0bd498b44195a0c3da99, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8242,6 +8266,27 @@ MonoBehaviour:
   normalStrength: 5
   normalSmoothing: 1
   computingNormal: 0
+--- !u!114 &2417901239693519842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2416545803760403613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowLayerWeightsInspector: 1
+  ShowParameterInspector: 1
+  m_SynchronizeParameters:
+  - Type: 9
+    SynchronizeType: 1
+    Name: takeDamage
+  m_SynchronizeLayers:
+  - SynchronizeType: 0
+    LayerIndex: 0
 --- !u!1 &2416545803804907970
 GameObject:
   m_ObjectHideFlags: 0

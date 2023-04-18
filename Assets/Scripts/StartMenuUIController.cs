@@ -28,7 +28,6 @@ public class StartMenuUIController : MonoBehaviour
     [SerializeField] TextMeshProUGUI errorMessage;
     [SerializeField] TextMeshProUGUI connectingSign;
     [SerializeField] GameObject pressToStart;
-    //[SerializeField] CanvasGroup mainContent;
     [SerializeField] CanvasGroup createJoinLobbyContent;
     [SerializeField] DustStormTransition dustStorm;
     [SerializeField] Image fader;
@@ -80,6 +79,12 @@ public class StartMenuUIController : MonoBehaviour
                 ShowContent(0);
             }
         }  
+
+        if (Input.GetKeyDown(KeyCode.U) && currentContent == contents[4])
+        {
+            Debug.LogWarning("Force starting game. Players connected = " + MultiplayerManager.instance.ConnectedPlayersCount());
+            FadeToDustAndLoadScene(2);
+        }
     }
 
     public void OnMenus_Back(InputValue value)
@@ -239,21 +244,6 @@ public class StartMenuUIController : MonoBehaviour
         _changeToCoopMenu.Append(connectingSign.DOFade(1, 0.2f));
         _changeToCoopMenu.OnComplete(() => MultiplayerManager.instance.InitializeConnectionToServer());
     }
-
-    //public void ShowCreate_or_JoinLobbyContent()
-    //{
-    //    createJoinLobbyContent.gameObject.SetActive(true);
-    //    Sequence _showLobbyContent = DOTween.Sequence();
-    //    _showLobbyContent.Append(connectingSign.DOFade(0, .2f)).OnComplete(() => connectingSign.gameObject.SetActive(false));
-    //    _showLobbyContent.AppendInterval(0.2f);
-    //    _showLobbyContent.Append(createJoinLobbyContent.DOFade(1, .25f));
-
-        
-
-    //    GameObject _createJoinLobbyContentFirstChild = createJoinLobbyContent.transform.GetChild(0).gameObject;
-    //    eventSystem.SetSelectedGameObject(_createJoinLobbyContentFirstChild);
-    //    currentContent = contents[1];
-    //}
 
     public void ShowCreateNewLobbyContent()
     {

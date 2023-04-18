@@ -4,6 +4,7 @@ using UnityEngine;
 using DG.Tweening;
 using System;
 using UnityEngine.InputSystem;
+using Photon.Pun;
 public enum ActionType
 {
     NORMAL_ATTACK,
@@ -97,6 +98,8 @@ public class CharacterBehaviour : MonoBehaviour
     protected bool isDoingCritDamageAction;
     public bool IsDoingCritDamageAction => isDoingCritDamageAction;
 
+    public PhotonView photonView => GetComponent<PhotonView>();
+
     //int defaultSortingOrder;
 
     protected virtual void OnEnable()
@@ -123,6 +126,8 @@ public class CharacterBehaviour : MonoBehaviour
 
         currentHP = myStats.baseHP;
         currentMP = myStats.baseMP;
+
+        transform.SetParent(CombatManager.instance.PlayersParent);
     }
 
     public virtual void Update()
