@@ -1409,7 +1409,6 @@ GameObject:
   - component: {fileID: 2817347301963565664}
   - component: {fileID: 2817347301963565665}
   - component: {fileID: 2817347301963565666}
-  - component: {fileID: 8998352261520370747}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -1552,27 +1551,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startTimeBetweenSpawns: 0.02
   echo: {fileID: 4821512705132272490, guid: acb4f317ec8e3c94398028300d2bc244, type: 3}
---- !u!114 &8998352261520370747
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2817347301963565668}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowLayerWeightsInspector: 1
-  ShowParameterInspector: 1
-  m_SynchronizeParameters:
-  - Type: 9
-    SynchronizeType: 1
-    Name: takeDamage
-  m_SynchronizeLayers:
-  - SynchronizeType: 0
-    LayerIndex: 0
 --- !u!1 &2817347302057400944
 GameObject:
   m_ObjectHideFlags: 0
@@ -8497,7 +8475,7 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 8998352261520370747}
+  - {fileID: 0}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0

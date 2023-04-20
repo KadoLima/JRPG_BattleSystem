@@ -73,7 +73,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        Debug.LogWarning("ROOM CREATED SUCCESSFULLY!");
+        //Debug.LogWarning("ROOM CREATED SUCCESSFULLY!");
         //PhotonNetwork.LoadLevel("Main_Online");
     }
 

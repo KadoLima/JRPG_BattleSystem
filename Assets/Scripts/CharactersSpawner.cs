@@ -52,10 +52,10 @@ public class CharactersSpawner : MonoBehaviour
         else
         {
             _playerPrefabIndex = 1;
-            Debug.LogWarning("I am not master client. Spawning PREFAB_" + _playerPrefabIndex);
+            //Debug.LogWarning("I am not master client. Spawning PREFAB_" + _playerPrefabIndex);
         }
 
-        GameObject _spawnedPlayer = PhotonNetwork.Instantiate(playersPrefabs[_playerPrefabIndex].prefab.name, playersPrefabs[_playerPrefabIndex].spawnPos.position,             Quaternion.identity);
+        PhotonNetwork.Instantiate(playersPrefabs[_playerPrefabIndex].prefab.name, playersPrefabs[_playerPrefabIndex].spawnPos.position, Quaternion.identity);
 
 
     }

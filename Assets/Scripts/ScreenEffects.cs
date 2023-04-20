@@ -50,6 +50,7 @@ public class ScreenEffects : MonoBehaviour
 
     public void ShowDarkScreen(string s)
     {
+        //Debug.LogWarning("dark screen effect activated");
         skillDarkScreen.DOColor(new Color(0, 0, 0, .6f), .25f);
     }
 
