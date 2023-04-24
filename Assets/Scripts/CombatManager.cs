@@ -39,9 +39,6 @@ public class CombatManager : MonoBehaviour
     CharacterBehaviour currentActivePlayer = null;
     public CharacterBehaviour CurrentActivePlayer => currentActivePlayer;
 
-    [Header("Global cooldown between actions")]
-    [SerializeField] float globalCooldown = .75f;
-
     int totalXPEarned = 0;
 
     [Space(20)]
@@ -49,6 +46,14 @@ public class CombatManager : MonoBehaviour
 
     [Header("COMBAT QUEUE")]
     [SerializeField] List<CharacterBehaviour> combatQueue = new List<CharacterBehaviour>();
+    public List<CharacterBehaviour> CombatQueue
+    {
+        get => combatQueue;
+        set => combatQueue = value;
+    }
+
+    [Header("Delay when removing character from queue")]
+    [SerializeField] float queueDelay = 1.25f;
 
     public bool IsFieldClear()
     {
@@ -147,7 +152,7 @@ public class CombatManager : MonoBehaviour
 
     IEnumerator RemoveFromCombatQueueCoroutine(CharacterBehaviour characterToRemove)
     {
-        yield return new WaitForSeconds(globalCooldown);
+        yield return new WaitForSeconds(queueDelay);
         combatQueue.Remove(characterToRemove);
     }
 

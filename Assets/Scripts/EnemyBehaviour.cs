@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using System.Linq;
 
 public class EnemyBehaviour : CharacterBehaviour
 {
     [Header("ENEMY SPECIFIC PARAMETERS")]
-    [SerializeField] float initialDelay;
     [SerializeField] float minAttackRate = 6;
     [SerializeField] float maxattackRate = 8;
     [SerializeField] int xpRewarded;
@@ -86,11 +86,12 @@ public class EnemyBehaviour : CharacterBehaviour
 
         if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
         {
-            randomizedInitialDelay = UnityEngine.Random.Range(initialDelay - .1f, initialDelay + .1f);
-            photonView.RPC(nameof(SyncInitialDelay), RpcTarget.Others, randomizedInitialDelay);
+            randomizedInitialDelay = UnityEngine.Random.Range(4 - .1f, 4 + .1f);
+
+            if (PhotonNetwork.IsMasterClient)
+                photonView.RPC(nameof(SyncInitialDelay), RpcTarget.Others, randomizedInitialDelay);
         }
         yield return new WaitForSeconds(.1f);
-        Debug.LogWarning(randomizedInitialDelay);
         yield return new WaitForSeconds(randomizedInitialDelay);
 
         while (CurrentBattlePhase != BattleState.DEAD)
@@ -108,7 +109,7 @@ public class EnemyBehaviour : CharacterBehaviour
 
             yield return new WaitForSeconds(.1f); //syncing
 
-            CombatManager.instance.AddToCombatQueue(this);
+            AddToCombatQueue();
 
             ChangeBattleState(BattleState.WAITING);
 
@@ -118,9 +119,12 @@ public class EnemyBehaviour : CharacterBehaviour
 
 
             ChangeBattleState(BattleState.EXECUTING_ACTION);
+
             SetRandomAction();
 
-            yield return new WaitForSeconds(.1f); 
+            yield return new WaitUntil(() => currentExecutingAction.actionType != ActionType.NULL); 
+
+            //Debug.LogWarning("CURRENT ACTION: " + currentExecutingAction.actionType);
 
             if (currentExecutingAction.goToTarget)
             {
@@ -149,7 +153,7 @@ public class EnemyBehaviour : CharacterBehaviour
 
                 yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
-                ApplyDamageOrHeal(currentPlayerTarget);
+                StartCoroutine(ApplyDamageOrHeal(currentPlayerTarget));
 
                 yield return new WaitForSeconds(0.25f);
 
@@ -165,15 +169,18 @@ public class EnemyBehaviour : CharacterBehaviour
                 myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
 
                 isDoingCritDamageAction = false;
-                CombatManager.instance.RemoveFromCombatQueue(this);
+                RemoveFromCombatQueue();
                 ChangeBattleState(BattleState.RECHARGING);
                 currentPlayerTarget = null;
+                currentExecutingAction.actionType = ActionType.NULL;
             }
 
             if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
             {
                 waitTime = UnityEngine.Random.Range(minAttackRate, maxattackRate);
-                photonView.RPC(nameof(SyncWaitTime), RpcTarget.Others, waitTime);
+
+                if (PhotonNetwork.IsMasterClient)
+                    photonView.RPC(nameof(SyncWaitTime), RpcTarget.Others, waitTime);
             }
 
             yield return new WaitForSeconds(.1f); //sync
@@ -214,6 +221,94 @@ public class EnemyBehaviour : CharacterBehaviour
         //Debug.LogWarning("Receiving RPC currentAction -> " + currentExecutingAction.actionType);
     }
 
+    [PunRPC]
+    private void SyncCombatQueue(int[] combatQueueViewIDs)
+    {
+        CharacterBehaviour[] _combatQueueArray = new CharacterBehaviour[combatQueueViewIDs.Length];
+
+        for (int i = 0; i < combatQueueViewIDs.Length; i++)
+        {
+            PhotonView photonView = PhotonView.Find(combatQueueViewIDs[i]);
+            if (photonView != null)
+            {
+                _combatQueueArray[i] = photonView.GetComponent<CharacterBehaviour>();
+            }
+        }
+
+        CombatManager.instance.CombatQueue = _combatQueueArray.ToList();
+
+        //Debug.LogWarning("Receiving CombatQueue RPC. Length is " + combatQueueViewIDs.Length);
+
+    }
+
+    [PunRPC]
+    void SyncCalculatedValue(int amount)
+    {
+        syncedCalculatedValue = amount;
+        Debug.LogWarning("Enemy receiving RPC. Dmg amount = " + syncedCalculatedValue);
+    }
+
+    //[PunRPC]
+    //void SyncCalculatedValue(int amount)
+    //{
+    //    syncedCalculatedValue = amount;
+    //    Debug.LogWarning("Receiving dmg amount = " + syncedCalculatedValue);
+    //}
+
+    void AddToCombatQueue()
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            CombatManager.instance.AddToCombatQueue(this);
+            return;
+        }
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            CombatManager.instance.AddToCombatQueue(this);
+
+            CharacterBehaviour[] _combatQueueArray = CombatManager.instance.CombatQueue.ToArray();
+
+            int[] combatQueueViewIDs = new int[_combatQueueArray.Length];
+
+            for (int i = 0; i < _combatQueueArray.Length; i++)
+            {
+                combatQueueViewIDs[i] = _combatQueueArray[i].photonView.ViewID;
+            }
+
+            photonView.RPC(nameof(SyncCombatQueue), RpcTarget.Others, combatQueueViewIDs);
+
+            //Debug.LogWarning("Sending CombatQueue RPC. Length is " + combatQueueViewIDs.Length);
+        }
+    }
+
+    void RemoveFromCombatQueue()
+    {
+        CombatManager.instance.RemoveFromCombatQueue(this);
+
+        //if (!PhotonNetwork.IsConnected)
+        //{
+        //    CombatManager.instance.RemoveFromCombatQueue(this);
+        //    return;
+        //}
+
+        //if (PhotonNetwork.IsMasterClient)
+        //{
+        //    CombatManager.instance.RemoveFromCombatQueue(this);
+
+        //    CharacterBehaviour[] _combatQueueArray = CombatManager.instance.CombatQueue.ToArray();
+
+        //    int[] combatQueueViewIDs = new int[_combatQueueArray.Length];
+
+        //    for (int i = 0; i < _combatQueueArray.Length; i++)
+        //    {
+        //        combatQueueViewIDs[i] = _combatQueueArray[i].photonView.ViewID;
+        //    }
+
+        //    photonView.RPC(nameof(SyncCombatQueue), RpcTarget.Others, combatQueueViewIDs);
+        //}
+    }
+
 
     public override void TakeDamageOrHeal(int amount, DamageType dmgType, bool isCrit)
     {
@@ -238,7 +333,7 @@ public class EnemyBehaviour : CharacterBehaviour
     {
         if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
         {
-            //Debug.LogWarning("Selecting a random action");
+            Debug.LogWarning("Selecting a random action");
             float _randomValue = UnityEngine.Random.value;
 
             if (_randomValue > chanceToUseSkill)
@@ -246,7 +341,7 @@ public class EnemyBehaviour : CharacterBehaviour
             else
                 currentExecutingAction = Skills[0];
 
-            if (PhotonNetwork.IsConnected)
+            if (PhotonNetwork.IsMasterClient)
             {
                 int _actionIndex = -1;
 

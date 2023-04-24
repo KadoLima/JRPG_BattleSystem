@@ -100,6 +100,8 @@ public class CharacterBehaviour : MonoBehaviour
 
     public PhotonView photonView => GetComponent<PhotonView>();
 
+    protected int syncedCalculatedValue;
+
     //int defaultSortingOrder;
 
     protected virtual void OnEnable()
@@ -318,7 +320,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
-        ApplyDamageOrHeal(target);
+        StartCoroutine(ApplyDamageOrHeal(target));
 
         if (currentExecutingAction.actionType == ActionType.ITEM)
         {
@@ -448,22 +450,44 @@ public class CharacterBehaviour : MonoBehaviour
         }
     }
 
-    protected void ApplyDamageOrHeal(CharacterBehaviour target)
+
+    protected IEnumerator ApplyDamageOrHeal(CharacterBehaviour target)
     {
+
+        if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
+        {
+            syncedCalculatedValue = CalculatedValue();
+
+            if (PhotonNetwork.IsMasterClient)
+                photonView.RPC(nameof(SyncCalculatedValue), RpcTarget.Others, syncedCalculatedValue);
+            //Debug.LogWarning("Sending dmg amount = " + syncedCalculatedValue);
+        }
+
+        yield return new WaitUntil(() => syncedCalculatedValue != 0);
+
         if (!currentExecutingAction.isAreaOfEffect)
-            target.TakeDamageOrHeal(CalculatedValue(), currentExecutingAction.damageType, isDoingCritDamageAction);
+            target.TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.damageType, isDoingCritDamageAction);
         else
         {
             for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
             {
-                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(CalculatedValue(), currentExecutingAction.damageType, isDoingCritDamageAction);
+                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.damageType, isDoingCritDamageAction);
             }
         }
+
+        syncedCalculatedValue = 0;
     }
 
+    [PunRPC]
+    void SyncCalculatedValue(int amount)
+    {
+        syncedCalculatedValue = amount;
+        Debug.LogWarning("Receiving dmg amount = " + syncedCalculatedValue);
+    }
 
     public virtual void TakeDamageOrHeal(int amount, DamageType dmgType, bool isCrit)
     {
+        //Debug.LogWarning("Taking dmg/heal = " + amount);
 
         if (dmgType == DamageType.HARMFUL)
         {
