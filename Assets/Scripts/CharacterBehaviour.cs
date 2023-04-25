@@ -212,7 +212,7 @@ public class CharacterBehaviour : MonoBehaviour
                     myAnimController.DisableAnimator();
                     uiController.HideCanvas(5, .25f);
                     combatEffects.DieEffect();
-                    CombatManager.instance.RemoveFromField_Delayed(this.GetComponent<EnemyBehaviour>());
+                    CombatManager.instance.RemoveFromField(this.GetComponent<EnemyBehaviour>());
                 }
                 break;
 
@@ -272,7 +272,7 @@ public class CharacterBehaviour : MonoBehaviour
         {
             var _rndValue = UnityEngine.Random.value;
             isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
-            Debug.LogWarning("CRIT? " + isDoingCritDamageAction);
+            //Debug.LogWarning("CRIT? " + isDoingCritDamageAction);
         }
 
 

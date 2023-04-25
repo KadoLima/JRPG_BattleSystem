@@ -303,12 +303,12 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    public void RemoveFromField_Delayed(EnemyBehaviour enemyToRemove)
+    public void RemoveFromField(EnemyBehaviour enemyToRemove)
     {
-        StartCoroutine(RemoveFromField_Delayed_Coroutine(enemyToRemove));
+        StartCoroutine(RemoveFromFieldCoroutine(enemyToRemove));
     }
 
-    IEnumerator RemoveFromField_Delayed_Coroutine(EnemyBehaviour enemy)
+    IEnumerator RemoveFromFieldCoroutine(EnemyBehaviour enemy)
     {
         yield return new WaitForSeconds(0.02f);
         if (enemy.GetComponent<EnemyBehaviour>())
@@ -329,7 +329,7 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    bool IsGameOver()
+    public bool AllPlayersDead()
     {
 
         foreach (CharacterBehaviour p in playersOnField)
@@ -347,7 +347,7 @@ public class CombatManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
 
-        if (IsGameOver())
+        if (AllPlayersDead())
         {
             yield return new WaitForSeconds(1);
             gameOverScreen.ShowGameOverScreen();

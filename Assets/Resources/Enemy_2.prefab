@@ -492,7 +492,6 @@ MonoBehaviour:
     animationCycle:
       name: 
       cycleTime: 0
-  initialDelay: 3
   minAttackRate: 8
   maxattackRate: 10
   xpRewarded: 1400

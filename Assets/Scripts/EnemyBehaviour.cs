@@ -45,7 +45,10 @@ public class EnemyBehaviour : CharacterBehaviour
 
     public void SetRandomTarget()
     {
-        int _randomPlayerIndex = UnityEngine.Random.Range(0, CombatManager.instance.playersOnField.Count);
+        int _randomPlayerIndex = 0;
+
+        if (CombatManager.instance.AllPlayersDead())
+            return;
 
         while (CombatManager.instance.playersOnField[_randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
         {
@@ -117,14 +120,22 @@ public class EnemyBehaviour : CharacterBehaviour
                                              CombatManager.instance.IsMyTurn(this) &&
                                              currentPlayerTarget != null);
 
+            if (CombatManager.instance.AllPlayersDead())
+            {
+                ChangeBattleState(BattleState.WAITING);
+                yield break;
+            }
 
             ChangeBattleState(BattleState.EXECUTING_ACTION);
 
             SetRandomAction();
 
-            yield return new WaitUntil(() => currentExecutingAction.actionType != ActionType.NULL); 
+            yield return new WaitUntil(() => currentExecutingAction.actionType != ActionType.NULL);
 
             //Debug.LogWarning("CURRENT ACTION: " + currentExecutingAction.actionType);
+
+            if (currentPlayerTarget.CurrentBattlePhase == BattleState.DEAD)
+                SetRandomTarget();
 
             if (currentExecutingAction.goToTarget)
             {
@@ -333,7 +344,7 @@ public class EnemyBehaviour : CharacterBehaviour
     {
         if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
         {
-            Debug.LogWarning("Selecting a random action");
+            //Debug.LogWarning("Selecting a random action");
             float _randomValue = UnityEngine.Random.value;
 
             if (_randomValue > chanceToUseSkill)
