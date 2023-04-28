@@ -19,3 +19,4 @@ MonoBehaviour:
   maxDamage: 22
   rechargeRate: 4
   critChance: 0.25
+  rangedNormalProjectile: {fileID: 6963270997362980555, guid: 6aa7e00b0d651a545a8f8ed83b3d24d9, type: 3}

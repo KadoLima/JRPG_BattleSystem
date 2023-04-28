@@ -5,37 +5,11 @@ using DG.Tweening;
 using System;
 using UnityEngine.InputSystem;
 using Photon.Pun;
-public enum ActionType
-{
-    NORMAL_ATTACK,
-    SKILL,
-    ITEM,
-    NULL
-}
-
-public enum DamageType
-{
-    HARMFUL,
-    HEALING,
-    MANA,
-    UNDEFINED
-}
 
 [System.Serializable]
 public struct CombatAction
 {
-    public ActionType actionType;
-    public DamageType damageType;
-    public string actionName;
-    public string description;
-    public int mpCost;
-    public GameObject projectile;
-    public bool goToTarget;
-    public bool isAreaOfEffect;
-    public float damageMultiplier;
-    public AnimationCycle animationCycle;
-
-    public bool IsHarmful => this.damageType == DamageType.HARMFUL;
+    public CombatActionSO actionInfo;
 }
 
 
@@ -58,7 +32,7 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] protected CharacterAnimationController myAnimController;
 
     [Space(20)]
-
+    [SerializeField] protected CombatAction recharging;
     [SerializeField] protected CombatAction normalAttack;
     [SerializeField] CombatAction[] skills;
     public CombatAction[] Skills => skills;
@@ -181,13 +155,13 @@ public class CharacterBehaviour : MonoBehaviour
 
         yield return new WaitUntil(() => syncedCalculatedValue != 0);
 
-        if (!currentExecutingAction.isAreaOfEffect)
-            target.TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.damageType, isDoingCritDamageAction);
+        if (!currentExecutingAction.actionInfo.isAreaOfEffect)
+            target.TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.actionInfo.damageType, isDoingCritDamageAction);
         else
         {
             for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
             {
-                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.damageType, isDoingCritDamageAction);
+                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.actionInfo.damageType, isDoingCritDamageAction);
             }
         }
 
@@ -228,9 +202,9 @@ public class CharacterBehaviour : MonoBehaviour
         int _rawDamage = myStats.baseDamage();
 
 
-        if (currentExecutingAction.actionType != ActionType.ITEM)
+        if (currentExecutingAction.actionInfo.actionType != ActionType.ITEM)
         {
-            return Mathf.RoundToInt(_rawDamage * CritDamageMultiplier() * currentExecutingAction.damageMultiplier);
+            return Mathf.RoundToInt(_rawDamage * CritDamageMultiplier() * currentExecutingAction.actionInfo.damageMultiplier);
         }
 
 
@@ -240,7 +214,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     public int CritDamageMultiplier()
     {
-        if (currentExecutingAction.actionType == ActionType.SKILL)
+        if (currentExecutingAction.actionInfo.actionType == ActionType.SKILL)
             return 1;
 
         return isDoingCritDamageAction ? 2 : 1;
@@ -261,7 +235,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void GoBackToStartingPositionAndSetToIdle()
     {
-        if (currentExecutingAction.goToTarget)
+        if (currentExecutingAction.actionInfo.goToTarget)
         {
             //GetComponentInChildren<SpriteRenderer>().sortingOrder--;
             transform.DOLocalMove(originalPosition, myAnimController.SecondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
@@ -310,7 +284,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         currentPreAction = skills[skillIndex];
 
-        if (currentMP < currentPreAction.mpCost)
+        if (currentMP < currentPreAction.actionInfo.mpCost)
             return;
 
         ChangeBattleState(BattleState.PICKING_TARGET);
@@ -322,7 +296,7 @@ public class CharacterBehaviour : MonoBehaviour
             return;
 
         currentPreAction = useItem;
-        currentPreAction.damageType = dmgType;
+        currentPreAction.actionInfo.damageType = dmgType;
         currentConsumableItemIndex = itemIndex;
 
         ChangeBattleState(BattleState.PICKING_TARGET);
@@ -367,18 +341,18 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (target.CurrentBattlePhase == BattleState.DEAD)
         {
-            if (currentExecutingAction.IsHarmful)
+            if (currentExecutingAction.actionInfo.IsHarmful)
                 target = CombatManager.instance.enemiesOnField[0];
             else target = CombatManager.instance.playersOnField[0];
         }
 
 
-        if (currentExecutingAction.actionType == ActionType.SKILL)
+        if (currentExecutingAction.actionInfo.actionType == ActionType.SKILL)
         {
-            OnSkillUsed?.Invoke(currentExecutingAction.actionName);
-            DecreaseMP(currentExecutingAction.mpCost);
+            OnSkillUsed?.Invoke(currentExecutingAction.actionInfo.actionName);
+            DecreaseMP(currentExecutingAction.actionInfo.mpCost);
         }
-        else if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
+        else if (currentExecutingAction.actionInfo.actionType == ActionType.NORMAL_ATTACK)
         {
             var _rndValue = UnityEngine.Random.value;
 
@@ -393,7 +367,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         //Debug.LogWarning("currentExecutingAction: " + currentExecutingAction.actionType);
 
-        if (currentExecutingAction.goToTarget)
+        if (currentExecutingAction.actionInfo.goToTarget)
         {
             TrailEffect _trailEffect = GetComponentInChildren<TrailEffect>();
 
@@ -409,18 +383,16 @@ public class CharacterBehaviour : MonoBehaviour
                 _trailEffect.HideTrail();
         }
 
-        myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
+        myAnimController.PlayAnimation(currentExecutingAction.actionInfo.animationCycle.name);
 
-        if (currentExecutingAction.projectile)
+        if (currentExecutingAction.actionInfo.projectile)
         {
-            if (currentExecutingAction.isAreaOfEffect == false)
+            if (currentExecutingAction.actionInfo.isAreaOfEffect == false)
             {
-                Debug.LogWarning(currentExecutingAction.actionName);
-                Debug.LogWarning(currentExecutingAction.actionType);
-                Debug.LogWarning(currentExecutingAction.projectile.name);
+                SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.actionInfo.projectile.gameObject, myAnimController.ProjectileSpawnPoint.transform.position, Quaternion.identity).GetComponent<SpellBehaviour>();
 
-                SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, myAnimController.ProjectileSpawnPoint.transform.position, Quaternion.identity).GetComponent<SpellBehaviour>();
-                _instantiatedProjectile.transform.SetParent(gameObject.transform);
+                //SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, myAnimController.ProjectileSpawnPoint.transform.position, Quaternion.identity).GetComponent<SpellBehaviour>();
+                //_instantiatedProjectile.transform.SetParent(gameObject.transform);
                 yield return new WaitForSeconds(0.25f);
                 _instantiatedProjectile.Execute(myAnimController.ProjectileSpawnPoint.position, target);
             }
@@ -429,7 +401,7 @@ public class CharacterBehaviour : MonoBehaviour
                 yield return new WaitForSeconds(0.25f);
                 for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
                 {
-                    SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, myAnimController.ProjectileSpawnPoint.position, Quaternion.identity).GetComponent<SpellBehaviour>();
+                    SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.actionInfo.projectile.gameObject, myAnimController.ProjectileSpawnPoint.position, Quaternion.identity).GetComponent<SpellBehaviour>();
                     _instantiatedProjectile.transform.SetParent(this.gameObject.transform);
                     _instantiatedProjectile.Execute(myAnimController.ProjectileSpawnPoint.position, CombatManager.instance.enemiesOnField[i]);
                 }
@@ -439,11 +411,11 @@ public class CharacterBehaviour : MonoBehaviour
 
         CombatManager.instance.HideAllFriendlyTargetPointers();
 
-        yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
+        yield return new WaitForSeconds(currentExecutingAction.actionInfo.animationCycle.cycleTime - 0.25f);
 
         StartCoroutine(ApplyDamageOrHeal(target));
 
-        if (currentExecutingAction.actionType == ActionType.ITEM)
+        if (currentExecutingAction.actionInfo.actionType == ActionType.ITEM)
         {
             CharacterInventory _inventory = GetComponentInChildren<CharacterInventory>();
             _inventory.ConsumeItem(currentConsumableItemIndex);
@@ -477,7 +449,7 @@ public class CharacterBehaviour : MonoBehaviour
         switch (CurrentBattlePhase)
         {
             case BattleState.RECHARGING:
-                currentPreAction.actionType = ActionType.NULL;
+                currentPreAction = recharging;
                 StartCoroutine(RechargingCoroutine());
                 SetToIdle();
                 break;
@@ -504,9 +476,9 @@ public class CharacterBehaviour : MonoBehaviour
             case BattleState.PICKING_TARGET:
 
                 uiController.HideMainBattlePanel();
-                if (currentPreAction.IsHarmful)
-                    CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.isAreaOfEffect);
-                else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.isAreaOfEffect);
+                if (currentPreAction.actionInfo.IsHarmful)
+                    CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.actionInfo.isAreaOfEffect);
+                else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.actionInfo.isAreaOfEffect);
 
                 break;
 
@@ -583,7 +555,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void ShowDescription(int skillIndex)
     {
-        uiController.ShowDescriptionTooltip(skills[skillIndex].description);
+        uiController.ShowDescriptionTooltip(skills[skillIndex].actionInfo.description);
     }
 
     public void SwapActiveCharacter()

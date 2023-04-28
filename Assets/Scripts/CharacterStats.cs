@@ -12,6 +12,7 @@ public class CharacterStats : ScriptableObject
     public int maxDamage;
     public float rechargeRate;
     public float critChance;
+    //public GameObject rangedNormalProjectile;
 
     public int baseDamage() => Random.Range(minDamage, maxDamage);
 }

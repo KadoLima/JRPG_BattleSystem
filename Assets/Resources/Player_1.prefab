@@ -8463,57 +8463,15 @@ MonoBehaviour:
   id: 1
   myStats: {fileID: 11400000, guid: 30f31d56bacef2243a981d9c0511cbba, type: 2}
   myAnimController: {fileID: 2817347303011870398}
+  recharging:
+    actionInfo: {fileID: 11400000, guid: b1c5713b38af28f4eb2fc428b150836f, type: 2}
   normalAttack:
-    actionType: 0
-    damageType: 0
-    actionName: 
-    description: 
-    mpCost: 0
-    projectile: {fileID: 0}
-    goToTarget: 1
-    isAreaOfEffect: 0
-    damageMultiplier: 1
-    animationCycle:
-      name: Player1_NormalAttack
-      cycleTime: 1
+    actionInfo: {fileID: 11400000, guid: b6a53a3cced30dd4abe7929d83cc922a, type: 2}
   skills:
-  - actionType: 1
-    damageType: 0
-    actionName: Phantom Pierce
-    description: A super fast lounge attack.
-    mpCost: 9
-    projectile: {fileID: 0}
-    goToTarget: 1
-    isAreaOfEffect: 0
-    damageMultiplier: 1.4
-    animationCycle:
-      name: Player1_Skill1
-      cycleTime: 1.5
-  - actionType: 1
-    damageType: 0
-    actionName: V-Sting
-    description: Hits all targets with a powerful sting.
-    mpCost: 19
-    projectile: {fileID: 0}
-    goToTarget: 0
-    isAreaOfEffect: 1
-    damageMultiplier: 1.1
-    animationCycle:
-      name: Player1_Skill2
-      cycleTime: 2
+  - actionInfo: {fileID: 11400000, guid: d8e30d15834076e42bdbfef6af47ff4c, type: 2}
+  - actionInfo: {fileID: 11400000, guid: 2527801dcbc7c0f43945bf469bb89044, type: 2}
   useItem:
-    actionType: 2
-    damageType: 3
-    actionName: 
-    description: 
-    mpCost: 0
-    projectile: {fileID: 0}
-    goToTarget: 0
-    isAreaOfEffect: 0
-    damageMultiplier: 0
-    animationCycle:
-      name: 
-      cycleTime: 1
+    actionInfo: {fileID: 0}
 --- !u!114 &2817347303011870398
 MonoBehaviour:
   m_ObjectHideFlags: 0

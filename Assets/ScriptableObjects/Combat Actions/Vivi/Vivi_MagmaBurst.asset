@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 073911ff38c6a5a409963669e8db9378, type: 3}
+  m_Name: Vivi_MagmaBurst
+  m_EditorClassIdentifier: 
+  actionType: 1
+  damageType: 0
+  actionName: Magma Burst
+  description: Call erupting flames to inflict damage to all foes.
+  mpCost: 43
+  projectile: {fileID: 826800815465065935, guid: f3f72a7708701224e8e3e28c5dfcd19f, type: 3}
+  goToTarget: 0
+  isAreaOfEffect: 1
+  damageMultiplier: 0.9
+  animationCycle:
+    name: Player2_Skill1
+    cycleTime: 1.6

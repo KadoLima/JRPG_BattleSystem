@@ -19,7 +19,7 @@ public class InputManager : MonoBehaviour
 
         if (_activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET)
         {
-            if (_activePlayer.CurrentPreAction.IsHarmful)
+            if (_activePlayer.CurrentPreAction.actionInfo.IsHarmful)
             {
                 _activePlayer.ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
             }
@@ -78,9 +78,9 @@ public class InputManager : MonoBehaviour
         if (_activePlayer == null)
             return;
 
-        if (_activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !_activePlayer.CurrentPreAction.isAreaOfEffect)
+        if (_activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !_activePlayer.CurrentPreAction.actionInfo.isAreaOfEffect)
         {
-            if (_activePlayer.CurrentPreAction.IsHarmful)
+            if (_activePlayer.CurrentPreAction.actionInfo.IsHarmful)
                 CombatManager.instance.IncreaseTargetEnemyIndex();
             else CombatManager.instance.IncreaseFriendlyTargetIndex();
         }
@@ -93,9 +93,9 @@ public class InputManager : MonoBehaviour
         if (_activePlayer == null)
             return;
 
-        if (_activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !_activePlayer.CurrentPreAction.isAreaOfEffect)
+        if (_activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && !_activePlayer.CurrentPreAction.actionInfo.isAreaOfEffect)
         {
-            if (_activePlayer.CurrentPreAction.IsHarmful)
+            if (_activePlayer.CurrentPreAction.actionInfo.IsHarmful)
                 CombatManager.instance.DecreaseTargetEnemyIndex();
             else CombatManager.instance.DecreaseFriendlyTargetIndex();
         }

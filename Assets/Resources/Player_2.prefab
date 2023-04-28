@@ -1963,56 +1963,12 @@ MonoBehaviour:
   myStats: {fileID: 11400000, guid: b6ce82f9a88258f47a63c938dc9cd86e, type: 2}
   myAnimController: {fileID: 2416545803011836601}
   normalAttack:
-    actionType: 0
-    damageType: 0
-    actionName: EnergyBall
-    description: 
-    mpCost: 0
-    projectile: {fileID: 6963270997362980555, guid: 6aa7e00b0d651a545a8f8ed83b3d24d9, type: 3}
-    goToTarget: 0
-    isAreaOfEffect: 0
-    damageMultiplier: 1
-    animationCycle:
-      name: Player2_NormalAttack
-      cycleTime: 1
+    actionInfo: {fileID: 11400000, guid: 557fadcf844568547a2d4cced0c45023, type: 2}
   skills:
-  - actionType: 1
-    damageType: 0
-    actionName: Fireball
-    description: Conjures a massive fireball that does fire damage.
-    mpCost: 15
-    projectile: {fileID: 6963270997362980555, guid: 27110aa337107074e9d70e194a457613, type: 3}
-    goToTarget: 0
-    isAreaOfEffect: 0
-    damageMultiplier: 1.7
-    animationCycle:
-      name: Player2_Skill1
-      cycleTime: 1.5
-  - actionType: 1
-    damageType: 0
-    actionName: Magma Burst
-    description: Call erupting flames to inflict damage to all targets.
-    mpCost: 43
-    projectile: {fileID: 826800815465065935, guid: f3f72a7708701224e8e3e28c5dfcd19f, type: 3}
-    goToTarget: 0
-    isAreaOfEffect: 1
-    damageMultiplier: 0.9
-    animationCycle:
-      name: Player2_Skill1
-      cycleTime: 1.6
+  - actionInfo: {fileID: 11400000, guid: 7c3492f73a4c8bc47aa23ed7d96f484c, type: 2}
+  - actionInfo: {fileID: 11400000, guid: 8aba4739677269a47882d6d444f7867a, type: 2}
   useItem:
-    actionType: 2
-    damageType: 3
-    actionName: 
-    description: 
-    mpCost: 0
-    projectile: {fileID: 0}
-    goToTarget: 0
-    isAreaOfEffect: 0
-    damageMultiplier: 0
-    animationCycle:
-      name: 
-      cycleTime: 1
+    actionInfo: {fileID: 0}
 --- !u!114 &2416545803011836601
 MonoBehaviour:
   m_ObjectHideFlags: 0

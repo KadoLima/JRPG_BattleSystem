@@ -37,7 +37,7 @@ public class SubPanels : MonoBehaviour
 
         for (int i = 0; i < player.Skills.Length; i++)
         {
-            techItens[i].GetComponent<Button>().interactable = player.CurrentMP > player.Skills[i].mpCost;
+            techItens[i].GetComponent<Button>().interactable = player.CurrentMP > player.Skills[i].actionInfo.mpCost;
         }
     }
 

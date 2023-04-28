@@ -13,8 +13,8 @@ public class TechItem : MonoBehaviour
     {
         techIndex = index;
 
-        GetComponent<TextMeshProUGUI>().text = combatAction.actionName;
-        transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = combatAction.mpCost.ToString();
+        GetComponent<TextMeshProUGUI>().text = combatAction.actionInfo.actionName;
+        transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = combatAction.actionInfo.mpCost.ToString();
     }
 
     public void ShowDescription()
