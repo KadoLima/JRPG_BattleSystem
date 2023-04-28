@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Photon.Pun;
 
 public enum BattleState
 {
@@ -37,7 +38,11 @@ public class CombatManager : MonoBehaviour
     public int CurrentFriendlyTargetIndex => currentFriendlyTargetIndex;
 
     CharacterBehaviour currentActivePlayer = null;
-    public CharacterBehaviour CurrentActivePlayer => currentActivePlayer;
+    public CharacterBehaviour CurrentActivePlayer
+    {
+        get => currentActivePlayer;
+        set => currentActivePlayer = value;
+    }
 
     int totalXPEarned = 0;
 
@@ -192,6 +197,8 @@ public class CombatManager : MonoBehaviour
 
         if (currentActivePlayer != null && currentActivePlayer.CurrentBattlePhase != BattleState.DEAD)
         {
+            currentActivePlayer.UIController.ShowMainBattlePanel();
+            Debug.LogWarning("breaking here");
             yield break;
         }
 
@@ -199,20 +206,29 @@ public class CombatManager : MonoBehaviour
         {
             if (c.CurrentBattlePhase == BattleState.READY)
             {
+                //currentActivePlayer = null;
                 SetCurrentActivePlayer(c);
                 yield break;
             }
         }
 
-        SetCurrentActivePlayer(null);
+        currentActivePlayer = null;
     }
 
     public void SetCurrentActivePlayer(CharacterBehaviour c)
     {
-        currentActivePlayer = c;
+        //if (currentActivePlayer != null)
+        //    return;
 
-        if (c != null)
+
+        currentActivePlayer = c;
+        //Debug.LogWarning(currentActivePlayer);
+
+        if (c != null && (!PhotonNetwork.IsConnected || c.MyPhotonView.IsMine))
+        {
+            Debug.LogWarning("SHOWING " + c.name);
             c.UIController.ShowMainBattlePanel();
+        }
     }
 
     public int GetCurrentActivePlayerIndex()
@@ -226,7 +242,13 @@ public class CombatManager : MonoBehaviour
         return -1;
     }
 
-    public void PickAnotherReadyCharacter()
+    //public void TryGiveTurnTo(CharacterBehaviour c)
+    //{
+    //    if (currentActivePlayer == null || currentActivePlayer)
+    //        SetCurrentActivePlayer(c);
+    //}
+
+    public void PickNextReadyCharacter()
     {
         int _index = GetCurrentActivePlayerIndex();
         _index++;
@@ -234,6 +256,7 @@ public class CombatManager : MonoBehaviour
         if (_index == playersOnField.Count)
             _index = 0;
 
+        currentActivePlayer = null;
         SetCurrentActivePlayer(playersOnField[_index]);
     }
 

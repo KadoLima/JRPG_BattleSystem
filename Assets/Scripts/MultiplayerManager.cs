@@ -71,14 +71,25 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         }
     }
 
+    bool roomCreated = false;
+    public bool RoomCreated => roomCreated;
+
     public override void OnJoinedRoom()
     {
+        roomCreated = true;
         //Debug.LogWarning("ROOM CREATED SUCCESSFULLY!");
         //PhotonNetwork.LoadLevel("Main_Online");
     }
 
     public int ConnectedPlayersCount()
     {
+
+        if (!roomCreated)
+        {
+            Debug.LogWarning("nope, room not created yet");
+            return 0;
+        }
+
         return PhotonNetwork.CurrentRoom.PlayerCount;
     }
 }

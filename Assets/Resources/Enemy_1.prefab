@@ -1164,6 +1164,7 @@ MonoBehaviour:
   healColor: {r: 0.29803923, g: 1, b: 0.2509804, a: 1}
   manaColor: {r: 0.25882354, g: 0.83137256, b: 1, a: 1}
   descriptionTooltipText: {fileID: 0}
+  chatBubble: {fileID: 0}
   <cooldownBar>k__BackingField: {fileID: 0}
 --- !u!1 &8900923260625967869
 GameObject:

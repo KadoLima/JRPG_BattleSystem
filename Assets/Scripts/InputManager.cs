@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Photon.Pun;
 
 public class InputManager : MonoBehaviour
 {
@@ -32,12 +33,11 @@ public class InputManager : MonoBehaviour
     public void OnMenus_Back(InputValue value)
     {
 
-
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer == null)
             return;
-        
+
         if (_activePlayer.CurrentBattlePhase == BattleState.SELECTING_TECH ||
             _activePlayer.CurrentBattlePhase == BattleState.SELECTING_ITEM ||
             _activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET)
@@ -50,6 +50,9 @@ public class InputManager : MonoBehaviour
 
     public void OnSwapActiveCharacter(InputValue value)
     {
+        if (PhotonNetwork.IsConnected)
+            return;
+
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer == null)

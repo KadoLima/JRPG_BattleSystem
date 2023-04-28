@@ -79,12 +79,6 @@ public class StartMenuUIController : MonoBehaviour
                 ShowContent(0);
             }
         }  
-
-        if (Input.GetKeyDown(KeyCode.U) && currentContent == contents[4])
-        {
-            Debug.LogWarning("Force starting game. Players connected = " + MultiplayerManager.instance.ConnectedPlayersCount());
-            FadeToDustAndLoadScene(2);
-        }
     }
 
     public void OnMenus_Back(InputValue value)

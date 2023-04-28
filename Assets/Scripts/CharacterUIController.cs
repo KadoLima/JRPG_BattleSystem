@@ -20,6 +20,7 @@ public class CharacterUIController : MonoBehaviour
     [SerializeField] Color manaColor;
     [Space(10)]
     [SerializeField] TextMeshProUGUI descriptionTooltipText;
+    [SerializeField] GameObject chatBubble;
     float originalFloatingTextY;
     [field: SerializeField] public Image cooldownBar { get; private set; }
 
@@ -27,6 +28,9 @@ public class CharacterUIController : MonoBehaviour
 
     void Start()
     {
+        if (chatBubble!=null)
+            chatBubble.SetActive(false);
+
         pointer.SetActive(false);
         criticalText = floatingText.transform.GetChild(0).gameObject;
         criticalText.SetActive(false);
@@ -215,6 +219,16 @@ public class CharacterUIController : MonoBehaviour
             return;
 
         descriptionTooltipText.transform.parent.parent.gameObject.SetActive(false);
+    }
+
+    public void ShowChatBubble()
+    {
+        chatBubble.SetActive(true);
+    }
+
+    public void HideChatBubble()
+    {
+        chatBubble.SetActive(false);
     }
 
 }

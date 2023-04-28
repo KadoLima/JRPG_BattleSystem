@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG.Tweening;
+using Photon.Pun;
+
 public class MainBattlePanel : MonoBehaviour
 {
     EventSystem eventSystem;
@@ -57,6 +59,12 @@ public class MainBattlePanel : MonoBehaviour
 
     public void ShowHideSwapCharsIndicator(bool state)
     {
+        if (PhotonNetwork.IsConnected)
+        {
+            swapCharacterIndicator.SetActive(false);
+            return;
+        }
+
         swapCharacterIndicator.SetActive(state);
     }
 
