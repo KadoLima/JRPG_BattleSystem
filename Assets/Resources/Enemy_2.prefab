@@ -454,45 +454,14 @@ MonoBehaviour:
   id: 4
   myStats: {fileID: 11400000, guid: 072bea5692e9c7c469ce785048eb39b2, type: 2}
   myAnimController: {fileID: 537072853643609343}
+  recharging:
+    actionInfo: {fileID: 11400000, guid: b1c5713b38af28f4eb2fc428b150836f, type: 2}
   normalAttack:
-    actionType: 0
-    damageType: 0
-    actionName: 
-    description: 
-    mpCost: 0
-    projectile: {fileID: 0}
-    goToTarget: 1
-    isAreaOfEffect: 0
-    damageMultiplier: 1
-    animationCycle:
-      name: EnemyHog_NormalAttack
-      cycleTime: 0.6
+    actionInfo: {fileID: 11400000, guid: fb0c1cde370a1ca4492c394b79a15029, type: 2}
   skills:
-  - actionType: 1
-    damageType: 0
-    actionName: Heavy Pound
-    description: 
-    mpCost: 0
-    projectile: {fileID: 0}
-    goToTarget: 1
-    isAreaOfEffect: 0
-    damageMultiplier: 1.5
-    animationCycle:
-      name: EnemyHog_Skill1
-      cycleTime: 1.25
+  - actionInfo: {fileID: 11400000, guid: 398f59edf2cd0bf4da79c7c1fd9a0ab3, type: 2}
   useItem:
-    actionType: 0
-    damageType: 0
-    actionName: 
-    description: 
-    mpCost: 0
-    projectile: {fileID: 0}
-    goToTarget: 0
-    isAreaOfEffect: 0
-    damageMultiplier: 0
-    animationCycle:
-      name: 
-      cycleTime: 0
+    actionInfo: {fileID: 0}
   minAttackRate: 8
   maxattackRate: 10
   xpRewarded: 1400

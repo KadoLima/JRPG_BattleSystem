@@ -127,9 +127,7 @@ public class EnemyBehaviour : CharacterBehaviour
 
             SetRandomAction();
 
-            Debug.LogWarning(currentExecutingAction.actionInfo.actionType);
-
-            yield return new WaitUntil(() => currentExecutingAction.actionInfo.actionType != ActionType.NULL);
+            //yield return new WaitUntil(() => currentExecutingAction.actionInfo.actionType != ActionType.NULL);
 
             //Debug.LogWarning("CURRENT ACTION: " + currentExecutingAction.actionType);
 

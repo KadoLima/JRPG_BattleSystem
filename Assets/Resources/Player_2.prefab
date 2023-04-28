@@ -1962,6 +1962,8 @@ MonoBehaviour:
   id: 2
   myStats: {fileID: 11400000, guid: b6ce82f9a88258f47a63c938dc9cd86e, type: 2}
   myAnimController: {fileID: 2416545803011836601}
+  recharging:
+    actionInfo: {fileID: 11400000, guid: b1c5713b38af28f4eb2fc428b150836f, type: 2}
   normalAttack:
     actionInfo: {fileID: 11400000, guid: 557fadcf844568547a2d4cced0c45023, type: 2}
   skills:

@@ -188,6 +188,7 @@ public class CombatManager : MonoBehaviour
 
     public void LookForReadyPlayer()
     {
+        //Debug.LogWarning("LOOKING FOR READY PLAYER");
         StartCoroutine(LookForReadyPlayerCoroutine());
     }
 
@@ -197,7 +198,7 @@ public class CombatManager : MonoBehaviour
 
         if (currentActivePlayer != null && currentActivePlayer.CurrentBattlePhase != BattleState.DEAD)
         {
-            currentActivePlayer.UIController.ShowMainBattlePanel();
+            //currentActivePlayer.UIController.ShowMainBattlePanel();
             Debug.LogWarning("breaking here");
             yield break;
         }
@@ -226,7 +227,7 @@ public class CombatManager : MonoBehaviour
 
         if (c != null && (!PhotonNetwork.IsConnected || c.MyPhotonView.IsMine))
         {
-            Debug.LogWarning("SHOWING " + c.name);
+            //Debug.LogWarning("SHOWING " + c.name);
             c.UIController.ShowMainBattlePanel();
         }
     }

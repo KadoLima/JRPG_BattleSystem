@@ -359,8 +359,10 @@ public class CharacterBehaviour : MonoBehaviour
             if (!PhotonNetwork.IsConnected || myPhotonView.IsMine)
             {
                 isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
-                Debug.LogWarning("Sending CRIT DAMAGE bool = " + isDoingCritDamageAction);
-                myPhotonView.RPC(nameof(SyncIsDoingCritDamage), RpcTarget.Others, isDoingCritDamageAction);
+                //Debug.LogWarning("Sending CRIT DAMAGE bool = " + isDoingCritDamageAction);
+
+                if (PhotonNetwork.IsConnected)
+                    myPhotonView.RPC(nameof(SyncIsDoingCritDamage), RpcTarget.Others, isDoingCritDamageAction);
             }
             //Debug.LogWarning("CRIT? " + isDoingCritDamageAction);
         }
@@ -450,6 +452,7 @@ public class CharacterBehaviour : MonoBehaviour
         {
             case BattleState.RECHARGING:
                 currentPreAction = recharging;
+                currentExecutingAction = recharging;
                 StartCoroutine(RechargingCoroutine());
                 SetToIdle();
                 break;
@@ -460,7 +463,12 @@ public class CharacterBehaviour : MonoBehaviour
                 {
                     if ((!PhotonNetwork.IsConnected || MyPhotonView.IsMine))
                     {
-                        CombatManager.instance.LookForReadyPlayer();
+                        if (CombatManager.instance.CurrentActivePlayer == null)
+                            CombatManager.instance.SetCurrentActivePlayer(this);
+                        else if (CombatManager.instance.CurrentActivePlayer == this)
+                            UIController.ShowMainBattlePanel();
+                        else CombatManager.instance.LookForReadyPlayer();
+                        //CombatManager.instance.LookForReadyPlayer();
                     }
 
                     if (PhotonNetwork.IsConnected)

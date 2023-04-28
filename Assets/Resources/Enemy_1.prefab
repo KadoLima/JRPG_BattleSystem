@@ -1221,45 +1221,14 @@ MonoBehaviour:
   id: 3
   myStats: {fileID: 11400000, guid: 33a53b904db0c094986cf8417fb8f79f, type: 2}
   myAnimController: {fileID: 8900923260625967866}
+  recharging:
+    actionInfo: {fileID: 11400000, guid: b1c5713b38af28f4eb2fc428b150836f, type: 2}
   normalAttack:
-    actionType: 0
-    damageType: 0
-    actionName: 
-    description: 
-    mpCost: 0
-    projectile: {fileID: 0}
-    goToTarget: 1
-    isAreaOfEffect: 0
-    damageMultiplier: 1
-    animationCycle:
-      name: EnemySnake_NormalAttack
-      cycleTime: 1.25
+    actionInfo: {fileID: 11400000, guid: de19eab315563a6429ecebc85ee5492c, type: 2}
   skills:
-  - actionType: 1
-    damageType: 0
-    actionName: Monstrous Bite
-    description: 
-    mpCost: 0
-    projectile: {fileID: 0}
-    goToTarget: 1
-    isAreaOfEffect: 0
-    damageMultiplier: 1.5
-    animationCycle:
-      name: EnemySnake_Skill1
-      cycleTime: 1.25
+  - actionInfo: {fileID: 11400000, guid: 7ffd38fe2c003d14ab965369b8dd1da1, type: 2}
   useItem:
-    actionType: 0
-    damageType: 0
-    actionName: 
-    description: 
-    mpCost: 0
-    projectile: {fileID: 0}
-    goToTarget: 0
-    isAreaOfEffect: 0
-    damageMultiplier: 0
-    animationCycle:
-      name: 
-      cycleTime: 0
+    actionInfo: {fileID: 0}
   minAttackRate: 6
   maxattackRate: 8
   xpRewarded: 1250
