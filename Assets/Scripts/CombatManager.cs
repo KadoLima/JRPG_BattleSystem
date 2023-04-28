@@ -274,18 +274,29 @@ public class CombatManager : MonoBehaviour
 
     public void SetTargetedEnemyByIndex(int index, bool isAreaOfEffect = false)
     {
+        if (enemiesOnField.Count == 0)
+            return;
+
+
         if (isAreaOfEffect)
         {
             currentTargetEnemyIndex = index;
             ShowAllEnemyPointers();
             return;
         }
+        else
+        {
+            currentActivePlayer.CurrentTarget = enemiesOnField[index];
+        }
+
         currentTargetEnemyIndex = index;
 
         for (int i = 0; i < enemiesOnField.Count; i++)
         {
             if (i == index)
+            {
                 enemiesOnField[i].UIController.ShowPointer();
+            }
             else enemiesOnField[i].UIController.HidePointer();
         }
     }

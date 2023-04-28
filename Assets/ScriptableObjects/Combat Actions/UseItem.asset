@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: UseItem
   m_EditorClassIdentifier: 
   actionType: 2
-  damageType: 1
+  damageType: 3
   actionName: 
   description: 
   mpCost: 0
@@ -23,4 +23,4 @@ MonoBehaviour:
   damageMultiplier: 0
   animationCycle:
     name: 
-    cycleTime: 0
+    cycleTime: 1

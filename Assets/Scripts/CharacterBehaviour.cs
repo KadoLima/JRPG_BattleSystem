@@ -6,12 +6,6 @@ using System;
 using UnityEngine.InputSystem;
 using Photon.Pun;
 
-[System.Serializable]
-public struct CombatAction
-{
-    public CombatActionSO actionInfo;
-}
-
 
 public class CharacterBehaviour : MonoBehaviour
 {
@@ -32,11 +26,11 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] protected CharacterAnimationController myAnimController;
 
     [Space(20)]
-    [SerializeField] protected CombatAction recharging;
-    [SerializeField] protected CombatAction normalAttack;
-    [SerializeField] CombatAction[] skills;
-    public CombatAction[] Skills => skills;
-    [SerializeField] CombatAction useItem;
+    [SerializeField] protected CombatActionSO recharging;
+    [SerializeField] protected CombatActionSO normalAttack;
+    [SerializeField] CombatActionSO[] skills;
+    public CombatActionSO[] Skills => skills;
+    [SerializeField] CombatActionSO useItem;
 
     protected CharacterUIController uiController;
     public CharacterUIController UIController => uiController;
@@ -55,13 +49,17 @@ public class CharacterBehaviour : MonoBehaviour
 
     protected Vector2 originalPosition;
 
-    protected CombatAction currentPreAction;
-    protected CombatAction currentExecutingAction;
-    public CombatAction CurrentPreAction => currentPreAction;
+    protected CombatActionSO currentPreAction;
+    protected CombatActionSO currentExecutingAction;
+    public CombatActionSO CurrentPreAction => currentPreAction;
     //public CombatAction CurrentExecutingAction => currentExecutingAction;
 
     CharacterBehaviour currentTarget = null;
-    public CharacterBehaviour CurrentTarget => currentTarget;
+    public CharacterBehaviour CurrentTarget
+    {
+        get => currentTarget;
+        set => currentTarget = value;
+    }
 
     bool isBusy = false;
     public bool IsBusy() => isBusy;
@@ -155,13 +153,13 @@ public class CharacterBehaviour : MonoBehaviour
 
         yield return new WaitUntil(() => syncedCalculatedValue != 0);
 
-        if (!currentExecutingAction.actionInfo.isAreaOfEffect)
-            target.TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.actionInfo.damageType, isDoingCritDamageAction);
+        if (!currentExecutingAction.isAreaOfEffect)
+            target.TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.damageType, isDoingCritDamageAction);
         else
         {
             for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
             {
-                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.actionInfo.damageType, isDoingCritDamageAction);
+                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.damageType, isDoingCritDamageAction);
             }
         }
 
@@ -202,9 +200,9 @@ public class CharacterBehaviour : MonoBehaviour
         int _rawDamage = myStats.baseDamage();
 
 
-        if (currentExecutingAction.actionInfo.actionType != ActionType.ITEM)
+        if (currentExecutingAction.actionType != ActionType.ITEM)
         {
-            return Mathf.RoundToInt(_rawDamage * CritDamageMultiplier() * currentExecutingAction.actionInfo.damageMultiplier);
+            return Mathf.RoundToInt(_rawDamage * CritDamageMultiplier() * currentExecutingAction.damageMultiplier);
         }
 
 
@@ -214,7 +212,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     public int CritDamageMultiplier()
     {
-        if (currentExecutingAction.actionInfo.actionType == ActionType.SKILL)
+        if (currentExecutingAction.actionType == ActionType.SKILL)
             return 1;
 
         return isDoingCritDamageAction ? 2 : 1;
@@ -235,7 +233,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void GoBackToStartingPositionAndSetToIdle()
     {
-        if (currentExecutingAction.actionInfo.goToTarget)
+        if (currentExecutingAction.goToTarget)
         {
             //GetComponentInChildren<SpriteRenderer>().sortingOrder--;
             transform.DOLocalMove(originalPosition, myAnimController.SecondsToGoBack).SetEase(Ease.OutExpo).OnComplete(SetToIdle);
@@ -284,7 +282,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         currentPreAction = skills[skillIndex];
 
-        if (currentMP < currentPreAction.actionInfo.mpCost)
+        if (currentMP < currentPreAction.mpCost)
             return;
 
         ChangeBattleState(BattleState.PICKING_TARGET);
@@ -296,7 +294,7 @@ public class CharacterBehaviour : MonoBehaviour
             return;
 
         currentPreAction = useItem;
-        currentPreAction.actionInfo.damageType = dmgType;
+        currentPreAction.damageType = dmgType;
         currentConsumableItemIndex = itemIndex;
 
         ChangeBattleState(BattleState.PICKING_TARGET);
@@ -314,6 +312,8 @@ public class CharacterBehaviour : MonoBehaviour
             {
                 int _targetViewID = currentTarget.GetComponent<PhotonView>().ViewID;
                 //Debug.LogWarning($"Target is {currentTarget.name}, ViewID {_targetViewID}");
+                Debug.LogWarning(currentPreAction.actionType);
+                test = currentPreAction;
                 myPhotonView.RPC(nameof(SyncExecuteAction), RpcTarget.Others, _targetViewID, JsonUtility.ToJson(currentPreAction));
             }
 
@@ -341,18 +341,18 @@ public class CharacterBehaviour : MonoBehaviour
 
         if (target.CurrentBattlePhase == BattleState.DEAD)
         {
-            if (currentExecutingAction.actionInfo.IsHarmful)
+            if (currentExecutingAction.IsHarmful)
                 target = CombatManager.instance.enemiesOnField[0];
             else target = CombatManager.instance.playersOnField[0];
         }
 
 
-        if (currentExecutingAction.actionInfo.actionType == ActionType.SKILL)
+        if (currentExecutingAction.actionType == ActionType.SKILL)
         {
-            OnSkillUsed?.Invoke(currentExecutingAction.actionInfo.actionName);
-            DecreaseMP(currentExecutingAction.actionInfo.mpCost);
+            OnSkillUsed?.Invoke(currentExecutingAction.actionName);
+            DecreaseMP(currentExecutingAction.mpCost);
         }
-        else if (currentExecutingAction.actionInfo.actionType == ActionType.NORMAL_ATTACK)
+        else if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
         {
             var _rndValue = UnityEngine.Random.value;
 
@@ -369,7 +369,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         //Debug.LogWarning("currentExecutingAction: " + currentExecutingAction.actionType);
 
-        if (currentExecutingAction.actionInfo.goToTarget)
+        if (currentExecutingAction.goToTarget)
         {
             TrailEffect _trailEffect = GetComponentInChildren<TrailEffect>();
 
@@ -385,13 +385,13 @@ public class CharacterBehaviour : MonoBehaviour
                 _trailEffect.HideTrail();
         }
 
-        myAnimController.PlayAnimation(currentExecutingAction.actionInfo.animationCycle.name);
+        myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
 
-        if (currentExecutingAction.actionInfo.projectile)
+        if (currentExecutingAction.projectile)
         {
-            if (currentExecutingAction.actionInfo.isAreaOfEffect == false)
+            if (currentExecutingAction.isAreaOfEffect == false)
             {
-                SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.actionInfo.projectile.gameObject, myAnimController.ProjectileSpawnPoint.transform.position, Quaternion.identity).GetComponent<SpellBehaviour>();
+                SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, myAnimController.ProjectileSpawnPoint.transform.position, Quaternion.identity).GetComponent<SpellBehaviour>();
 
                 //SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, myAnimController.ProjectileSpawnPoint.transform.position, Quaternion.identity).GetComponent<SpellBehaviour>();
                 //_instantiatedProjectile.transform.SetParent(gameObject.transform);
@@ -403,7 +403,7 @@ public class CharacterBehaviour : MonoBehaviour
                 yield return new WaitForSeconds(0.25f);
                 for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
                 {
-                    SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.actionInfo.projectile.gameObject, myAnimController.ProjectileSpawnPoint.position, Quaternion.identity).GetComponent<SpellBehaviour>();
+                    SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, myAnimController.ProjectileSpawnPoint.position, Quaternion.identity).GetComponent<SpellBehaviour>();
                     _instantiatedProjectile.transform.SetParent(this.gameObject.transform);
                     _instantiatedProjectile.Execute(myAnimController.ProjectileSpawnPoint.position, CombatManager.instance.enemiesOnField[i]);
                 }
@@ -413,11 +413,11 @@ public class CharacterBehaviour : MonoBehaviour
 
         CombatManager.instance.HideAllFriendlyTargetPointers();
 
-        yield return new WaitForSeconds(currentExecutingAction.actionInfo.animationCycle.cycleTime - 0.25f);
+        yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
         StartCoroutine(ApplyDamageOrHeal(target));
 
-        if (currentExecutingAction.actionInfo.actionType == ActionType.ITEM)
+        if (currentExecutingAction.actionType == ActionType.ITEM)
         {
             CharacterInventory _inventory = GetComponentInChildren<CharacterInventory>();
             _inventory.ConsumeItem(currentConsumableItemIndex);
@@ -484,9 +484,9 @@ public class CharacterBehaviour : MonoBehaviour
             case BattleState.PICKING_TARGET:
 
                 uiController.HideMainBattlePanel();
-                if (currentPreAction.actionInfo.IsHarmful)
-                    CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.actionInfo.isAreaOfEffect);
-                else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.actionInfo.isAreaOfEffect);
+                if (currentPreAction.IsHarmful)
+                    CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.isAreaOfEffect);
+                else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.isAreaOfEffect);
 
                 break;
 
@@ -502,7 +502,7 @@ public class CharacterBehaviour : MonoBehaviour
                 break;
             case BattleState.DEAD:
                 CombatManager.instance.RemoveFromCombatQueue(this);
-                StopAllCoroutines();
+                //StopAllCoroutines();
 
                 if (!GetComponent<EnemyBehaviour>())
                 {
@@ -523,6 +523,14 @@ public class CharacterBehaviour : MonoBehaviour
                     uiController.HideCanvas(5, .25f);
                     combatEffects.DieEffect();
                     CombatManager.instance.RemoveFromField(this.GetComponent<EnemyBehaviour>());
+
+                    yield return new WaitForSeconds(.1f);
+
+                    if (CombatManager.instance.CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && CombatManager.instance.CurrentActivePlayer.CurrentTarget == this)
+                    {
+                        Debug.LogWarning("I'm dead! Picking other");
+                        CombatManager.instance.SetTargetedEnemyByIndex(0);
+                    }
                 }
                 break;
 
@@ -530,6 +538,7 @@ public class CharacterBehaviour : MonoBehaviour
                 GoBackToStartingPosition();
                 myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
                 uiController.HideCanvas();
+                StopAllCoroutines();
                 break;
 
             case BattleState.NULL:
@@ -563,7 +572,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void ShowDescription(int skillIndex)
     {
-        uiController.ShowDescriptionTooltip(skills[skillIndex].actionInfo.description);
+        uiController.ShowDescriptionTooltip(skills[skillIndex].description);
     }
 
     public void SwapActiveCharacter()
@@ -588,10 +597,13 @@ public class CharacterBehaviour : MonoBehaviour
 
     #region ONLINE
 
+    public CombatActionSO test;
+
     [PunRPC]
     public void SyncExecuteAction(int viewID, string jsonStringParameter)
     {
-        currentPreAction = JsonUtility.FromJson<CombatAction>(jsonStringParameter);
+        test = JsonUtility.FromJson<CombatActionSO>(jsonStringParameter);
+        Debug.LogWarning("Received RPC action => " + currentPreAction.actionType);
         currentTarget = PhotonView.Find(viewID).GetComponent<CharacterBehaviour>();
         CombatManager.instance.AddToCombatQueue(this);
         uiController.HideChatBubble();

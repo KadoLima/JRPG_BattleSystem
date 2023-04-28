@@ -134,16 +134,16 @@ public class EnemyBehaviour : CharacterBehaviour
             if (currentPlayerTarget.CurrentBattlePhase == BattleState.DEAD)
                 SetRandomTarget();
 
-            if (currentExecutingAction.actionInfo.goToTarget)
+            if (currentExecutingAction.goToTarget)
             {
                 MoveToTarget(currentPlayerTarget);
 
-                if (currentExecutingAction.actionInfo.actionType == ActionType.SKILL)
+                if (currentExecutingAction.actionType == ActionType.SKILL)
                 {
-                    OnEnemyUsedSkill?.Invoke(currentExecutingAction.actionInfo.actionName);
+                    OnEnemyUsedSkill?.Invoke(currentExecutingAction.actionName);
                 }
 
-                else if (currentExecutingAction.actionInfo.actionType == ActionType.NORMAL_ATTACK)
+                else if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
                 {
                     if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
                     {
@@ -156,16 +156,16 @@ public class EnemyBehaviour : CharacterBehaviour
                 }
 
                 yield return new WaitForSeconds(myAnimController.SecondsToReachTarget);
-                myAnimController.PlayAnimation(currentExecutingAction.actionInfo.animationCycle.name);
+                myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
                 GetComponentInChildren<SpriteRenderer>().sortingOrder = currentPlayerTarget.GetComponentInChildren<SpriteRenderer>().sortingOrder + 1;
 
-                yield return new WaitForSeconds(currentExecutingAction.actionInfo.animationCycle.cycleTime - 0.25f);
+                yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
                 StartCoroutine(ApplyDamageOrHeal(currentPlayerTarget));
 
                 yield return new WaitForSeconds(0.25f);
 
-                if (currentExecutingAction.actionInfo.goToTarget)
+                if (currentExecutingAction.goToTarget)
                 {
                     GetComponentInChildren<SpriteRenderer>().sortingOrder = defaultSortingOrder;
                     GoBackToStartingPosition();
@@ -180,7 +180,7 @@ public class EnemyBehaviour : CharacterBehaviour
                 RemoveFromCombatQueue();
                 ChangeBattleState(BattleState.RECHARGING);
                 currentPlayerTarget = null;
-                currentExecutingAction.actionInfo.actionType = ActionType.NULL;
+                currentExecutingAction.actionType = ActionType.NULL;
             }
 
             if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
@@ -353,7 +353,7 @@ public class EnemyBehaviour : CharacterBehaviour
             {
                 int _actionIndex = -1;
 
-                if (currentExecutingAction.actionInfo.actionType == ActionType.NORMAL_ATTACK)
+                if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
                     _actionIndex = 0;
                 else _actionIndex = 1;
 

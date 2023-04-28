@@ -50,7 +50,7 @@ public class SpriteEffects : MonoBehaviour
         if (_player.CurrentTarget != null)
         {
 
-            if (_player.CurrentPreAction.actionInfo.isAreaOfEffect)
+            if (_player.CurrentPreAction.isAreaOfEffect)
             {
                 for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
                     CombatManager.instance.enemiesOnField[i].GetComponentInChildren<SpriteEffects>().FlashRedAndPushBack();
