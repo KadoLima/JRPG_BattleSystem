@@ -522,12 +522,11 @@ MonoBehaviour:
   id: 5
   myStats: {fileID: 11400000, guid: e33f804d0233fde479c607a91e599333, type: 2}
   myAnimController: {fileID: 8008911636120275914}
-  recharging: {fileID: 11400000, guid: b1c5713b38af28f4eb2fc428b150836f, type: 2}
-  normalAttack: {fileID: 11400000, guid: c9ab697142e2b08488c092ba6dac7aed, type: 2}
-  skills:
+  characterActions:
+  - {fileID: 11400000, guid: b1c5713b38af28f4eb2fc428b150836f, type: 2}
+  - {fileID: 11400000, guid: c9ab697142e2b08488c092ba6dac7aed, type: 2}
   - {fileID: 11400000, guid: 9221f7ed565f31944b5e3c7e4a8bdbcf, type: 2}
-  useItem: {fileID: 11400000, guid: 505a9823325df944e98913c69d86a4e4, type: 2}
-  test: {fileID: 0}
+  - {fileID: 11400000, guid: 505a9823325df944e98913c69d86a4e4, type: 2}
   minAttackRate: 6
   maxattackRate: 8
   xpRewarded: 1120

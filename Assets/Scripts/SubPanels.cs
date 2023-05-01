@@ -35,9 +35,9 @@ public class SubPanels : MonoBehaviour
         if (itensList.Count == 0)
             BuildComsumableItens();
 
-        for (int i = 0; i < player.Skills.Length; i++)
+        for (int i = 0; i < SkillsCount(); i++)
         {
-            techItens[i].GetComponent<Button>().interactable = player.CurrentMP > player.Skills[i].mpCost;
+            techItens[i].GetComponent<Button>().interactable = player.CurrentMP > player.CharacterActions[2 + i].mpCost;
         }
     }
 
@@ -56,10 +56,10 @@ public class SubPanels : MonoBehaviour
 
     private void BuildTechItens()
     {
-        for (int i = 0; i < player.Skills.Length; i++)
+        for (int i = 0; i < SkillsCount(); i++)
         {
             GameObject _techItemPrefab = Instantiate(this.techItemPrefab, techsContent);
-            _techItemPrefab.GetComponent<TechItem>().Initialize(i, player.Skills[i]);
+            _techItemPrefab.GetComponent<TechItem>().Initialize(i, player.CharacterActions[2 + i]);
             techItens.Add(_techItemPrefab.GetComponent<Button>());
         }
 
@@ -121,5 +121,18 @@ public class SubPanels : MonoBehaviour
     {
         techsSubPanel.SetActive(false);
         itensSubpanel.SetActive(false);
+    }
+
+    private int SkillsCount()
+    {
+        int _skillsCount = 0;
+
+        foreach (var a in player.CharacterActions)
+        {
+            if (a.actionType == ActionType.SKILL)
+                _skillsCount++;
+        }
+
+        return _skillsCount;
     }
 }

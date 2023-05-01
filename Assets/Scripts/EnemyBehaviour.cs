@@ -180,7 +180,7 @@ public class EnemyBehaviour : CharacterBehaviour
                 RemoveFromCombatQueue();
                 ChangeBattleState(BattleState.RECHARGING);
                 currentPlayerTarget = null;
-                currentExecutingAction.actionType = ActionType.NULL;
+                //currentExecutingAction.actionType = ActionType.RECHARGING;
             }
 
             if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
@@ -223,8 +223,10 @@ public class EnemyBehaviour : CharacterBehaviour
     private void SyncCurrentAction(int actionIndex)
     {
         if (actionIndex == 0)
-            currentExecutingAction = normalAttack;
-        else currentExecutingAction = Skills[0];
+            currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
+        else currentExecutingAction = SelectAction(ActionType.SKILL);
+        //currentExecutingAction = normalAttack;
+        //else currentExecutingAction = Skills[0];
 
         //Debug.LogWarning("Receiving RPC currentAction -> " + currentExecutingAction.actionType);
     }
@@ -345,9 +347,15 @@ public class EnemyBehaviour : CharacterBehaviour
             float _randomValue = UnityEngine.Random.value;
 
             if (_randomValue > chanceToUseSkill)
-                currentExecutingAction = normalAttack;
+                currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
             else
-                currentExecutingAction = Skills[0];
+                currentExecutingAction = SelectAction(ActionType.SKILL);
+
+            Debug.LogWarning(currentExecutingAction);
+            //if (_randomValue > chanceToUseSkill)
+            //    currentExecutingAction = normalAttack;
+            //else
+            //    currentExecutingAction = Skills[0];
 
             if (PhotonNetwork.IsMasterClient)
             {

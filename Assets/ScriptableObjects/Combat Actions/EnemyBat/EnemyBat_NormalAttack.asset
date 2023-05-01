@@ -18,9 +18,9 @@ MonoBehaviour:
   description: 
   mpCost: 0
   projectile: {fileID: 0}
-  goToTarget: 1
+  goToTarget: 0
   isAreaOfEffect: 0
-  damageMultiplier: 1
+  damageMultiplier: 0
   animationCycle:
-    name: EnemyBat_NormalAttack
-    cycleTime: 0.6
+    name: 
+    cycleTime: 0

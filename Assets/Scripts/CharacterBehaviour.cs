@@ -26,11 +26,15 @@ public class CharacterBehaviour : MonoBehaviour
     [SerializeField] protected CharacterAnimationController myAnimController;
 
     [Space(20)]
-    [SerializeField] protected CombatActionSO recharging;
-    [SerializeField] protected CombatActionSO normalAttack;
-    [SerializeField] CombatActionSO[] skills;
-    public CombatActionSO[] Skills => skills;
-    [SerializeField] CombatActionSO useItem;
+
+    [SerializeField] protected CombatActionSO[] characterActions; // 0 = recharging, 1 = normal attack, 2-8 = skills, 9 = useItem
+    public CombatActionSO[] CharacterActions => characterActions;
+
+    //[SerializeField] protected CombatActionSO recharging;
+    //[SerializeField] protected CombatActionSO normalAttack;
+    //[SerializeField] CombatActionSO[] skills;
+    //public CombatActionSO[] Skills => skills;
+    //[SerializeField] CombatActionSO useItem;
 
     protected CharacterUIController uiController;
     public CharacterUIController UIController => uiController;
@@ -266,12 +270,25 @@ public class CharacterBehaviour : MonoBehaviour
         uiController.HideUI();
     }
 
+    public CombatActionSO SelectAction(ActionType type)
+    {
+        foreach (var action in characterActions)
+        {
+            if (action.actionType == type)
+                return action;
+        }
+
+        Debug.LogError("ACTION TYPE NOT FOUND");
+        return null;
+    }
+
     public void UseNormalAttack()
     {
         if (CombatManager.instance.CurrentActivePlayer != this)
             return;
 
-        currentPreAction = normalAttack;
+        //currentPreAction = normalAttack;
+        currentPreAction = SelectAction(ActionType.NORMAL_ATTACK);
         ChangeBattleState(BattleState.PICKING_TARGET);
     }
 
@@ -280,7 +297,8 @@ public class CharacterBehaviour : MonoBehaviour
         if (CombatManager.instance.CurrentActivePlayer != this)
             return;
 
-        currentPreAction = skills[skillIndex];
+        //currentPreAction = skills[skillIndex];
+        currentPreAction = characterActions[2 + skillIndex];
 
         if (currentMP < currentPreAction.mpCost)
             return;
@@ -293,8 +311,9 @@ public class CharacterBehaviour : MonoBehaviour
         if (CombatManager.instance.CurrentActivePlayer != this)
             return;
 
-        currentPreAction = useItem;
-        currentPreAction.damageType = dmgType;
+        // currentPreAction = useItem;
+        currentPreAction = SelectAction(ActionType.ITEM);
+        //currentPreAction.damageType = dmgType;
         currentConsumableItemIndex = itemIndex;
 
         ChangeBattleState(BattleState.PICKING_TARGET);
@@ -313,7 +332,6 @@ public class CharacterBehaviour : MonoBehaviour
                 int _targetViewID = currentTarget.GetComponent<PhotonView>().ViewID;
                 //Debug.LogWarning($"Target is {currentTarget.name}, ViewID {_targetViewID}");
                 Debug.LogWarning(currentPreAction.actionType);
-                test = currentPreAction;
                 myPhotonView.RPC(nameof(SyncExecuteAction), RpcTarget.Others, _targetViewID, JsonUtility.ToJson(currentPreAction));
             }
 
@@ -330,6 +348,7 @@ public class CharacterBehaviour : MonoBehaviour
         }
 
         currentExecutingAction = currentPreAction;
+        //Debug.LogWarning(gameObject.name + " -> " + currentExecutingAction.actionType);
 
         CombatManager.instance.HideAllEnemyPointers();
         target.uiController.HidePointer();
@@ -387,7 +406,9 @@ public class CharacterBehaviour : MonoBehaviour
 
         myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
 
-        if (currentExecutingAction.projectile)
+        //Debug.LogWarning(currentExecutingAction);
+
+        if (currentExecutingAction.projectile!=null)
         {
             if (currentExecutingAction.isAreaOfEffect == false)
             {
@@ -424,7 +445,6 @@ public class CharacterBehaviour : MonoBehaviour
             target.myAnimController.PlayHealingEffect();
         }
 
-
         yield return new WaitForSeconds(0.25f);
 
         GoBackToStartingPositionAndSetToIdle();
@@ -451,8 +471,10 @@ public class CharacterBehaviour : MonoBehaviour
         switch (CurrentBattlePhase)
         {
             case BattleState.RECHARGING:
-                currentPreAction = recharging;
-                currentExecutingAction = recharging;
+                //currentPreAction = recharging;
+                //currentExecutingAction = recharging;
+                currentPreAction = SelectAction(ActionType.RECHARGING);
+                currentExecutingAction = SelectAction(ActionType.RECHARGING);
                 StartCoroutine(RechargingCoroutine());
                 SetToIdle();
                 break;
@@ -461,7 +483,7 @@ public class CharacterBehaviour : MonoBehaviour
 
                 if (uiController.FindMainBattlePanel())
                 {
-                    if ((!PhotonNetwork.IsConnected || MyPhotonView.IsMine))
+                    if (!PhotonNetwork.IsConnected)
                     {
                         if (CombatManager.instance.CurrentActivePlayer == null)
                             CombatManager.instance.SetCurrentActivePlayer(this);
@@ -471,11 +493,15 @@ public class CharacterBehaviour : MonoBehaviour
                         //CombatManager.instance.LookForReadyPlayer();
                     }
 
-                    if (PhotonNetwork.IsConnected)
+                    else
                     {
                         if (!MyPhotonView.IsMine)
                             uiController.ShowChatBubble();
-                        else uiController.HideChatBubble();
+                        else
+                        {
+                            CombatManager.instance.SetCurrentActivePlayer(this);
+                            uiController.HideChatBubble();
+                        }
                     }
                 }
 
@@ -526,7 +552,11 @@ public class CharacterBehaviour : MonoBehaviour
 
                     yield return new WaitForSeconds(.1f);
 
-                    if (CombatManager.instance.CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET && CombatManager.instance.CurrentActivePlayer.CurrentTarget == this)
+                    if (CombatManager.instance.CurrentActivePlayer == null)
+                        break;
+
+                    if (CombatManager.instance.CurrentActivePlayer.CurrentTarget == this &&
+                        CombatManager.instance.CurrentActivePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET)
                     {
                         Debug.LogWarning("I'm dead! Picking other");
                         CombatManager.instance.SetTargetedEnemyByIndex(0);
@@ -538,6 +568,7 @@ public class CharacterBehaviour : MonoBehaviour
                 GoBackToStartingPosition();
                 myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
                 uiController.HideCanvas();
+                yield return new WaitForSeconds(.5f);
                 StopAllCoroutines();
                 break;
 
@@ -572,7 +603,8 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void ShowDescription(int skillIndex)
     {
-        uiController.ShowDescriptionTooltip(skills[skillIndex].description);
+        //uiController.ShowDescriptionTooltip(skills[skillIndex].description);
+        UIController.ShowDescriptionTooltip(characterActions[2 + skillIndex].description);
     }
 
     public void SwapActiveCharacter()
@@ -589,7 +621,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     public void GameOver_Win()
     {
-        StopAllCoroutines();
+        //StopAllCoroutines();
         ChangeBattleState(BattleState.GAMEWIN);
     }
 
@@ -597,12 +629,10 @@ public class CharacterBehaviour : MonoBehaviour
 
     #region ONLINE
 
-    public CombatActionSO test;
-
     [PunRPC]
     public void SyncExecuteAction(int viewID, string jsonStringParameter)
     {
-        test = JsonUtility.FromJson<CombatActionSO>(jsonStringParameter);
+        JsonUtility.FromJsonOverwrite(jsonStringParameter, currentPreAction);
         Debug.LogWarning("Received RPC action => " + currentPreAction.actionType);
         currentTarget = PhotonView.Find(viewID).GetComponent<CharacterBehaviour>();
         CombatManager.instance.AddToCombatQueue(this);

@@ -20,7 +20,7 @@ MonoBehaviour:
   projectile: {fileID: 0}
   goToTarget: 0
   isAreaOfEffect: 0
-  damageMultiplier: 0
+  damageMultiplier: 1
   animationCycle:
     name: 
-    cycleTime: 0
+    cycleTime: 1

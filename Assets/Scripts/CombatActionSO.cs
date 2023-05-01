@@ -7,7 +7,7 @@ public enum ActionType
     NORMAL_ATTACK,
     SKILL,
     ITEM,
-    NULL
+    RECHARGING
 }
 
 public enum DamageType
@@ -20,6 +20,7 @@ public enum DamageType
 
 
 [CreateAssetMenu(fileName = "New CombatAction", menuName = "Combat Actions/New CombatAction")]
+[System.Serializable]
 public class CombatActionSO : ScriptableObject
 {
     public ActionType actionType;
