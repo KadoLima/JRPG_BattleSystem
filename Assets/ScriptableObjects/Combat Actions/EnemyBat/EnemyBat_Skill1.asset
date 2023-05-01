@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 073911ff38c6a5a409963669e8db9378, type: 3}
   m_Name: EnemyBat_Skill1
   m_EditorClassIdentifier: 
-  actionType: 0
+  actionType: 1
   damageType: 0
-  actionName: 
+  actionName: Whirlwind
   description: 
   mpCost: 0
   projectile: {fileID: 0}
-  goToTarget: 0
+  goToTarget: 1
   isAreaOfEffect: 0
-  damageMultiplier: 0
+  damageMultiplier: 1.5
   animationCycle:
-    name: 
-    cycleTime: 0
+    name: EnemyBat_Skill1
+    cycleTime: 1.25

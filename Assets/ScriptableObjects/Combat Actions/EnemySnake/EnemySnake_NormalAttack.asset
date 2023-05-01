@@ -18,9 +18,9 @@ MonoBehaviour:
   description: 
   mpCost: 0
   projectile: {fileID: 0}
-  goToTarget: 0
+  goToTarget: 1
   isAreaOfEffect: 0
-  damageMultiplier: 0
+  damageMultiplier: 1
   animationCycle:
-    name: 
-    cycleTime: 0
+    name: EnemySnake_NormalAttack
+    cycleTime: 1.25
