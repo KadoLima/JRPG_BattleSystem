@@ -527,6 +527,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c9ab697142e2b08488c092ba6dac7aed, type: 2}
   - {fileID: 11400000, guid: 9221f7ed565f31944b5e3c7e4a8bdbcf, type: 2}
   - {fileID: 11400000, guid: 505a9823325df944e98913c69d86a4e4, type: 2}
+  inventory: {fileID: 0}
   minAttackRate: 6
   maxattackRate: 8
   xpRewarded: 1120

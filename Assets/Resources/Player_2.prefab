@@ -1968,6 +1968,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7c3492f73a4c8bc47aa23ed7d96f484c, type: 2}
   - {fileID: 11400000, guid: 8aba4739677269a47882d6d444f7867a, type: 2}
   - {fileID: 11400000, guid: 505a9823325df944e98913c69d86a4e4, type: 2}
+  inventory: {fileID: 2416545802332225626}
 --- !u!114 &2416545803011836601
 MonoBehaviour:
   m_ObjectHideFlags: 0

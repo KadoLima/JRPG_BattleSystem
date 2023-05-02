@@ -223,7 +223,7 @@ public class StartMenuUIController : MonoBehaviour
         Sequence fadeAndLoadSequence = DOTween.Sequence();
         fadeAndLoadSequence.Append(currentContent.contentContainer.GetComponent<CanvasGroup>().DOFade(0, .5f));
         dustStorm.PlayParticles();
-        fadeAndLoadSequence.AppendInterval(2f);
+        fadeAndLoadSequence.AppendInterval(2.25f);
         fadeAndLoadSequence.OnComplete(() => SceneManager.LoadScene(sceneIndex));
     }
 

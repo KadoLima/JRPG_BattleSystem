@@ -1226,10 +1226,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: de19eab315563a6429ecebc85ee5492c, type: 2}
   - {fileID: 11400000, guid: 7ffd38fe2c003d14ab965369b8dd1da1, type: 2}
   - {fileID: 11400000, guid: 505a9823325df944e98913c69d86a4e4, type: 2}
+  inventory: {fileID: 0}
   minAttackRate: 6
   maxattackRate: 8
   xpRewarded: 1250
-  chanceToUseSkill: 0.35
+  chanceToUseSkill: 0.3
 --- !u!114 &8900923260625967866
 MonoBehaviour:
   m_ObjectHideFlags: 0

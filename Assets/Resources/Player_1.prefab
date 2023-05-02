@@ -8469,12 +8469,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d8e30d15834076e42bdbfef6af47ff4c, type: 2}
   - {fileID: 11400000, guid: 2527801dcbc7c0f43945bf469bb89044, type: 2}
   - {fileID: 11400000, guid: 505a9823325df944e98913c69d86a4e4, type: 2}
-  recharging: {fileID: 11400000, guid: b1c5713b38af28f4eb2fc428b150836f, type: 2}
-  normalAttack: {fileID: 11400000, guid: b6a53a3cced30dd4abe7929d83cc922a, type: 2}
-  skills:
-  - {fileID: 11400000, guid: d8e30d15834076e42bdbfef6af47ff4c, type: 2}
-  - {fileID: 11400000, guid: 2527801dcbc7c0f43945bf469bb89044, type: 2}
-  useItem: {fileID: 11400000, guid: 505a9823325df944e98913c69d86a4e4, type: 2}
+  inventory: {fileID: 2817347301366046918}
 --- !u!114 &2817347303011870398
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -27,6 +27,9 @@ public class EnemyBehaviour : CharacterBehaviour
     {
         myPhotonView = GetComponent<PhotonView>();
 
+        currentPreAction = ScriptableObject.CreateInstance<CombatActionSO>();
+        currentExecutingAction = ScriptableObject.CreateInstance<CombatActionSO>();
+
         defaultSortingOrder = GetComponentInChildren<SpriteRenderer>().sortingOrder;
         uiController = GetComponentInChildren<CharacterUIController>();
         CombatManager.instance.enemiesOnField.Add(this);
