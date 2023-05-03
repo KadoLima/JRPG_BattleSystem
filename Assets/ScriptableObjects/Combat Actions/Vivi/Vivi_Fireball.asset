@@ -17,7 +17,7 @@ MonoBehaviour:
   actionName: Fireball
   description: Conjures a massive fireball to strike a target.
   mpCost: 15
-  projectile: {fileID: 6963270997362980555, guid: 27110aa337107074e9d70e194a457613, type: 3}
+  projectile: {fileID: 6963270997362980555, guid: e5e478f3f20646e42847e3cf877970fd, type: 3}
   goToTarget: 0
   isAreaOfEffect: 0
   damageMultiplier: 1.7

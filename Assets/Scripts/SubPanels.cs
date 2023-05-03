@@ -35,6 +35,11 @@ public class SubPanels : MonoBehaviour
         if (itensList.Count == 0)
             BuildComsumableItens();
 
+        //CheckSkillsAvailability();
+    }
+
+    public void CheckSkillsAvailability()
+    {
         for (int i = 0; i < SkillsCount(); i++)
         {
             techItens[i].GetComponent<Button>().interactable = player.CurrentMP > player.CharacterActions[2 + i].mpCost;

@@ -97,7 +97,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 247b63d53c4d00d4f94521c508adf2ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotateSpeed: 1
+  myAnim: {fileID: 0}
+  rotateSpeed: 8
+  additionalWidth: 0
   finalScale: 0.15
   projectileLifetime: 0.5
   spellType: 0
