@@ -24,7 +24,7 @@ public class StartMenuUIController : MonoBehaviour
     [SerializeField] Content[] contents;
     [Space(10)]
     [Header("Texts")]
-    [SerializeField] TextMeshProUGUI gameTitle;
+    [SerializeField] CanvasGroup gameTitle;
     [SerializeField] TextMeshProUGUI errorMessage;
     [SerializeField] TextMeshProUGUI connectingSign;
     [SerializeField] GameObject pressToStart;
@@ -66,19 +66,7 @@ public class StartMenuUIController : MonoBehaviour
         AssignButtons();
         HideContents();
         HideErrorMessage();
-        PressToStart_Effect();
-    }
-
-    void Update()
-    {
-        if (Input.anyKeyDown)
-        {
-            if (pressToStart.activeSelf)
-            {
-                pressToStart.SetActive(false);
-                ShowContent(0);
-            }
-        }  
+        //PressToStart_Effect();
     }
 
     public void OnMenus_Back(InputValue value)
@@ -92,7 +80,21 @@ public class StartMenuUIController : MonoBehaviour
 
             Sequence _sequence = DOTween.Sequence();
             _sequence.AppendInterval(.2f);
-            _sequence.OnComplete(() => PressToStart_Effect());
+            _sequence.OnComplete(() => pressToStart.SetActive(true));
+        }
+    }
+    
+    public void OnQuitToDesktop(InputValue value)
+    {
+        Application.Quit();
+    }
+
+    public void OnAnyPositiveKey(InputValue value)
+    {
+        if (pressToStart.activeSelf)
+        {
+            pressToStart.SetActive(false);
+            ShowContent(0);
         }
     }
 
@@ -190,16 +192,16 @@ public class StartMenuUIController : MonoBehaviour
         }
     }
 
-    void PressToStart_Effect()
-    {
-        pressToStart.SetActive(true);
-        TextMeshProUGUI _pressToStartText = pressToStart.GetComponent<TextMeshProUGUI>();
+    //void PressToStart_Effect()
+    //{
+    //    pressToStart.SetActive(true);
+    //    TextMeshProUGUI _pressToStartText = pressToStart.GetComponent<TextMeshProUGUI>();
 
-        Sequence _pulsingEffect = DOTween.Sequence();
-        _pulsingEffect.Append(_pressToStartText.DOFade(1, .75f));
-        _pulsingEffect.Append(_pressToStartText.DOFade(0, .75f));
-        _pulsingEffect.SetLoops(-1);
-    }
+    //    Sequence _pulsingEffect = DOTween.Sequence();
+    //    _pulsingEffect.Append(_pressToStartText.DOFade(1, .75f));
+    //    _pulsingEffect.Append(_pressToStartText.DOFade(0, .75f));
+    //    _pulsingEffect.SetLoops(-1);
+    //}
 
     void AssignButtons()
     {
@@ -280,16 +282,6 @@ public class StartMenuUIController : MonoBehaviour
         MultiplayerManager.instance.CreateRoom(contents[2].contentInputField.text);
         StartCoroutine(WaitForPlayersAndLoadGameScene());
     }
-
-    IEnumerator WaitForPlayersAndLoadGameScene()
-    {
-        ShowContent(4);
-        yield return new WaitForSeconds(.5f);
-        yield return new WaitUntil(() => MultiplayerManager.instance.ConnectedPlayersCount() > 1);
-        yield return new WaitForSeconds(.5f);
-        FadeToDustAndLoadScene(2);
-    }
-
     public void FinishJoiningLobby()
     {
         if (string.IsNullOrEmpty(contents[3].contentInputField.text))
@@ -302,6 +294,23 @@ public class StartMenuUIController : MonoBehaviour
 
         MultiplayerManager.instance.JoinRoom(contents[3].contentInputField.text);
         StartCoroutine(WaitForPlayersAndLoadGameScene());
+    }
+
+    IEnumerator WaitForPlayersAndLoadGameScene()
+    {
+        HideErrorMessage();
+        yield return new WaitForSeconds(.5f);
+
+        if (MultiplayerManager.instance.RoomJoined == false)
+        {
+            ShowErrorMessage("Room not found!");
+            yield break;
+        }
+
+        ShowContent(4);
+        yield return new WaitUntil(() => MultiplayerManager.instance.ConnectedPlayersCount() > 1);
+        yield return new WaitForSeconds(.5f);
+        FadeToDustAndLoadScene(2);
     }
 
     public void ShowErrorMessage(string text)

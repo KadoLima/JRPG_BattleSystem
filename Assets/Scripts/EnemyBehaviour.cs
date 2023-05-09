@@ -44,6 +44,7 @@ public class EnemyBehaviour : CharacterBehaviour
         ExecuteActionOn();
     }
 
+
     public void SetRandomTarget()
     {
         if (CombatManager.instance.AllPlayersDead())
@@ -99,7 +100,6 @@ public class EnemyBehaviour : CharacterBehaviour
 
         while (CurrentBattlePhase != BattleState.DEAD)
         {
-
             if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
             {
                 if (currentPlayerTarget == null)

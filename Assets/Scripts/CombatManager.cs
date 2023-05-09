@@ -60,6 +60,21 @@ public class CombatManager : MonoBehaviour
     [Header("Delay when removing character from queue")]
     [SerializeField] float queueDelay = 1.25f;
 
+    private void Awake()
+    {
+        instance = this;
+    }
+
+    private void Update()
+    {
+        if (enemiesOnField.Count == 0)
+            return;
+
+        if (!GameManager.instance.GameStarted)
+            return;
+
+    }
+
     public bool IsFieldClear()
     {
         foreach (var p in playersOnField)
@@ -86,22 +101,21 @@ public class CombatManager : MonoBehaviour
         }
 
         return false;
-    }
+    }   
+    
+    //public bool IsAnyPlayerBusy()
+    //{
+    //    foreach (var p in playersOnField)
+    //    {
+    //        if (p.CurrentBattlePhase == BattleState.EXECUTING_ACTION || 
+    //            p.CurrentBattlePhase == BattleState.PICKING_TARGET ||
+    //            p.CurrentBattlePhase == BattleState.SELECTING_ITEM || 
+    //            p.CurrentBattlePhase == BattleState.SELECTING_TECH)
+    //            return true;
+    //    }
 
-    private void Awake()
-    {
-        instance = this;
-    }
-
-    private void Update()
-    {
-        if (enemiesOnField.Count == 0)
-            return;
-
-        if (!GameManager.instance.GameStarted)
-            return;
-
-    }
+    //    return false;
+    //}
 
     public EnemyBehaviour CurrentReadyEnemy()
     {

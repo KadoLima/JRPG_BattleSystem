@@ -427,6 +427,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   myCanvasGroup: {fileID: 8008911635346364248}
   pointer: {fileID: 8008911635418175516}
+  playerIndicator: {fileID: 0}
   battlePanel: {fileID: 0}
   hpText: {fileID: 8008911636858878420}
   mpText: {fileID: 0}

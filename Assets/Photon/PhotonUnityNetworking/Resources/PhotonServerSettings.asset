@@ -51,6 +51,10 @@ MonoBehaviour:
   - SyncCalculatedValue
   - SyncExecuteAction
   - SyncIsDoingCritDamage
+  - SyncPause
+  - SyncResume
+  - SyncRestartScene
+  - SyncQuitGame
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

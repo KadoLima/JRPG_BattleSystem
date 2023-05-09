@@ -5,11 +5,13 @@ using UnityEngine.UI;
 using DG.Tweening;
 using System;
 using TMPro;
+using Photon.Pun;
 
 public class CharacterUIController : MonoBehaviour
 {
     [SerializeField] CanvasGroup myCanvasGroup;
     [SerializeField] GameObject pointer;
+    [SerializeField] GameObject playerIndicator;
     [SerializeField] MainBattlePanel battlePanel;
     [SerializeField] TextMeshProUGUI hpText;
     [SerializeField] TextMeshProUGUI mpText;
@@ -47,6 +49,9 @@ public class CharacterUIController : MonoBehaviour
         Invoke(nameof(RefreshHPMP), .1f);
 
         ResetFloatingText();
+
+        if (playerIndicator)
+            playerIndicator.SetActive(PhotonNetwork.IsConnected && characterBehaviour.MyPhotonView.IsMine);
 
     }
 

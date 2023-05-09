@@ -363,6 +363,8 @@ public class CharacterBehaviour : MonoBehaviour
 
     IEnumerator ExecuteActionCoroutine(CharacterBehaviour target)
     {
+        ChangeBattleState(BattleState.WAITING);
+
         if (CombatManager.instance.CurrentActivePlayer == this)
         {
             CombatManager.instance.CurrentActivePlayer = null;
@@ -370,7 +372,6 @@ public class CharacterBehaviour : MonoBehaviour
         }
 
         currentExecutingAction = currentPreAction;
-
 
         CombatManager.instance.HideAllEnemyPointers();
         target.uiController.HidePointer();

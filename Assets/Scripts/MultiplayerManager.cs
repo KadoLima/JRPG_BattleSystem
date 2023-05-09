@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using System;
+using Photon.Realtime;
 
 public class MultiplayerManager : MonoBehaviourPunCallbacks
 {
     public static Action<int> OnConnectedToLobby;
 
+
     public static MultiplayerManager instance;
+
+    bool roomCreated = false;
+    bool roomJoined = false;
+    public bool RoomJoined => roomJoined;
 
     private void Awake()
     {
@@ -54,29 +60,40 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         if (!string.IsNullOrEmpty(roomName))
         {
             PhotonNetwork.CreateRoom(roomName,new Photon.Realtime.RoomOptions { MaxPlayers = 2 });
+            roomCreated = true;
         }
     }
 
     public void JoinRoom(string roomName)
     {
-        if (!string.IsNullOrEmpty(roomName))
-        {
-            PhotonNetwork.JoinRoom(roomName);
+        if (string.IsNullOrEmpty(roomName))
+            return;
 
-            if (PhotonNetwork.IsMasterClient)
-                Debug.LogWarning("ANOTHER PLAYER IS JOINING YOU!");
+        PhotonNetwork.JoinRoom(roomName);
 
-            else
-                Debug.LogWarning("Joining room!!!!");
-        }
+        //if (PhotonNetwork.JoinRoom(roomName))
+        //{
+        //    if (PhotonNetwork.IsMasterClient)
+        //        Debug.LogWarning("ANOTHER PLAYER IS JOINING YOU!");
+
+        //    else
+        //        Debug.LogWarning("Joining room!!!!");
+
+        //}
+
     }
 
-    bool roomCreated = false;
-    public bool RoomCreated => roomCreated;
+    public override void OnJoinRoomFailed(short returnCode, string message)
+    {
+        Debug.LogWarning("FAILED TO JOIN ROOM");
+        roomJoined = false;
+    }
+
 
     public override void OnJoinedRoom()
     {
-        roomCreated = true;
+        Debug.LogWarning("ROOM JOINED");
+        roomJoined = true;
         //Debug.LogWarning("ROOM CREATED SUCCESSFULLY!");
         //PhotonNetwork.LoadLevel("Main_Online");
     }
@@ -84,7 +101,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     public int ConnectedPlayersCount()
     {
 
-        if (!roomCreated)
+        if (!roomJoined)
         {
             Debug.LogWarning("nope, room not created yet");
             return 0;
@@ -92,4 +109,6 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
 
         return PhotonNetwork.CurrentRoom.PlayerCount;
     }
+
+
 }
