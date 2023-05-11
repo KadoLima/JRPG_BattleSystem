@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Photon.Pun;
+using System.Linq;
 
 public enum BattleState
 {
@@ -60,9 +61,15 @@ public class CombatManager : MonoBehaviour
     [Header("Delay when removing character from queue")]
     [SerializeField] float queueDelay = 1.25f;
 
+    PhotonView myPhotonView;
+    public PhotonView MyPhotonView => myPhotonView;
+
+
     private void Awake()
     {
         instance = this;
+
+        myPhotonView = GetComponent<PhotonView>();
     }
 
     private void Update()
@@ -161,7 +168,26 @@ public class CombatManager : MonoBehaviour
 
     public void AddToCombatQueue(CharacterBehaviour characterToAdd)
     {
-        combatQueue.Add(characterToAdd);
+        //Debug.LogWarning($"Add to queue: {characterToAdd.name}");
+
+        if (!PhotonNetwork.IsConnected)
+        {
+            combatQueue.Add(characterToAdd);
+            return;
+        }
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            combatQueue.Add(characterToAdd);
+
+            int[] _combatQueueViewIDs = UpdateCombatQueue();
+
+            MyPhotonView.RPC(nameof(SyncCombatQueue), RpcTarget.Others, _combatQueueViewIDs);
+
+            //Debug.LogWarning("Sending CombatQueue RPC. Length is " + combatQueueViewIDs.Length);
+        }
+
+        //combatQueue.Add(characterToAdd);
     }
 
     public void RemoveFromCombatQueue(CharacterBehaviour characterToRemove)
@@ -169,10 +195,40 @@ public class CombatManager : MonoBehaviour
         StartCoroutine(RemoveFromCombatQueueCoroutine(characterToRemove));
     }
 
+    private static int[] UpdateCombatQueue()
+    {
+        CharacterBehaviour[] _combatQueueArray = CombatManager.instance.CombatQueue.ToArray();
+
+        int[] combatQueueViewIDs = new int[_combatQueueArray.Length];
+
+        for (int i = 0; i < _combatQueueArray.Length; i++)
+        {
+            combatQueueViewIDs[i] = _combatQueueArray[i].MyPhotonView.ViewID;
+        }
+
+        return combatQueueViewIDs;
+    }
+
     IEnumerator RemoveFromCombatQueueCoroutine(CharacterBehaviour characterToRemove)
     {
         yield return new WaitForSeconds(queueDelay);
-        combatQueue.Remove(characterToRemove);
+
+        if (!PhotonNetwork.IsConnected)
+        {
+            combatQueue.Remove(characterToRemove);
+            yield break;
+        }
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            combatQueue.Remove(characterToRemove);
+
+            int[] _combatQueueViewIDs = UpdateCombatQueue();
+
+            MyPhotonView.RPC(nameof(SyncCombatQueue), RpcTarget.Others, _combatQueueViewIDs);
+
+            //Debug.LogWarning("Sending CombatQueue RPC. Length is " + combatQueueViewIDs.Length);
+        }
     }
 
     public void AddToTotalXP(int amount)
@@ -464,5 +520,29 @@ public class CombatManager : MonoBehaviour
 
     #endregion
 
+
+    #region ONLINE
+
+    [PunRPC]
+    protected void SyncCombatQueue(int[] combatQueueViewIDs)
+    {
+        CharacterBehaviour[] _combatQueueArray = new CharacterBehaviour[combatQueueViewIDs.Length];
+
+        for (int i = 0; i < combatQueueViewIDs.Length; i++)
+        {
+            PhotonView photonView = PhotonView.Find(combatQueueViewIDs[i]);
+            if (photonView != null)
+            {
+                _combatQueueArray[i] = photonView.GetComponent<CharacterBehaviour>();
+            }
+        }
+
+        CombatManager.instance.CombatQueue = _combatQueueArray.ToList();
+
+        //Debug.LogWarning("Receiving CombatQueue RPC. Length is " + combatQueueViewIDs.Length);
+
+    }
+
+    #endregion
 
 }

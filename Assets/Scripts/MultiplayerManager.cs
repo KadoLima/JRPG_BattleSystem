@@ -12,7 +12,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
 
     public static MultiplayerManager instance;
 
-    bool roomCreated = false;
+    //bool roomCreated = false;
     bool roomJoined = false;
     public bool RoomJoined => roomJoined;
 
@@ -60,7 +60,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         if (!string.IsNullOrEmpty(roomName))
         {
             PhotonNetwork.CreateRoom(roomName,new Photon.Realtime.RoomOptions { MaxPlayers = 2 });
-            roomCreated = true;
+            //roomCreated = true;
         }
     }
 

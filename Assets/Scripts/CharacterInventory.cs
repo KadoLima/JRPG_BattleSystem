@@ -21,7 +21,7 @@ public class CharacterInventory : MonoBehaviour
 
     public void ConsumeItem(int itemIndex)
     {
-        Debug.LogWarning("Consuming an item...");
+        //Debug.LogWarning("Consuming an item...");
 
         for (int i = 0; i < inventoryItens.Count; i++)
         {

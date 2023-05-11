@@ -23,8 +23,9 @@ public class StartMenuUIController : MonoBehaviour
 
     [SerializeField] Content[] contents;
     [Space(10)]
+    [SerializeField] TextMeshProUGUI[] objsToFadeOut;
+    [Space(10)]
     [Header("Texts")]
-    [SerializeField] CanvasGroup gameTitle;
     [SerializeField] TextMeshProUGUI errorMessage;
     [SerializeField] TextMeshProUGUI connectingSign;
     [SerializeField] GameObject pressToStart;
@@ -221,7 +222,16 @@ public class StartMenuUIController : MonoBehaviour
 
     public void FadeToDustAndLoadScene(int sceneIndex)
     {
-        gameTitle.DOFade(0, 0.5f);
+
+        foreach (TextMeshProUGUI item in objsToFadeOut)
+        {
+            var _canvasGrp = item.GetComponent<CanvasGroup>();
+
+            if (_canvasGrp)
+                _canvasGrp.DOFade(0, 0.5f);
+            else item.DOFade(0, 0.5f);
+        }
+
         Sequence fadeAndLoadSequence = DOTween.Sequence();
         fadeAndLoadSequence.Append(currentContent.contentContainer.GetComponent<CanvasGroup>().DOFade(0, .5f));
         dustStorm.PlayParticles();
@@ -299,13 +309,32 @@ public class StartMenuUIController : MonoBehaviour
     IEnumerator WaitForPlayersAndLoadGameScene()
     {
         HideErrorMessage();
-        yield return new WaitForSeconds(.5f);
 
-        if (MultiplayerManager.instance.RoomJoined == false)
+        yield return new WaitForSeconds(0.5f);
+
+        int _attempts = 90;
+
+        for (int i = 0; i < +_attempts; i++)
+        {
+            if (MultiplayerManager.instance.RoomJoined)
+            {
+                break;
+            }
+        }
+
+        if (!MultiplayerManager.instance.RoomJoined)
         {
             ShowErrorMessage("Room not found!");
             yield break;
         }
+
+        //yield return new WaitForSeconds(1.5f);
+
+        //if (MultiplayerManager.instance.RoomJoined == false)
+        //{
+        //    ShowErrorMessage("Room not found!");
+        //    yield break;
+        //}
 
         ShowContent(4);
         yield return new WaitUntil(() => MultiplayerManager.instance.ConnectedPlayersCount() > 1);

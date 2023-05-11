@@ -142,7 +142,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     [PunRPC]
     void SyncPause(bool isPausedValue)
     {
-        Debug.LogWarning("pausing P2");
+        //Debug.LogWarning("pausing P2");
         isPaused = isPausedValue;
         OnGamePaused?.Invoke();
         Time.timeScale = 0;
@@ -153,7 +153,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         isPaused = isPausedValue;
         Time.timeScale = 1;
-        Debug.LogWarning("resuming P2");
+        //Debug.LogWarning("resuming P2");
         OnGameResumed?.Invoke();
     }
 
