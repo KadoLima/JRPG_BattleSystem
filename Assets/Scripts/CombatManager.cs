@@ -110,19 +110,6 @@ public class CombatManager : MonoBehaviour
         return false;
     }   
     
-    //public bool IsAnyPlayerBusy()
-    //{
-    //    foreach (var p in playersOnField)
-    //    {
-    //        if (p.CurrentBattlePhase == BattleState.EXECUTING_ACTION || 
-    //            p.CurrentBattlePhase == BattleState.PICKING_TARGET ||
-    //            p.CurrentBattlePhase == BattleState.SELECTING_ITEM || 
-    //            p.CurrentBattlePhase == BattleState.SELECTING_TECH)
-    //            return true;
-    //    }
-
-    //    return false;
-    //}
 
     public EnemyBehaviour CurrentReadyEnemy()
     {
@@ -168,7 +155,6 @@ public class CombatManager : MonoBehaviour
 
     public void AddToCombatQueue(CharacterBehaviour characterToAdd)
     {
-        //Debug.LogWarning($"Add to queue: {characterToAdd.name}");
 
         if (!PhotonNetwork.IsConnected)
         {
@@ -183,11 +169,8 @@ public class CombatManager : MonoBehaviour
             int[] _combatQueueViewIDs = UpdateCombatQueue();
 
             MyPhotonView.RPC(nameof(SyncCombatQueue), RpcTarget.Others, _combatQueueViewIDs);
-
-            //Debug.LogWarning("Sending CombatQueue RPC. Length is " + combatQueueViewIDs.Length);
         }
 
-        //combatQueue.Add(characterToAdd);
     }
 
     public void RemoveFromCombatQueue(CharacterBehaviour characterToRemove)
@@ -227,7 +210,6 @@ public class CombatManager : MonoBehaviour
 
             MyPhotonView.RPC(nameof(SyncCombatQueue), RpcTarget.Others, _combatQueueViewIDs);
 
-            //Debug.LogWarning("Sending CombatQueue RPC. Length is " + combatQueueViewIDs.Length);
         }
     }
 
@@ -258,7 +240,6 @@ public class CombatManager : MonoBehaviour
 
     public void LookForReadyPlayer()
     {
-        //Debug.LogWarning("LOOKING FOR READY PLAYER");
         StartCoroutine(LookForReadyPlayerCoroutine());
     }
 
@@ -268,7 +249,6 @@ public class CombatManager : MonoBehaviour
 
         if (currentActivePlayer != null && currentActivePlayer.CurrentBattlePhase != BattleState.DEAD)
         {
-            //currentActivePlayer.UIController.ShowMainBattlePanel();
             Debug.LogWarning("breaking here");
             yield break;
         }
@@ -277,7 +257,6 @@ public class CombatManager : MonoBehaviour
         {
             if (c.CurrentBattlePhase == BattleState.READY)
             {
-                //currentActivePlayer = null;
                 SetCurrentActivePlayer(c);
                 yield break;
             }
@@ -288,16 +267,11 @@ public class CombatManager : MonoBehaviour
 
     public void SetCurrentActivePlayer(CharacterBehaviour c)
     {
-        //if (currentActivePlayer != null)
-        //    return;
-
 
         currentActivePlayer = c;
-        //Debug.LogWarning(currentActivePlayer);
 
         if (c != null && (!PhotonNetwork.IsConnected || c.MyPhotonView.IsMine))
         {
-            //Debug.LogWarning("SHOWING " + c.name);
             c.UIController.ShowMainBattlePanel();
         }
     }
@@ -313,12 +287,6 @@ public class CombatManager : MonoBehaviour
         return -1;
     }
 
-    //public void TryGiveTurnTo(CharacterBehaviour c)
-    //{
-    //    if (currentActivePlayer == null || currentActivePlayer)
-    //        SetCurrentActivePlayer(c);
-    //}
-
     public void PickNextReadyCharacter()
     {
         int _index = GetCurrentActivePlayerIndex();
@@ -332,15 +300,15 @@ public class CombatManager : MonoBehaviour
     }
 
     #region Enemy Target
-    public void RandomEnemyStartAction(int forceEnemyIndex = -1)
-    {
-        EnemyBehaviour _rndEnemy;
-        int _forceEnemyIndex = forceEnemyIndex;
+    //public void RandomEnemyStartAction(int forceEnemyIndex = -1)
+    //{
+    //    EnemyBehaviour _rndEnemy;
+    //    int _forceEnemyIndex = forceEnemyIndex;
 
-        if (_forceEnemyIndex != -1)
-            _rndEnemy = enemiesOnField[_forceEnemyIndex];
-        else _rndEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
-    }
+    //    if (_forceEnemyIndex != -1)
+    //        _rndEnemy = enemiesOnField[_forceEnemyIndex];
+    //    else _rndEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
+    //}
 
     public void SetTargetedEnemyByIndex(int index, bool isAreaOfEffect = false)
     {
@@ -420,7 +388,6 @@ public class CombatManager : MonoBehaviour
         {
             enemiesOnField.Remove(enemy.GetComponent<EnemyBehaviour>());
             CheckWinConditionCoroutine();
-            //StartCoroutine(CheckWinConditionCoroutine());
         }
         else playersOnField.Remove(enemy);
     }
@@ -538,9 +505,6 @@ public class CombatManager : MonoBehaviour
         }
 
         CombatManager.instance.CombatQueue = _combatQueueArray.ToList();
-
-        //Debug.LogWarning("Receiving CombatQueue RPC. Length is " + combatQueueViewIDs.Length);
-
     }
 
     #endregion

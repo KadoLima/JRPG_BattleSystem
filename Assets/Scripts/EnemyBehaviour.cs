@@ -67,7 +67,6 @@ public class EnemyBehaviour : CharacterBehaviour
         if (PhotonNetwork.IsMasterClient && PhotonNetwork.InRoom)
         {
             MyPhotonView.RPC(nameof(SyncTarget), RpcTarget.Others, currentPlayerTarget.MyPhotonView.ViewID);
-            //Debug.LogWarning("Im master client, sending RPC target -> " + target.photonView.gameObject.name);
         }
     }
 
@@ -75,7 +74,6 @@ public class EnemyBehaviour : CharacterBehaviour
     void SyncTarget(int viewID)
     {
         currentPlayerTarget = PhotonView.Find(viewID).GetComponent<CharacterBehaviour>();
-        //Debug.LogWarning("Updating current target via RPC! Current target is " + currentPlayerTarget);
     }
 
     public override void ExecuteActionOn(CharacterBehaviour target=null)
@@ -106,9 +104,6 @@ public class EnemyBehaviour : CharacterBehaviour
                 else SetTarget(target);
             }
 
-            //else if (PhotonNetwork.IsMasterClient)
-            //    SetRandomTarget();
-
             yield return new WaitForSeconds(.1f); //syncing
 
             CombatManager.instance.AddToCombatQueue(this);
@@ -135,11 +130,9 @@ public class EnemyBehaviour : CharacterBehaviour
             if (currentPlayerTarget.CurrentBattlePhase == BattleState.DEAD)
                 SetRandomTarget();
 
-            //Debug.LogWarning(currentExecutingAction.actionType + " // go to target? " + currentExecutingAction.goToTarget);
 
             if (currentExecutingAction.goToTarget)
             {
-                //Debug.LogWarning("MOVING TO TARGET!");
                 MoveToTarget(currentPlayerTarget);
 
                 if (currentExecutingAction.actionType == ActionType.SKILL)
@@ -184,7 +177,6 @@ public class EnemyBehaviour : CharacterBehaviour
                 CombatManager.instance.RemoveFromCombatQueue(this);
                 ChangeBattleState(BattleState.RECHARGING);
                 currentPlayerTarget = null;
-                //currentExecutingAction.actionType = ActionType.RECHARGING;
             }
 
             if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
@@ -205,22 +197,18 @@ public class EnemyBehaviour : CharacterBehaviour
     void SyncInitialDelay(float value)
     {
         randomizedInitialDelay = value;
-        //Debug.LogWarning("RECEIVING RPC FOR isDoingCritDmgAction. Value is: " + isDoingCritDamageAction);
     }
 
     [PunRPC]
     void SyncIsDoingCritDamageAction(bool value)
     {
         isDoingCritDamageAction = value;
-
-        //Debug.LogWarning("RECEIVING RPC FOR isDoingCritDmgAction. Value is: " + isDoingCritDamageAction);
     }
 
     [PunRPC]
     void SyncWaitTime(float time)
     {
         waitTime = time;
-        //Debug.LogWarning("RECEIVING WAIT TIME RPC. waitTime = " + waitTime);
     }
 
     [PunRPC]
@@ -229,53 +217,13 @@ public class EnemyBehaviour : CharacterBehaviour
         if (actionIndex == 0)
             currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
         else currentExecutingAction = SelectAction(ActionType.SKILL);
-        //currentExecutingAction = normalAttack;
-        //else currentExecutingAction = Skills[0];
-
-        //Debug.LogWarning("Receiving RPC currentAction -> " + currentExecutingAction.actionType);
     }
 
     [PunRPC]
     void SyncCalculatedValue(int amount)
     {
         syncedCalculatedValue = amount;
-        //Debug.LogWarning("Enemy receiving RPC. Dmg amount = " + syncedCalculatedValue);
     }
-
-    //[PunRPC]
-    //void SyncCalculatedValue(int amount)
-    //{
-    //    syncedCalculatedValue = amount;
-    //    Debug.LogWarning("Receiving dmg amount = " + syncedCalculatedValue);
-    //}
-
-    //void RemoveFromCombatQueue()
-    //{
-        //CombatManager.instance.RemoveFromCombatQueue(this);
-
-        //if (!PhotonNetwork.IsConnected)
-        //{
-        //    CombatManager.instance.RemoveFromCombatQueue(this);
-        //    return;
-        //}
-
-        //if (PhotonNetwork.IsMasterClient)
-        //{
-        //    CombatManager.instance.RemoveFromCombatQueue(this);
-
-        //    CharacterBehaviour[] _combatQueueArray = CombatManager.instance.CombatQueue.ToArray();
-
-        //    int[] combatQueueViewIDs = new int[_combatQueueArray.Length];
-
-        //    for (int i = 0; i < _combatQueueArray.Length; i++)
-        //    {
-        //        combatQueueViewIDs[i] = _combatQueueArray[i].photonView.ViewID;
-        //    }
-
-        //    photonView.RPC(nameof(SyncCombatQueue), RpcTarget.Others, combatQueueViewIDs);
-        //}
-    //}
-
 
     public override void TakeDamageOrHeal(int amount, DamageType dmgType, bool isCrit)
     {
@@ -286,10 +234,8 @@ public class EnemyBehaviour : CharacterBehaviour
 
             if (currentHP <= 0)
             {
-                //Debug.LogWarning("ENEMY DIED!");
                 CombatManager.instance.AddToTotalXP(xpRewarded);
                 ChangeBattleState(BattleState.DEAD);
-
             }
         }
 
@@ -300,19 +246,12 @@ public class EnemyBehaviour : CharacterBehaviour
     {
         if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
         {
-            //Debug.LogWarning("Selecting a random action");
             float _randomValue = UnityEngine.Random.value;
 
             if (_randomValue > chanceToUseSkill)
                 currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
             else
                 currentExecutingAction = SelectAction(ActionType.SKILL);
-
-            //Debug.LogWarning(currentExecutingAction);
-            //if (_randomValue > chanceToUseSkill)
-            //    currentExecutingAction = normalAttack;
-            //else
-            //    currentExecutingAction = Skills[0];
 
             if (PhotonNetwork.IsMasterClient)
             {
@@ -322,38 +261,11 @@ public class EnemyBehaviour : CharacterBehaviour
                     _actionIndex = 0;
                 else _actionIndex = 1;
 
-                //Debug.LogWarning($"SENDING RPC => {currentExecutingAction.actionType} (index={_actionIndex}");
                 MyPhotonView.RPC(nameof(SyncCurrentAction), RpcTarget.Others, _actionIndex);
-                //Debug.LogWarning("Sending RPC currentAction -> " + currentExecutingAction.actionType);
             }
 
         }
 
-        //Debug.LogWarning(currentExecutingAction.actionType);
-
     }
 
-
-
-    //void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    //{
-    //    if (stream.IsWriting)
-    //    {
-    //        // Envie o target atual do inimigo apenas se este é o Master Client
-    //        if (PhotonNetwork.IsMasterClient)
-    //        {
-    //            stream.SendNext(currentPlayerTarget);
-    //            stream.SendNext(currentExecutingAction);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        // Atualize o target do inimigo recebendo a informação do Master Client
-    //        if (!PhotonNetwork.IsMasterClient)
-    //        {
-    //            currentPlayerTarget = (CharacterBehaviour)stream.ReceiveNext();
-    //            currentExecutingAction = (CombatAction)stream.ReceiveNext();
-    //        }
-    //    }
-    //}
 }

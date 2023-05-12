@@ -15,11 +15,9 @@ public class CharactersSpawner : MonoBehaviour
 
     [Header("ENEMIES")]
     [SerializeField] SpawnedCharacter[] enemiesPrefabs;
-    //[SerializeField] Transform enemiesParent;
 
     [Header("PLAYERS")]
     [SerializeField] SpawnedCharacter[] playersPrefabs;
-    //[SerializeField] Transform playersParent;
 
 
     private void Start()
@@ -36,7 +34,6 @@ public class CharactersSpawner : MonoBehaviour
         foreach (SpawnedCharacter e in enemiesPrefabs)
         {
             GameObject _spawnedEnemy = PhotonNetwork.Instantiate(e.prefab.name, e.spawnPos.position, Quaternion.identity);
-            //_spawnedEnemy.transform.SetParent(enemiesParent);
         }
     }
 
@@ -47,12 +44,10 @@ public class CharactersSpawner : MonoBehaviour
         if (PhotonNetwork.IsMasterClient)
         {
             _playerPrefabIndex = 0;
-            //Debug.LogWarning("I'm master client. Spawning PREFAB_"+_playerPrefabIndex);
         }
         else
         {
             _playerPrefabIndex = 1;
-            //Debug.LogWarning("I am not master client. Spawning PREFAB_" + _playerPrefabIndex);
         }
 
         PhotonNetwork.Instantiate(playersPrefabs[_playerPrefabIndex].prefab.name, playersPrefabs[_playerPrefabIndex].spawnPos.position, Quaternion.identity);

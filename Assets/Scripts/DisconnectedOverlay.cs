@@ -31,7 +31,5 @@ public class DisconnectedOverlay : MonoBehaviour
         screen.SetActive(true);
         EventSystem.current.SetSelectedGameObject(null);
         EventSystem.current.SetSelectedGameObject(okButton.gameObject);
-
-        Debug.LogWarning(EventSystem.current.currentSelectedGameObject.name);
     }
 }

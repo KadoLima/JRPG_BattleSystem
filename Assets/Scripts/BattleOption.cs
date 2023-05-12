@@ -14,14 +14,18 @@ public class BattleOption : MonoBehaviour
 
     [SerializeField] PanelToOpen panelToOpen;
 
+    CharacterBehaviour characterBehaviour;
+
     public void ExecuteAction()
     {
         if (panelToOpen.panel)
         {
-            GetComponentInParent<CharacterBehaviour>().ChangeBattleState(panelToOpen.battleState);
+            if (characterBehaviour == null)
+                characterBehaviour = GetComponentInParent<CharacterBehaviour>();
+
+            characterBehaviour.ChangeBattleState(panelToOpen.battleState);
             panelToOpen.panel.SetActive(true);
             EventSystem.current.SetSelectedGameObject(GetFirstActiveChild());
-            return;
         }
     }
 

@@ -21,8 +21,10 @@ public class HighlightButton : MonoBehaviour
 
     public void Selected()
     {
-        //Debug.LogWarning("ASDJFSDJFSDJF");
         tweener = transform.DOScale(1.075f * scaleMultiplier, .1f).SetUpdate(true);
+
+        if (button)
+            button.interactable = true;
     }
 
     public void Deselected()

@@ -59,11 +59,8 @@ public class PauseOverlay : MonoBehaviour
 
     public void ShowPauseOverlay()
     {
-        //Debug.LogWarning("SHOWING PAUSE OVERLAY");
-
         screenCanvasGroup.alpha = 0;
         screen.SetActive(true);
-        //SetFirstSelected();
 
         screenCanvasGroup.DOFade(1, .15f).SetEase(Ease.Linear).SetUpdate(true);
 

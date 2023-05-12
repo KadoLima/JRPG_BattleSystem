@@ -67,14 +67,12 @@ public class StartMenuUIController : MonoBehaviour
         AssignButtons();
         HideContents();
         HideErrorMessage();
-        //PressToStart_Effect();
     }
 
     public void OnMenus_Back(InputValue value)
     {
         if (currentContent != contents[0] && currentContent != contents[4])
         {
-            //Debug.LogWarning("yes");
             MultiplayerManager.ForceDisconnect();
             HideContents();
             HideErrorMessage();
@@ -173,7 +171,6 @@ public class StartMenuUIController : MonoBehaviour
     {
         foreach (Button button in contents[index].contentButtons.Skip(1))
         {
-            //Debug.LogWarning(button.name);
             GameObject _buttonArrow = button.transform.GetChild(1).gameObject;
             _buttonArrow.SetActive(false);
 
@@ -193,17 +190,6 @@ public class StartMenuUIController : MonoBehaviour
         }
     }
 
-    //void PressToStart_Effect()
-    //{
-    //    pressToStart.SetActive(true);
-    //    TextMeshProUGUI _pressToStartText = pressToStart.GetComponent<TextMeshProUGUI>();
-
-    //    Sequence _pulsingEffect = DOTween.Sequence();
-    //    _pulsingEffect.Append(_pressToStartText.DOFade(1, .75f));
-    //    _pulsingEffect.Append(_pressToStartText.DOFade(0, .75f));
-    //    _pulsingEffect.SetLoops(-1);
-    //}
-
     void AssignButtons()
     {
         contents[0].contentButtons[0].onClick.AddListener(delegate { FadeToDustAndLoadScene(1); });
@@ -215,9 +201,6 @@ public class StartMenuUIController : MonoBehaviour
         contents[2].contentButtons[0].onClick.AddListener(FinishCreatingLobby); 
         
         contents[3].contentButtons[0].onClick.AddListener(FinishJoiningLobby);
-
-        //contents[4].contentButtons[0].onClick.AddListener(delegate { FadeToDustAndLoadScene(1); });
-
     }
 
     public void FadeToDustAndLoadScene(int sceneIndex)
@@ -324,17 +307,10 @@ public class StartMenuUIController : MonoBehaviour
 
         if (!MultiplayerManager.instance.RoomJoined)
         {
+            eventSystem.SetSelectedGameObject(currentContent.contentInputField.gameObject);
             ShowErrorMessage("Room not found!");
             yield break;
         }
-
-        //yield return new WaitForSeconds(1.5f);
-
-        //if (MultiplayerManager.instance.RoomJoined == false)
-        //{
-        //    ShowErrorMessage("Room not found!");
-        //    yield break;
-        //}
 
         ShowContent(4);
         yield return new WaitUntil(() => MultiplayerManager.instance.ConnectedPlayersCount() > 1);

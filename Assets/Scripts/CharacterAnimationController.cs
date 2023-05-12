@@ -26,13 +26,10 @@ public class CharacterAnimationController : MonoBehaviour
     [SerializeField] ParticleSystem healingEffect;
 
 
-    public void PlayAnimation(string animName) 
-    {
-        //Debug.LogWarning("PLAYING ANIMATION: " + animName);
-        myAnim.Play(animName);
-    }
+    public void PlayAnimation(string animName) => myAnim.Play(animName);
     
     public void EnableAnimator() => myAnim.enabled = true;
+
     public void DisableAnimator() => myAnim.enabled = false;
 
     public void PlayHealingEffect() => healingEffect.Play();

@@ -26,8 +26,6 @@ public class SpellBehaviour : MonoBehaviour
 
     void Start()
     {
-        //if (myAnim)
-        //    myAnim.enabled = false;
     }
 
     public void Execute(Vector3 spawnPoint, CharacterBehaviour target)

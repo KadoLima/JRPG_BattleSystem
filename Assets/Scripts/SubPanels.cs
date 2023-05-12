@@ -34,8 +34,6 @@ public class SubPanels : MonoBehaviour
 
         if (itensList.Count == 0)
             BuildComsumableItens();
-
-        //CheckSkillsAvailability();
     }
 
     public void CheckSkillsAvailability()

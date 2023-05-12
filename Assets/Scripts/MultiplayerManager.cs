@@ -21,18 +21,6 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         instance = this;
     }
 
-    //public override void OnEnable()
-    //{
-    //    base.OnEnable();
-    //    //StartMenuUIController.OnPlayerChoseCoop += InitializeConnectionToServer;
-    //}
-
-    //public override void OnDisable()
-    //{
-    //    base.OnDisable();
-    //    //StartMenuUIController.OnPlayerChoseCoop -= InitializeConnectionToServer;
-    //}
-
     public void InitializeConnectionToServer()
     {
         PhotonNetwork.ConnectUsingSettings();
@@ -45,13 +33,11 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        //Debug.LogWarning("CONNECTED TO MASTER.");
         PhotonNetwork.JoinLobby();
     }
 
     public override void OnJoinedLobby()
     {
-        //Debug.LogWarning("CONNECTED TO LOBBY");
         OnConnectedToLobby?.Invoke(1);
     }
 
@@ -60,7 +46,6 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         if (!string.IsNullOrEmpty(roomName))
         {
             PhotonNetwork.CreateRoom(roomName,new Photon.Realtime.RoomOptions { MaxPlayers = 2 });
-            //roomCreated = true;
         }
     }
 
@@ -71,39 +56,23 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
 
         PhotonNetwork.JoinRoom(roomName);
 
-        //if (PhotonNetwork.JoinRoom(roomName))
-        //{
-        //    if (PhotonNetwork.IsMasterClient)
-        //        Debug.LogWarning("ANOTHER PLAYER IS JOINING YOU!");
-
-        //    else
-        //        Debug.LogWarning("Joining room!!!!");
-
-        //}
-
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
-        Debug.LogWarning("FAILED TO JOIN ROOM");
         roomJoined = false;
     }
 
 
     public override void OnJoinedRoom()
     {
-        Debug.LogWarning("ROOM JOINED");
         roomJoined = true;
-        //Debug.LogWarning("ROOM CREATED SUCCESSFULLY!");
-        //PhotonNetwork.LoadLevel("Main_Online");
     }
 
     public int ConnectedPlayersCount()
     {
-
         if (!roomJoined)
         {
-            Debug.LogWarning("nope, room not created yet");
             return 0;
         }
 

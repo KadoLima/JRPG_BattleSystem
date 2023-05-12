@@ -33,10 +33,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     EventSystem eventSystem;
     PhotonView myPhotonView;
 
-    //[Header("GAME MODES")]
-    //[SerializeField] bool isOnlineCoop;
-    //public bool IsOnlineCoop => isOnlineCoop;
-
     [Header("DEBUG TOOLS")]
     [SerializeField] bool enemiesWontAttack;
     public bool EnemiesWontAttack => enemiesWontAttack;
@@ -56,7 +52,10 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         eventSystem = EventSystem.current;
         myPhotonView = GetComponent<PhotonView>();
+
+        ToggleDebugLog();
     }
+
 
     private void Start()
     {
@@ -64,7 +63,16 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.IsConnected)
             PhotonNetwork.MinimalTimeScaleToDispatchInFixedUpdate = 0;
-        
+
+    }
+
+    private static void ToggleDebugLog()
+    {
+#if UNITY_EDITOR
+        Debug.unityLogger.logEnabled = true;
+#else
+  Debug.logger.logEnabled = false;
+#endif
     }
 
     public void EndGame()
@@ -102,7 +110,6 @@ public class GameManager : MonoBehaviourPunCallbacks
             if (PhotonNetwork.IsConnected)
             {
                 myPhotonView.RPC(nameof(SyncResume), RpcTarget.Others, isPaused);
-                //PhotonNetwork.MinimalTimeScaleToDispatchInFixedUpdate = -1;
             }
         }
     }
@@ -129,20 +136,12 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public void QuitGame()
     {
-        //if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
-        //{
-        //    myPhotonView.RPC(nameof(SyncQuitGame), RpcTarget.Others);
-        //   //mostrar o aviso que o player desconectou. O load da cena inicial só deve acontecer depois do jogador apertar o OK nesse aviso.
-        //}
-
-
         LoadMenuScene();
     }
 
     [PunRPC]
     void SyncPause(bool isPausedValue)
     {
-        //Debug.LogWarning("pausing P2");
         isPaused = isPausedValue;
         OnGamePaused?.Invoke();
         Time.timeScale = 0;
@@ -153,7 +152,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         isPaused = isPausedValue;
         Time.timeScale = 1;
-        //Debug.LogWarning("resuming P2");
         OnGameResumed?.Invoke();
     }
 
@@ -165,7 +163,6 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        Debug.LogWarning("PLAYER LEFT ROOM!");
         Time.timeScale = 0;
         OnPlayerDisconnectedFromGame?.Invoke();
     }
