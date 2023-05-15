@@ -10,14 +10,11 @@ public class TrailEffect : MonoBehaviour
     [SerializeField] GameObject echo;
 
     SpriteRenderer mySpriteRenderer;
-    //CharacterBehaviour characterBehaviour;
-
     bool canShowTrail = false;
 
     void Start()
     {
         mySpriteRenderer = GetComponent<SpriteRenderer>();
-        //characterBehaviour = GetComponentInParent<CharacterBehaviour>();
     }
 
     void Update()

@@ -27,7 +27,9 @@ public class CharacterAnimationController : MonoBehaviour
 
 
     public void PlayAnimation(string animName) => myAnim.Play(animName);
+    
     public void EnableAnimator() => myAnim.enabled = true;
+
     public void DisableAnimator() => myAnim.enabled = false;
 
     public void PlayHealingEffect() => healingEffect.Play();

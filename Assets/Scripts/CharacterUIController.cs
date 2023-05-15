@@ -5,11 +5,13 @@ using UnityEngine.UI;
 using DG.Tweening;
 using System;
 using TMPro;
+using Photon.Pun;
 
 public class CharacterUIController : MonoBehaviour
 {
     [SerializeField] CanvasGroup myCanvasGroup;
     [SerializeField] GameObject pointer;
+    [SerializeField] GameObject playerIndicator;
     [SerializeField] MainBattlePanel battlePanel;
     [SerializeField] TextMeshProUGUI hpText;
     [SerializeField] TextMeshProUGUI mpText;
@@ -20,6 +22,7 @@ public class CharacterUIController : MonoBehaviour
     [SerializeField] Color manaColor;
     [Space(10)]
     [SerializeField] TextMeshProUGUI descriptionTooltipText;
+    [SerializeField] GameObject chatBubble;
     float originalFloatingTextY;
     [field: SerializeField] public Image cooldownBar { get; private set; }
 
@@ -27,6 +30,9 @@ public class CharacterUIController : MonoBehaviour
 
     void Start()
     {
+        if (chatBubble!=null)
+            chatBubble.SetActive(false);
+
         pointer.SetActive(false);
         criticalText = floatingText.transform.GetChild(0).gameObject;
         criticalText.SetActive(false);
@@ -43,6 +49,9 @@ public class CharacterUIController : MonoBehaviour
         Invoke(nameof(RefreshHPMP), .1f);
 
         ResetFloatingText();
+
+        if (playerIndicator)
+            playerIndicator.SetActive(PhotonNetwork.IsConnected && characterBehaviour.MyPhotonView.IsMine);
 
     }
 
@@ -215,6 +224,16 @@ public class CharacterUIController : MonoBehaviour
             return;
 
         descriptionTooltipText.transform.parent.parent.gameObject.SetActive(false);
+    }
+
+    public void ShowChatBubble()
+    {
+        chatBubble.SetActive(true);
+    }
+
+    public void HideChatBubble()
+    {
+        chatBubble.SetActive(false);
     }
 
 }

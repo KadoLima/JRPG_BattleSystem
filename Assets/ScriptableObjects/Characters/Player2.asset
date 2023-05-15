@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Player2
   m_EditorClassIdentifier: 
   characterSprite: {fileID: 21300000, guid: e29ad8ad635918b498cfca31bc6f9e7f, type: 3}
-  baseHP: 131
+  baseHP: 116
   baseMP: 88
   minDamage: 14
   maxDamage: 22
   rechargeRate: 4
   critChance: 0.25
+  rangedNormalProjectile: {fileID: 6963270997362980555, guid: 6aa7e00b0d651a545a8f8ed83b3d24d9, type: 3}

@@ -153,7 +153,7 @@ TextureImporter:
       213: 21300098
     second: sprite-sheet-249x100_49
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -183,7 +183,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -213,19 +213,20 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 1
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
     androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 1
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
     buildTarget: Standalone
     maxTextureSize: 2048
@@ -237,7 +238,19 @@ TextureImporter:
     allowsAlphaSplitting: 0
     overridden: 0
     androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 1
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -1092,46 +1105,46 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      sprite-sheet-249x100_8: 21300016
-      sprite-sheet-249x100_17: 21300034
-      sprite-sheet-249x100_21: 21300042
-      sprite-sheet-249x100_29: 21300058
-      sprite-sheet-249x100_30: 21300060
-      sprite-sheet-249x100_2: 21300004
-      sprite-sheet-249x100_4: 21300008
-      sprite-sheet-249x100_26: 21300052
-      sprite-sheet-249x100_25: 21300050
-      sprite-sheet-249x100_35: 21300070
-      sprite-sheet-249x100_19: 21300038
-      sprite-sheet-249x100_13: 21300026
-      sprite-sheet-249x100_31: 21300062
-      sprite-sheet-249x100_15: 21300030
-      sprite-sheet-249x100_24: 21300048
-      sprite-sheet-249x100_1: 21300002
-      sprite-sheet-249x100_14: 21300028
-      sprite-sheet-249x100_7: 21300014
-      sprite-sheet-249x100_9: 21300018
-      sprite-sheet-249x100_10: 21300020
-      sprite-sheet-249x100_37: 21300074
-      sprite-sheet-249x100_36: 21300072
-      sprite-sheet-249x100_38: 21300076
-      sprite-sheet-249x100_28: 21300056
-      sprite-sheet-249x100_33: 21300066
-      sprite-sheet-249x100_12: 21300024
-      sprite-sheet-249x100_3: 21300006
-      sprite-sheet-249x100_16: 21300032
-      sprite-sheet-249x100_27: 21300054
-      sprite-sheet-249x100_18: 21300036
-      sprite-sheet-249x100_32: 21300064
-      sprite-sheet-249x100_34: 21300068
-      sprite-sheet-249x100_20: 21300040
-      sprite-sheet-249x100_22: 21300044
       sprite-sheet-249x100_0: 21300000
-      sprite-sheet-249x100_5: 21300010
-      sprite-sheet-249x100_23: 21300046
-      sprite-sheet-249x100_6: 21300012
+      sprite-sheet-249x100_1: 21300002
+      sprite-sheet-249x100_10: 21300020
       sprite-sheet-249x100_11: 21300022
+      sprite-sheet-249x100_12: 21300024
+      sprite-sheet-249x100_13: 21300026
+      sprite-sheet-249x100_14: 21300028
+      sprite-sheet-249x100_15: 21300030
+      sprite-sheet-249x100_16: 21300032
+      sprite-sheet-249x100_17: 21300034
+      sprite-sheet-249x100_18: 21300036
+      sprite-sheet-249x100_19: 21300038
+      sprite-sheet-249x100_2: 21300004
+      sprite-sheet-249x100_20: 21300040
+      sprite-sheet-249x100_21: 21300042
+      sprite-sheet-249x100_22: 21300044
+      sprite-sheet-249x100_23: 21300046
+      sprite-sheet-249x100_24: 21300048
+      sprite-sheet-249x100_25: 21300050
+      sprite-sheet-249x100_26: 21300052
+      sprite-sheet-249x100_27: 21300054
+      sprite-sheet-249x100_28: 21300056
+      sprite-sheet-249x100_29: 21300058
+      sprite-sheet-249x100_3: 21300006
+      sprite-sheet-249x100_30: 21300060
+      sprite-sheet-249x100_31: 21300062
+      sprite-sheet-249x100_32: 21300064
+      sprite-sheet-249x100_33: 21300066
+      sprite-sheet-249x100_34: 21300068
+      sprite-sheet-249x100_35: 21300070
+      sprite-sheet-249x100_36: 21300072
+      sprite-sheet-249x100_37: 21300074
+      sprite-sheet-249x100_38: 21300076
       sprite-sheet-249x100_39: 21300078
+      sprite-sheet-249x100_4: 21300008
+      sprite-sheet-249x100_5: 21300010
+      sprite-sheet-249x100_6: 21300012
+      sprite-sheet-249x100_7: 21300014
+      sprite-sheet-249x100_8: 21300016
+      sprite-sheet-249x100_9: 21300018
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

@@ -14,19 +14,18 @@ public class SpellBehaviour : MonoBehaviour
         NULL
     }
 
+    [Header("Anim")]
+    [SerializeField] Animator myAnim;
+
     [Header("Appearance settings")]
     [SerializeField] float rotateSpeed = 1;
+    [SerializeField] float additionalWidth = 0;
     [SerializeField] float finalScale = 0.1f;
     [SerializeField] float projectileLifetime = 0.5f;
     [SerializeField] SpellType spellType;
-    Animator myAnim;
 
     void Start()
     {
-        myAnim = GetComponent<Animator>();
-
-        if (myAnim)
-            myAnim.enabled = false;
     }
 
     public void Execute(Vector3 spawnPoint, CharacterBehaviour target)
@@ -64,7 +63,7 @@ public class SpellBehaviour : MonoBehaviour
     {
         this.transform.localScale = Vector3.zero;
 
-        this.transform.DOScale(new Vector2(finalScale, finalScale), .5f);
+        this.transform.DOScale(new Vector2(finalScale+additionalWidth, finalScale), .5f);
     }
 
     void Update()

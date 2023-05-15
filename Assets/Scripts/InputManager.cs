@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Photon.Pun;
 
 public class InputManager : MonoBehaviour
 {
+
     public void OnMenus_Confirm(InputValue value)
     {
 
@@ -31,11 +33,12 @@ public class InputManager : MonoBehaviour
 
     public void OnMenus_Back(InputValue value)
     {
+
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer == null)
             return;
-        
+
         if (_activePlayer.CurrentBattlePhase == BattleState.SELECTING_TECH ||
             _activePlayer.CurrentBattlePhase == BattleState.SELECTING_ITEM ||
             _activePlayer.CurrentBattlePhase == BattleState.PICKING_TARGET)
@@ -48,6 +51,9 @@ public class InputManager : MonoBehaviour
 
     public void OnSwapActiveCharacter(InputValue value)
     {
+        if (PhotonNetwork.IsConnected)
+            return;
+
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer == null)
@@ -93,6 +99,19 @@ public class InputManager : MonoBehaviour
             if (_activePlayer.CurrentPreAction.IsHarmful)
                 CombatManager.instance.DecreaseTargetEnemyIndex();
             else CombatManager.instance.DecreaseFriendlyTargetIndex();
+        }
+    }
+
+    public void OnPauseGame(InputValue value)
+    {
+        if (PhotonNetwork.IsConnected && MultiplayerManager.instance.ConnectedPlayersCount() < 2)
+            return;
+
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
+        {
+            if (!GameManager.instance.IsPaused)
+                GameManager.instance.PauseGame();
+            else GameManager.instance.ResumeGame();
         }
     }
  

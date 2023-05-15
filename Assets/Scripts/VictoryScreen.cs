@@ -5,6 +5,7 @@ using DG.Tweening;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using Photon.Pun;
 
 public class VictoryScreen : MonoBehaviour
 {
@@ -36,6 +37,9 @@ public class VictoryScreen : MonoBehaviour
     {
         restartButton.SetActive(false);
         quitButton.SetActive(false);
+
+        restartButton.GetComponent<Button>().onClick.AddListener(GameManager.instance.RestartCurrentScene);
+        quitButton.GetComponent<Button>().onClick.AddListener(GameManager.instance.QuitGame);
     }
 
 
@@ -76,6 +80,9 @@ public class VictoryScreen : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
+        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+            yield break;
+
         restartButton.GetComponent<CanvasGroup>().alpha = 0;
         restartButton.SetActive(true);
         quitButton.GetComponent<CanvasGroup>().alpha = 0;
@@ -94,17 +101,5 @@ public class VictoryScreen : MonoBehaviour
             GameObject g = Instantiate(playerXPItensPrefabs[i], playerXPItensContainer);
         }
     }
-
-    public void RestartGame()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    public void QuitGame()
-    {
-        Application.Quit();
-    }
-
-
 
 }
