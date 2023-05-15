@@ -60,7 +60,7 @@ TextureImporter:
       213: 21300036
     second: sprite-sheet-121x89_18
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -90,7 +90,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -120,19 +120,20 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 1
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
     androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 1
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
     buildTarget: Standalone
     maxTextureSize: 2048
@@ -144,7 +145,19 @@ TextureImporter:
     allowsAlphaSplitting: 0
     overridden: 0
     androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 1
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -558,25 +571,25 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      sprite-sheet-121x89_7: 21300014
-      sprite-sheet-121x89_15: 21300030
-      sprite-sheet-121x89_2: 21300004
+      sprite-sheet-121x89_0: 21300000
+      sprite-sheet-121x89_1: 21300002
+      sprite-sheet-121x89_10: 21300020
+      sprite-sheet-121x89_11: 21300022
+      sprite-sheet-121x89_12: 21300024
+      sprite-sheet-121x89_13: 21300026
       sprite-sheet-121x89_14: 21300028
+      sprite-sheet-121x89_15: 21300030
+      sprite-sheet-121x89_16: 21300032
+      sprite-sheet-121x89_17: 21300034
+      sprite-sheet-121x89_18: 21300036
+      sprite-sheet-121x89_2: 21300004
+      sprite-sheet-121x89_3: 21300006
       sprite-sheet-121x89_4: 21300008
       sprite-sheet-121x89_5: 21300010
-      sprite-sheet-121x89_12: 21300024
-      sprite-sheet-121x89_10: 21300020
       sprite-sheet-121x89_6: 21300012
-      sprite-sheet-121x89_3: 21300006
-      sprite-sheet-121x89_17: 21300034
-      sprite-sheet-121x89_1: 21300002
-      sprite-sheet-121x89_18: 21300036
+      sprite-sheet-121x89_7: 21300014
       sprite-sheet-121x89_8: 21300016
-      sprite-sheet-121x89_13: 21300026
       sprite-sheet-121x89_9: 21300018
-      sprite-sheet-121x89_16: 21300032
-      sprite-sheet-121x89_0: 21300000
-      sprite-sheet-121x89_11: 21300022
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
