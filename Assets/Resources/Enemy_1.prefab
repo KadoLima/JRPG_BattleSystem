@@ -1178,7 +1178,6 @@ GameObject:
   - component: {fileID: 8900923260625967868}
   - component: {fileID: 8900923260625967867}
   - component: {fileID: 8900923260625967866}
-  - component: {fileID: 5773386056071030032}
   m_Layer: 0
   m_Name: Enemy_1
   m_TagString: Untagged
@@ -1251,28 +1250,6 @@ MonoBehaviour:
   deadAnimation: SNAKE_Dead
   projectileSpawnPoint: {fileID: 0}
   healingEffect: {fileID: 0}
---- !u!114 &5773386056071030032
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8900923260625967869}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ObservedComponentsFoldoutOpen: 1
-  Group: 0
-  prefixField: -1
-  Synchronization: 3
-  OwnershipTransfer: 0
-  observableSearch: 2
-  ObservedComponents: []
-  sceneViewId: 0
-  InstantiationId: 0
-  isRuntimeInstantiated: 0
 --- !u!1 &8900923260776794097
 GameObject:
   m_ObjectHideFlags: 0

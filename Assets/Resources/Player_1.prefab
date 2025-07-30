@@ -8548,7 +8548,6 @@ GameObject:
   - component: {fileID: 2817347303011870396}
   - component: {fileID: 2817347303011870397}
   - component: {fileID: 2817347303011870398}
-  - component: {fileID: -1784972012958353173}
   m_Layer: 0
   m_Name: Player_1
   m_TagString: Untagged
@@ -8601,6 +8600,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2527801dcbc7c0f43945bf469bb89044, type: 2}
   - {fileID: 11400000, guid: 505a9823325df944e98913c69d86a4e4, type: 2}
   inventory: {fileID: 2817347301366046918}
+  characterUIController: {fileID: 2817347303058536508}
+  trailEffect: {fileID: 2817347301963565666}
 --- !u!114 &2817347303011870398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8620,28 +8621,6 @@ MonoBehaviour:
   deadAnimation: Player1_Dead
   projectileSpawnPoint: {fileID: 0}
   healingEffect: {fileID: 2817347302058435198}
---- !u!114 &-1784972012958353173
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2817347303011870387}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ObservedComponentsFoldoutOpen: 1
-  Group: 0
-  prefixField: -1
-  Synchronization: 3
-  OwnershipTransfer: 0
-  observableSearch: 2
-  ObservedComponents: []
-  sceneViewId: 0
-  InstantiationId: 0
-  isRuntimeInstantiated: 0
 --- !u!1 &2817347303034744149
 GameObject:
   m_ObjectHideFlags: 0
@@ -8865,6 +8844,7 @@ MonoBehaviour:
   floatingText: {fileID: 2817347302826069499}
   healColor: {r: 0.2962757, g: 1, b: 0.25, a: 1}
   manaColor: {r: 0.2588235, g: 0.8327275, b: 1, a: 1}
+  descriptionTooltipContainer: {fileID: 2817347303081784129}
   descriptionTooltipText: {fileID: 2817347301199855791}
   chatBubble: {fileID: 1649540259421792674}
   <cooldownBar>k__BackingField: {fileID: 2817347302845467542}

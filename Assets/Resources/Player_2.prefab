@@ -2063,7 +2063,6 @@ GameObject:
   - component: {fileID: 2416545803011836598}
   - component: {fileID: 2416545803011836599}
   - component: {fileID: 2416545803011836601}
-  - component: {fileID: 6270700201061002773}
   m_Layer: 0
   m_Name: Player_2
   m_TagString: Untagged
@@ -2116,6 +2115,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8aba4739677269a47882d6d444f7867a, type: 2}
   - {fileID: 11400000, guid: 505a9823325df944e98913c69d86a4e4, type: 2}
   inventory: {fileID: 2416545802332225626}
+  characterUIController: {fileID: 2416545803119654999}
 --- !u!114 &2416545803011836601
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2135,28 +2135,6 @@ MonoBehaviour:
   deadAnimation: Player2_Dead
   projectileSpawnPoint: {fileID: 2416545802546986450}
   healingEffect: {fileID: 2416545803692069029}
---- !u!114 &6270700201061002773
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2416545803011836594}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ObservedComponentsFoldoutOpen: 1
-  Group: 0
-  prefixField: -1
-  Synchronization: 3
-  OwnershipTransfer: 0
-  observableSearch: 2
-  ObservedComponents: []
-  sceneViewId: 0
-  InstantiationId: 0
-  isRuntimeInstantiated: 0
 --- !u!1 &2416545803012402485
 GameObject:
   m_ObjectHideFlags: 0
@@ -2559,6 +2537,7 @@ MonoBehaviour:
   floatingText: {fileID: 2416545803587166549}
   healColor: {r: 0.2962757, g: 1, b: 0.25, a: 1}
   manaColor: {r: 0.25882354, g: 0.83137256, b: 1, a: 1}
+  descriptionTooltipContainer: {fileID: 2416545802273488997}
   descriptionTooltipText: {fileID: 2416545802574560145}
   chatBubble: {fileID: 7381090271182073803}
   <cooldownBar>k__BackingField: {fileID: 2416545802518921278}
