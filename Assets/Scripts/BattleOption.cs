@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -15,17 +13,21 @@ public class BattleOption : MonoBehaviour
     [SerializeField] PanelToOpen panelToOpen;
 
     CharacterBehaviour characterBehaviour;
+    EventSystem currentEventSystem;
+
+    private void Start()
+    {
+        characterBehaviour = GetComponentInParent<CharacterBehaviour>();
+        currentEventSystem = EventSystem.current;
+    }
 
     public void ExecuteAction()
     {
         if (panelToOpen.panel)
         {
-            if (characterBehaviour == null)
-                characterBehaviour = GetComponentInParent<CharacterBehaviour>();
-
             characterBehaviour.ChangeBattleState(panelToOpen.battleState);
             panelToOpen.panel.SetActive(true);
-            EventSystem.current.SetSelectedGameObject(GetFirstActiveChild());
+            currentEventSystem.SetSelectedGameObject(GetFirstActiveChild());
         }
     }
 

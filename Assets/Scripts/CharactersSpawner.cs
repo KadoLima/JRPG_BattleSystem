@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using Photon.Pun;
 
 public class CharactersSpawner : MonoBehaviour
 {
@@ -19,39 +16,38 @@ public class CharactersSpawner : MonoBehaviour
     [Header("PLAYERS")]
     [SerializeField] SpawnedCharacter[] playersPrefabs;
 
-
     private void Start()
     {
-        SpawnEnemies();
-        SpawnCharacters();
+        //SpawnEnemies();
+        //SpawnCharacters();
     }
 
-    private void SpawnEnemies()
-    {
-        if (PhotonNetwork.IsMasterClient == false)
-            return;
+    //private void SpawnEnemies()
+    //{
+    //    if (PhotonNetwork.IsMasterClient == false)
+    //        return;
 
-        foreach (SpawnedCharacter e in enemiesPrefabs)
-        {
-            GameObject _spawnedEnemy = PhotonNetwork.Instantiate(e.prefab.name, e.spawnPos.position, Quaternion.identity);
-        }
-    }
+    //    foreach (SpawnedCharacter e in enemiesPrefabs)
+    //    {
+    //        GameObject _spawnedEnemy = PhotonNetwork.Instantiate(e.prefab.name, e.spawnPos.position, Quaternion.identity);
+    //    }
+    //}
 
-    private void SpawnCharacters()
-    {
-        int _playerPrefabIndex;
+    //private void SpawnCharacters()
+    //{
+    //    int _playerPrefabIndex;
 
-        if (PhotonNetwork.IsMasterClient)
-        {
-            _playerPrefabIndex = 0;
-        }
-        else
-        {
-            _playerPrefabIndex = 1;
-        }
+    //    if (PhotonNetwork.IsMasterClient)
+    //    {
+    //        _playerPrefabIndex = 0;
+    //    }
+    //    else
+    //    {
+    //        _playerPrefabIndex = 1;
+    //    }
 
-        PhotonNetwork.Instantiate(playersPrefabs[_playerPrefabIndex].prefab.name, playersPrefabs[_playerPrefabIndex].spawnPos.position, Quaternion.identity);
+    //    PhotonNetwork.Instantiate(playersPrefabs[_playerPrefabIndex].prefab.name, playersPrefabs[_playerPrefabIndex].spawnPos.position, Quaternion.identity);
 
 
-    }
+    //}
 }

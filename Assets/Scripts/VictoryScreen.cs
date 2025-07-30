@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
-using Photon.Pun;
 
 public class VictoryScreen : MonoBehaviour
 {
@@ -21,6 +19,9 @@ public class VictoryScreen : MonoBehaviour
     [Header("BUTTONS")]
     [SerializeField] GameObject restartButton;
     [SerializeField] GameObject quitButton;
+
+    CanvasGroup restartButtonCanvasGroup;
+    CanvasGroup quittButtonCanvasGroup;
 
     private void OnEnable()
     {
@@ -40,6 +41,10 @@ public class VictoryScreen : MonoBehaviour
 
         restartButton.GetComponent<Button>().onClick.AddListener(GameManager.instance.RestartCurrentScene);
         quitButton.GetComponent<Button>().onClick.AddListener(GameManager.instance.QuitGame);
+
+        restartButtonCanvasGroup = restartButton.GetComponent<CanvasGroup>();
+        quittButtonCanvasGroup = quitButton.GetComponent<CanvasGroup>();
+
     }
 
 
@@ -80,26 +85,22 @@ public class VictoryScreen : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
-        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
-            yield break;
-
-        restartButton.GetComponent<CanvasGroup>().alpha = 0;
+        restartButtonCanvasGroup.alpha = 0;
         restartButton.SetActive(true);
-        quitButton.GetComponent<CanvasGroup>().alpha = 0;
+        quittButtonCanvasGroup.alpha = 0;
         quitButton.SetActive(true);
-        restartButton.GetComponent<CanvasGroup>().DOFade(1, .25f);
-        quitButton.GetComponent<CanvasGroup>().DOFade(1, .25f);
+        restartButtonCanvasGroup.DOFade(1, .25f);
+        quittButtonCanvasGroup.DOFade(1, .25f);
         EventSystem.current.SetSelectedGameObject(restartButton);
     }
 
     void ShowXPEarned()
     {
-        int _xpItensCreated = CombatManager.instance.playersOnField.Count;
+        int _xpItensCreated = CombatManager.instance.PlayersOnField.Count;
 
         for (int i = 0; i < _xpItensCreated; i++)
         {
             GameObject g = Instantiate(playerXPItensPrefabs[i], playerXPItensContainer);
         }
     }
-
 }

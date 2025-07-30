@@ -1,10 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using TMPro;
-using UnityEngine.InputSystem;
 
 public class SubPanels : MonoBehaviour
 {
@@ -16,24 +12,30 @@ public class SubPanels : MonoBehaviour
     [SerializeField] Transform techsContent;
     [Header("CONSUMABLES SUBPANEL")]
     [SerializeField] List<Button> itensList = new List<Button>();
-    public List<Button> ItensList => itensList;
     [SerializeField] GameObject consumablePrefab;
     [SerializeField] GameObject itensSubpanel;
     [SerializeField] Transform itensContent;
 
-
     CharacterBehaviour player;
+    CharacterInventory playerInventory;
+    public List<Button> ItensList => itensList;
+
+    void Awake()
+    {
+        mainBattlePanel = GetComponent<MainBattlePanel>();
+        player = GetComponentInParent<CharacterBehaviour>();
+        playerInventory = player.GetComponentInChildren<CharacterInventory>();
+    }
 
     private void OnEnable()
     {
-        if (player == null)
-            player = GetComponentInParent<CharacterBehaviour>();
-
         if (techItens.Count == 0)
             BuildTechItens();
 
         if (itensList.Count == 0)
+        {
             BuildComsumableItens();
+        }
     }
 
     public void CheckSkillsAvailability()
@@ -44,15 +46,8 @@ public class SubPanels : MonoBehaviour
         }
     }
 
-    void Awake()
-    {
-        mainBattlePanel = GetComponent<MainBattlePanel>();
-    }
-
     private void Start()
     {
-        player = GetComponentInParent<CharacterBehaviour>();
-
         techsSubPanel.SetActive(false);
         itensSubpanel.SetActive(false);
     }
@@ -71,12 +66,10 @@ public class SubPanels : MonoBehaviour
 
     private void BuildComsumableItens()
     {
-        CharacterInventory _playerInventory = player.GetComponentInChildren<CharacterInventory>();
-
-        for (int i = 0; i < _playerInventory.inventoryItens.Count; i++)
+        for (int i = 0; i < playerInventory.InventoryItems.Count; i++)
         {
             GameObject consumableItemPrefab = Instantiate(consumablePrefab, itensContent);
-            consumableItemPrefab.GetComponent<ConsumableItem>().Initialize(_playerInventory.inventoryItens[i],i);
+            consumableItemPrefab.GetComponent<ConsumableItem>().Initialize(playerInventory.InventoryItems[i],i);
             itensList.Add(consumableItemPrefab.GetComponent<Button>());
         }
 
@@ -102,7 +95,6 @@ public class SubPanels : MonoBehaviour
             }
 
             listItems[i].navigation = _nav;
-
         }
     }
 

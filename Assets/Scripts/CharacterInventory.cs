@@ -1,6 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [System.Serializable]
 public class Item
@@ -11,8 +11,10 @@ public class Item
 
 public class CharacterInventory : MonoBehaviour
 {
-    public List<Item> inventoryItens = new List<Item>();
+    [SerializeField] private List<Item> inventoryItens = new List<Item>();
     SubPanels characterSubPanels;
+
+    public List<Item> InventoryItems => inventoryItens;
 
     private void Start()
     {
@@ -26,7 +28,7 @@ public class CharacterInventory : MonoBehaviour
             if (i == itemIndex)
             {
                 inventoryItens[i].amount--;
-                var _itemUI = characterSubPanels.ItensList[i];
+                Button _itemUI = characterSubPanels.ItensList[i];
                 
                 if (inventoryItens[i].amount <= 0)
                 {

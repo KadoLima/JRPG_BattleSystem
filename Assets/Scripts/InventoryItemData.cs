@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Item", menuName = "InventoryItem/New Inventory Item")]
@@ -20,11 +18,11 @@ public class InventoryItemData : ScriptableObject
     public int effectAmount;
     public int effectTurns;
 
-public void ApplyItemEffect()
-{
+    public void ApplyItemEffect()
+    {
         CharacterBehaviour _currentPlayer = CombatManager.instance.CurrentActivePlayer;
 
-    switch (damageType)
+        switch (damageType)
         {
             case DamageType.HEALING:
                 _currentPlayer.IncreaseHP(effectAmount);
@@ -33,5 +31,5 @@ public void ApplyItemEffect()
                 _currentPlayer.IncreaseMP(effectAmount);
                 break;
         }
-}
+    }
 }

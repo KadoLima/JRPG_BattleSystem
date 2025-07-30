@@ -1,10 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using FunkyCode;
-using FunkyCode.LightingSettings;
-using FunkyCode.LightSettings;
 
 public class Sun : MonoBehaviour
 {

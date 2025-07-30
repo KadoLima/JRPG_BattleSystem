@@ -1,13 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using TMPro;
-using UnityEngine.UI;
 
 public class TechItem : MonoBehaviour
 {
     int techIndex;
+    CharacterBehaviour characterBehaviour;
 
     public void Initialize(int index, CombatActionSO combatActionSO)
     {
@@ -15,18 +12,19 @@ public class TechItem : MonoBehaviour
 
         GetComponent<TextMeshProUGUI>().text = combatActionSO.actionName;
         transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = combatActionSO.mpCost.ToString();
+        characterBehaviour = GetComponentInParent<CharacterBehaviour>();
     }
 
     public void ShowDescription()
     {
-        CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
-        _player.ShowDescription(techIndex);
+        //CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
+        characterBehaviour.ShowDescription(techIndex);
     }
 
     public void SelectTech()
     {
-        CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
-        _player.SelectTech(techIndex);
+        //CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
+        characterBehaviour.SelectTech(techIndex);
     }
 
 }

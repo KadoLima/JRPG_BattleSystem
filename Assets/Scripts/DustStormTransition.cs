@@ -1,20 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
 public class DustStormTransition : MonoBehaviour
 {
+    private ParticleSystem particles;
+
     void Start()
     {
         DontDestroyOnLoad(gameObject);
+        particles = GetComponent<ParticleSystem>();
     }
 
     public void PlayParticles()
     {
-        ParticleSystem _dustStorm = GetComponent<ParticleSystem>();
-
-        _dustStorm.Play();
-        _dustStorm.transform.DOMoveX(0, 7f).SetEase(Ease.OutQuint);
+        particles.Play();
+        particles.transform.DOMoveX(0, 7f).SetEase(Ease.OutQuint);
     }
 }

@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using Photon.Pun;
 
 public class EnemyBehaviour : CharacterBehaviour
 {
@@ -11,27 +9,33 @@ public class EnemyBehaviour : CharacterBehaviour
     [SerializeField] float maxattackRate = 8;
     [SerializeField] int xpRewarded;
     [SerializeField] float chanceToUseSkill;
-    public float ChanceToUseSkill => chanceToUseSkill;
+
+    int defaultSortingOrder;
+    float waitTime;
+    float randomizedInitialDelay;
     CharacterBehaviour currentPlayerTarget;
+    SpriteRenderer spriteRenderer;
+
+    public float ChanceToUseSkill => chanceToUseSkill;
     public CharacterBehaviour CurrentPlayerTarget => currentPlayerTarget;
 
     public static Action<string> OnEnemyUsedSkill;
 
-    int defaultSortingOrder;
-
-    float waitTime;
-    float randomizedInitialDelay;
-
     public override void Start()
     {
-        myPhotonView = GetComponent<PhotonView>();
+        Initialize();
+    }
+
+    protected override void Initialize()
+    {
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        defaultSortingOrder = spriteRenderer.sortingOrder;
 
         currentPreAction = ScriptableObject.CreateInstance<CombatActionSO>();
         currentExecutingAction = ScriptableObject.CreateInstance<CombatActionSO>();
 
-        defaultSortingOrder = GetComponentInChildren<SpriteRenderer>().sortingOrder;
-        uiController = GetComponentInChildren<CharacterUIController>();
-        CombatManager.instance.enemiesOnField.Add(this);
+        characterUIController = GetComponentInChildren<CharacterUIController>();
+        CombatManager.instance.EnemiesOnField.Add(this);
         originalPosition = transform.localPosition;
         currentHP = myStats.baseHP;
 
@@ -49,31 +53,20 @@ public class EnemyBehaviour : CharacterBehaviour
         if (CombatManager.instance.AllPlayersDead())
             return;
 
-        int _randomPlayerIndex = UnityEngine.Random.Range(0, CombatManager.instance.playersOnField.Count);
+        int _randomPlayerIndex = UnityEngine.Random.Range(0, CombatManager.instance.PlayersOnField.Count);
 
-        while (CombatManager.instance.playersOnField[_randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
+        while (CombatManager.instance.PlayersOnField[_randomPlayerIndex].CurrentBattlePhase == BattleState.DEAD)
         {
-            _randomPlayerIndex = UnityEngine.Random.Range(0, CombatManager.instance.playersOnField.Count);
+            _randomPlayerIndex = UnityEngine.Random.Range(0, CombatManager.instance.PlayersOnField.Count);
         }
 
         
-        SetTarget(CombatManager.instance.playersOnField[_randomPlayerIndex]);
+        SetTarget(CombatManager.instance.PlayersOnField[_randomPlayerIndex]);
     }
 
     public void SetTarget(CharacterBehaviour target)
     {
         currentPlayerTarget = target;
-
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.InRoom)
-        {
-            MyPhotonView.RPC(nameof(SyncTarget), RpcTarget.Others, currentPlayerTarget.MyPhotonView.ViewID);
-        }
-    }
-
-    [PunRPC]
-    void SyncTarget(int viewID)
-    {
-        currentPlayerTarget = PhotonView.Find(viewID).GetComponent<CharacterBehaviour>();
     }
 
     public override void ExecuteActionOn(CharacterBehaviour target=null)
@@ -85,24 +78,17 @@ public class EnemyBehaviour : CharacterBehaviour
     {
         yield return new WaitUntil(() => GameManager.instance.GameStarted);
 
-        if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
-        {
-            randomizedInitialDelay = UnityEngine.Random.Range(4 - .1f, 4 + .1f);
+        randomizedInitialDelay = UnityEngine.Random.Range(4 - .1f, 4 + .1f);
 
-            if (PhotonNetwork.IsMasterClient)
-                MyPhotonView.RPC(nameof(SyncInitialDelay), RpcTarget.Others, randomizedInitialDelay);
-        }
         yield return new WaitForSeconds(.1f);
         yield return new WaitForSeconds(randomizedInitialDelay);
 
         while (CurrentBattlePhase != BattleState.DEAD)
         {
-            if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
-            {
-                if (currentPlayerTarget == null)
-                    SetRandomTarget();
-                else SetTarget(target);
-            }
+
+            if (currentPlayerTarget == null)
+                SetRandomTarget();
+            else SetTarget(target);
 
             yield return new WaitForSeconds(.1f); //syncing
 
@@ -142,19 +128,13 @@ public class EnemyBehaviour : CharacterBehaviour
 
                 else if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
                 {
-                    if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
-                    {
-                        var _rndValue = UnityEngine.Random.value;
-                        isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
-
-                        if (PhotonNetwork.IsMasterClient)
-                            MyPhotonView.RPC(nameof(SyncIsDoingCritDamageAction), RpcTarget.Others, isDoingCritDamageAction);
-                    }
+                    var _rndValue = UnityEngine.Random.value;
+                    isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
                 }
 
                 yield return new WaitForSeconds(myAnimController.SecondsToReachTarget);
                 myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
-                GetComponentInChildren<SpriteRenderer>().sortingOrder = currentPlayerTarget.GetComponentInChildren<SpriteRenderer>().sortingOrder + 1;
+                spriteRenderer.sortingOrder = currentPlayerTarget.GetComponentInChildren<SpriteRenderer>().sortingOrder + 1;
 
                 yield return new WaitForSeconds(currentExecutingAction.animationCycle.cycleTime - 0.25f);
 
@@ -164,7 +144,7 @@ public class EnemyBehaviour : CharacterBehaviour
 
                 if (currentExecutingAction.goToTarget)
                 {
-                    GetComponentInChildren<SpriteRenderer>().sortingOrder = defaultSortingOrder;
+                    spriteRenderer.sortingOrder = defaultSortingOrder;
                     GoBackToStartingPosition();
                 }
 
@@ -179,13 +159,7 @@ public class EnemyBehaviour : CharacterBehaviour
                 currentPlayerTarget = null;
             }
 
-            if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
-            {
-                waitTime = UnityEngine.Random.Range(minAttackRate, maxattackRate);
-
-                if (PhotonNetwork.IsMasterClient)
-                    MyPhotonView.RPC(nameof(SyncWaitTime), RpcTarget.Others, waitTime);
-            }
+            waitTime = UnityEngine.Random.Range(minAttackRate, maxattackRate);
 
             yield return new WaitForSeconds(.1f); //sync
 
@@ -193,44 +167,12 @@ public class EnemyBehaviour : CharacterBehaviour
         }
     }
 
-    [PunRPC]
-    void SyncInitialDelay(float value)
-    {
-        randomizedInitialDelay = value;
-    }
-
-    [PunRPC]
-    void SyncIsDoingCritDamageAction(bool value)
-    {
-        isDoingCritDamageAction = value;
-    }
-
-    [PunRPC]
-    void SyncWaitTime(float time)
-    {
-        waitTime = time;
-    }
-
-    [PunRPC]
-    private void SyncCurrentAction(int actionIndex)
-    {
-        if (actionIndex == 0)
-            currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
-        else currentExecutingAction = SelectAction(ActionType.SKILL);
-    }
-
-    [PunRPC]
-    void SyncCalculatedValue(int amount)
-    {
-        syncedCalculatedValue = amount;
-    }
-
     public override void TakeDamageOrHeal(int amount, DamageType dmgType, bool isCrit)
     {
         if (dmgType == DamageType.HARMFUL)
         {
             currentHP -= amount;
-            uiController.ShowFloatingDamageText(amount, dmgType, isCrit);
+            characterUIController.ShowFloatingDamageText(amount, dmgType, isCrit);
 
             if (currentHP <= 0)
             {
@@ -239,33 +181,16 @@ public class EnemyBehaviour : CharacterBehaviour
             }
         }
 
-        uiController.RefreshHP(currentHP, myStats.baseHP);
+        characterUIController.RefreshHP(currentHP, myStats.baseHP);
     }
 
-    private void SetRandomAction(string s=null)
+    private void SetRandomAction(string s = null)
     {
-        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
-        {
-            float _randomValue = UnityEngine.Random.value;
+        float _randomValue = UnityEngine.Random.value;
 
-            if (_randomValue > chanceToUseSkill)
-                currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
-            else
-                currentExecutingAction = SelectAction(ActionType.SKILL);
-
-            if (PhotonNetwork.IsMasterClient)
-            {
-                int _actionIndex = -1;
-
-                if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
-                    _actionIndex = 0;
-                else _actionIndex = 1;
-
-                MyPhotonView.RPC(nameof(SyncCurrentAction), RpcTarget.Others, _actionIndex);
-            }
-
-        }
-
+        if (_randomValue > chanceToUseSkill)
+            currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
+        else
+            currentExecutingAction = SelectAction(ActionType.SKILL);
     }
-
 }

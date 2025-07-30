@@ -1,11 +1,7 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG.Tweening;
-using Photon.Pun;
 
 public class PauseOverlay : MonoBehaviour
 {
@@ -64,13 +60,8 @@ public class PauseOverlay : MonoBehaviour
 
         screenCanvasGroup.DOFade(1, .15f).SetEase(Ease.Linear).SetUpdate(true);
 
-        if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
-        {
-            SetFirstSelected();
-            buttonsParent.SetActive(true);
-        }
-        else
-            buttonsParent.SetActive(false);
+        SetFirstSelected();
+        buttonsParent.SetActive(true);
 
         notHostMessage.SetActive(!buttonsParent.activeSelf);
     }

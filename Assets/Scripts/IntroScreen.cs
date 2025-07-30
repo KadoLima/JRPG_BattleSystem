@@ -1,9 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
 public class IntroScreen : MonoBehaviour
 {
@@ -22,7 +20,6 @@ public class IntroScreen : MonoBehaviour
         {
             if (!GameManager.instance.GameStarted)
                 CloseContent();
-            
         }
     }
 
@@ -46,6 +43,4 @@ public class IntroScreen : MonoBehaviour
         GameManager.instance.GameStarted = true;
         content.SetActive(false);
     }
-
-
 }

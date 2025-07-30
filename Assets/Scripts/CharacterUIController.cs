@@ -1,11 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
-using System;
 using TMPro;
-using Photon.Pun;
 
 public class CharacterUIController : MonoBehaviour
 {
@@ -21,12 +18,15 @@ public class CharacterUIController : MonoBehaviour
     [SerializeField] Color healColor;
     [SerializeField] Color manaColor;
     [Space(10)]
+    [SerializeField] Transform descriptionTooltipContainer;
     [SerializeField] TextMeshProUGUI descriptionTooltipText;
     [SerializeField] GameObject chatBubble;
-    float originalFloatingTextY;
     [field: SerializeField] public Image cooldownBar { get; private set; }
 
     CharacterBehaviour characterBehaviour;
+    float originalFloatingTextY;
+    CanvasGroup cooldownBarCanvasGroup;
+    CanvasGroup floatingTextCanvasGroup;
 
     void Start()
     {
@@ -38,21 +38,22 @@ public class CharacterUIController : MonoBehaviour
         criticalText.SetActive(false);
 
         if (cooldownBar)
+        {
             cooldownBar.fillAmount = 0;
+            cooldownBarCanvasGroup = cooldownBar.GetComponentInParent<CanvasGroup>();
+        }
 
         characterBehaviour = GetComponentInParent<CharacterBehaviour>();
 
         if (battlePanel)
             battlePanel.gameObject.SetActive(false);
-
+        
+        if (floatingText)
+            floatingTextCanvasGroup = floatingText.GetComponent<CanvasGroup>();
 
         Invoke(nameof(RefreshHPMP), .1f);
 
         ResetFloatingText();
-
-        if (playerIndicator)
-            playerIndicator.SetActive(PhotonNetwork.IsConnected && characterBehaviour.MyPhotonView.IsMine);
-
     }
 
     public void RefreshHPMP()
@@ -67,8 +68,6 @@ public class CharacterUIController : MonoBehaviour
 
         originalFloatingTextY = floatingText.rectTransform.anchoredPosition.y;
     }
-
-    
 
     public void HideCanvas(float speed = 10, float delay = 0)
     {
@@ -130,7 +129,7 @@ public class CharacterUIController : MonoBehaviour
             mpText.DOColor(new Color(0, 0, 0, 0f), .2f);
 
         if (cooldownBar)
-            cooldownBar.GetComponentInParent<CanvasGroup>().alpha = 0;
+            cooldownBarCanvasGroup.alpha = 0;
     }
 
     public void ShowUI()
@@ -141,15 +140,12 @@ public class CharacterUIController : MonoBehaviour
             mpText.DOColor(new Color(0, 0, 0, 1f), .2f);
 
         if (cooldownBar)
-            cooldownBar.GetComponentInParent<CanvasGroup>().alpha = 1;
+            cooldownBarCanvasGroup.alpha = 1;
     }
 
     public void RefreshHP(int currentHP, int baseHP)
     {
-
-        if (currentHP > 0)
-            hpText.text = "H: " + currentHP + "/" + baseHP;
-        else hpText.text = "H: " + 0 + "/" + baseHP;
+        hpText.text = $"H: {Mathf.Max(0, currentHP)}/{baseHP}";
     }
 
     public void RefreshMP(int currentMP, int baseMP)
@@ -157,9 +153,7 @@ public class CharacterUIController : MonoBehaviour
         if (mpText == null)
             return;
 
-        if (currentMP > 0)
-            mpText.text = "M: " + currentMP + "/" + baseMP;
-        else mpText.text = "M: " + 0 + "/" + baseMP;
+        mpText.text = $"M: {Mathf.Max(0, currentMP)}/{baseMP}";
     }
 
     public void ShowFloatingDamageText(int damageAmount, DamageType dmgType, bool isCrit)
@@ -181,15 +175,13 @@ public class CharacterUIController : MonoBehaviour
         else
             SetTextColor_Normal();
 
-        CanvasGroup _canvasGroup = floatingText.GetComponent<CanvasGroup>();
         floatingText.text = damageAmount.ToString();
-        _canvasGroup.DOFade(0, 0);
-        _canvasGroup.DOFade(1, _fadeTime);
+        floatingTextCanvasGroup.DOFade(0, 0);
+        floatingTextCanvasGroup.DOFade(1, _fadeTime);
         criticalText.SetActive(isCrit);
         floatingText.rectTransform.DOAnchorPosY(floatingText.rectTransform.anchoredPosition.y + _yMovingAmount, _popMovingTime).OnComplete(BounceFloatingText);
         yield return new WaitForSeconds(_showingTime);
-        _canvasGroup.DOFade(0, _fadeTime);
-
+        floatingTextCanvasGroup.DOFade(0, _fadeTime);
     }
 
     void SetTextColor_Normal()
@@ -214,7 +206,8 @@ public class CharacterUIController : MonoBehaviour
 
     public void ShowDescriptionTooltip(string t)
     {
-        descriptionTooltipText.transform.parent.parent.gameObject.SetActive(true);
+        //descriptionTooltipText.transform.parent.parent.gameObject.SetActive(true);
+        descriptionTooltipContainer.gameObject.SetActive(true);
         descriptionTooltipText.text = t;
     }
 
@@ -223,7 +216,8 @@ public class CharacterUIController : MonoBehaviour
         if (!descriptionTooltipText)
             return;
 
-        descriptionTooltipText.transform.parent.parent.gameObject.SetActive(false);
+        //descriptionTooltipText.transform.parent.parent.gameObject.SetActive(false);
+        descriptionTooltipContainer.gameObject.SetActive(false);
     }
 
     public void ShowChatBubble()
@@ -235,5 +229,4 @@ public class CharacterUIController : MonoBehaviour
     {
         chatBubble.SetActive(false);
     }
-
 }

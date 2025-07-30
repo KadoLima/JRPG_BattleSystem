@@ -1,10 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using System;
-using UnityEngine.InputSystem;
-using Photon.Pun;
 
 public class CharacterBehaviour : MonoBehaviour
 {
@@ -14,12 +11,9 @@ public class CharacterBehaviour : MonoBehaviour
 
     [Header("Character ID")]
     [SerializeField] int id;
-    public int ID => id;
 
     [Header("STATS")]
-    //[SerializeField] protected Stats myStats;
     [SerializeField] protected CharacterStats myStats;
-    public CharacterStats MyStats => myStats;
 
     [Header("Anim Controller")]
     [SerializeField] protected CharacterAnimationController myAnimController;
@@ -27,47 +21,45 @@ public class CharacterBehaviour : MonoBehaviour
     [Space(20)]
 
     [SerializeField] protected CombatActionSO[] characterActions; // 0 = recharging, 1 = normal attack, 2-8 = skills, 9 = useItem
-    public CombatActionSO[] CharacterActions => characterActions;
 
     [Space(20)]
     [Header("INVENTORY")]
     [SerializeField] CharacterInventory inventory;
 
-    protected CharacterUIController uiController;
-    public CharacterUIController UIController => uiController;
+    [SerializeField] protected CharacterUIController characterUIController;
+    [SerializeField] private TrailEffect trailEffect;
 
     int currentConsumableItemIndex;
     float currentCooldown;
     protected int currentHP;
     protected int currentMP;
-    public int CurrentHP => currentHP;
-    public int CurrentMP => currentMP;
-
     protected Vector2 originalPosition;
-
+    CharacterBehaviour currentTarget = null;
+    bool isBusy = false;
+    protected int syncedCalculatedValue;
     protected CombatActionSO currentPreAction;
     protected CombatActionSO currentExecutingAction;
-    public CombatActionSO CurrentPreAction => currentPreAction;
+    protected bool isDoingCritDamageAction;
+    protected MainBattlePanel mainBattlePanel;
 
-    CharacterBehaviour currentTarget = null;
+    public CharacterUIController CharacterUIController => characterUIController;
+    public CombatActionSO[] CharacterActions => characterActions;
+    public CharacterStats MyStats => myStats;
+    public int ID => id;
+    public int CurrentHP => currentHP;
+    public int CurrentMP => currentMP;
+    public CombatActionSO CurrentPreAction => currentPreAction;
+    public bool IsBusy() => isBusy;
+
     public CharacterBehaviour CurrentTarget
     {
         get => currentTarget;
         set => currentTarget = value;
     }
 
-    bool isBusy = false;
-    public bool IsBusy() => isBusy;
     public bool IsDoingCritDamageAction => isDoingCritDamageAction;
-    protected bool isDoingCritDamageAction;
-
     public static Action<string> OnSkillUsed;
     public static Action OnSkillEnded;
-
-    protected PhotonView myPhotonView;
-    public PhotonView MyPhotonView => myPhotonView;
-
-    protected int syncedCalculatedValue;
 
     protected virtual void OnEnable()
     {
@@ -81,16 +73,18 @@ public class CharacterBehaviour : MonoBehaviour
 
     public virtual void Start()
     {
-        myPhotonView = GetComponent<PhotonView>();
+        Initialize();
+    }
 
+    protected virtual void Initialize()
+    {
         currentPreAction = ScriptableObject.CreateInstance<CombatActionSO>();
         currentExecutingAction = ScriptableObject.CreateInstance<CombatActionSO>();
 
-        CombatManager.instance.playersOnField.Add(this);
+        CombatManager.instance.AddPlayerOnField(this);
 
-        originalPosition = this.transform.localPosition;
+        originalPosition = transform.localPosition;
 
-        uiController = GetComponentInChildren<CharacterUIController>();
 
         ChangeBattleState(BattleState.RECHARGING);
 
@@ -98,6 +92,8 @@ public class CharacterBehaviour : MonoBehaviour
         currentMP = myStats.baseMP;
 
         transform.SetParent(CombatManager.instance.PlayersParent);
+
+        mainBattlePanel = characterUIController.FindMainBattlePanel();
     }
 
     public virtual void Update()
@@ -105,45 +101,38 @@ public class CharacterBehaviour : MonoBehaviour
         if (CurrentBattlePhase == BattleState.DEAD || CombatManager.instance.CurrentActivePlayer != this)
             return;
 
-        UIController.FindMainBattlePanel().ShowHideSwapCharsIndicator(CombatManager.instance.ReadyPlayersAmount() > 1);
+        mainBattlePanel.ShowHideSwapCharsIndicator(CombatManager.instance.ReadyPlayersAmount() > 1);
     }
 
-    #region STATS CHANGE
     public void IncreaseHP(int amount)
     {
         currentHP += amount;
-        if (currentHP > myStats.baseHP) currentHP = myStats.baseHP;
 
-        uiController.RefreshHPMP();
+        if (currentHP > myStats.baseHP)
+            currentHP = myStats.baseHP;
+
+        characterUIController.RefreshHPMP();
     }
 
     public void IncreaseMP(int amount)
     {
         currentMP += amount;
-        if (currentMP > myStats.baseMP) currentMP = myStats.baseMP;
 
-        uiController.RefreshHPMP();
+        if (currentMP > myStats.baseMP) 
+            currentMP = myStats.baseMP;
+
+        characterUIController.RefreshHPMP();
     }
 
     private void DecreaseMP(int amount)
     {
         currentMP -= amount;
-        uiController.RefreshHPMP();
+        characterUIController.RefreshHPMP();
     }
 
-    #endregion
-
-    #region DAMAGE
     protected IEnumerator ApplyDamageOrHeal(CharacterBehaviour target)
     {
-
-        if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
-        {
-            syncedCalculatedValue = CalculatedValue();
-
-            if (PhotonNetwork.IsMasterClient)
-                MyPhotonView.RPC(nameof(SyncCalculatedValue), RpcTarget.Others, syncedCalculatedValue);
-        }
+        syncedCalculatedValue = CalculatedValue();
 
         yield return new WaitUntil(() => syncedCalculatedValue != 0);
 
@@ -153,13 +142,18 @@ public class CharacterBehaviour : MonoBehaviour
         }
         else
         {
-            for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
-            {
-                CombatManager.instance.enemiesOnField[i].TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.damageType, isDoingCritDamageAction);
-            }
+            DamageAllEnemies();
         }
 
         syncedCalculatedValue = 0;
+    }
+
+    private void DamageAllEnemies()
+    {
+        for (int i = 0; i < CombatManager.instance.EnemiesOnField.Count; i++)
+        {
+            CombatManager.instance.EnemiesOnField[i].TakeDamageOrHeal(syncedCalculatedValue, currentExecutingAction.damageType, isDoingCritDamageAction);
+        }
     }
 
     public virtual void TakeDamageOrHeal(int amount, DamageType dmgType, bool isCrit)
@@ -168,7 +162,7 @@ public class CharacterBehaviour : MonoBehaviour
         if (dmgType == DamageType.HARMFUL)
         {
             currentHP -= amount;
-            uiController.ShowFloatingDamageText(amount, dmgType, isCrit);
+            characterUIController.ShowFloatingDamageText(amount, dmgType, isCrit);
 
             if (currentHP <= 0)
             {
@@ -186,8 +180,12 @@ public class CharacterBehaviour : MonoBehaviour
             IncreaseMP(amount);
         }
 
-        uiController.ShowFloatingDamageText(amount, dmgType, isCrit);
-        uiController.RefreshHPMP();
+        if (characterUIController)
+        {
+            characterUIController.ShowFloatingDamageText(amount, dmgType, isCrit);
+            characterUIController.RefreshHPMP();
+        }
+        else Debug.LogError("No characterUIController reference!");
     }
 
     private int CalculatedValue()
@@ -200,7 +198,7 @@ public class CharacterBehaviour : MonoBehaviour
             return Mathf.RoundToInt(_rawDamage * CritDamageMultiplier() * currentExecutingAction.damageMultiplier);
         }
 
-        return inventory.inventoryItens[currentConsumableItemIndex].itemData.effectAmount;
+        return inventory.InventoryItems[currentConsumableItemIndex].itemData.effectAmount;
     }
 
     public int CritDamageMultiplier()
@@ -211,9 +209,6 @@ public class CharacterBehaviour : MonoBehaviour
         return isDoingCritDamageAction ? 2 : 1;
     }
 
-    #endregion
-
-    #region MOVEMENT
     public void MoveToTarget(CharacterBehaviour enemy)
     {
         transform.DOMove(enemy.GetAttackedPos.position, myAnimController.SecondsToReachTarget).SetEase(Ease.InOutExpo);
@@ -232,11 +227,7 @@ public class CharacterBehaviour : MonoBehaviour
         }
     }
 
-    #endregion
-
-    #region ACTIONS
-
-        protected void SetToIdle()
+    protected void SetToIdle()
     {
         StartCoroutine(SetToIdle_Coroutine());
     }
@@ -244,7 +235,7 @@ public class CharacterBehaviour : MonoBehaviour
     IEnumerator SetToIdle_Coroutine()
     {
         currentTarget = null;
-        uiController.ShowUI();
+        characterUIController.ShowUI();
         myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
         yield return new WaitForSeconds(0.001f);
         isBusy = false;
@@ -253,8 +244,8 @@ public class CharacterBehaviour : MonoBehaviour
     protected void SetToBusy()
     {
         isBusy = true;
-        uiController.HideMainBattlePanel();
-        uiController.HideUI();
+        characterUIController.HideMainBattlePanel();
+        characterUIController.HideUI();
     }
 
     public CombatActionSO SelectAction(ActionType type)
@@ -301,40 +292,16 @@ public class CharacterBehaviour : MonoBehaviour
         currentPreAction.damageType = dmgType;
         currentConsumableItemIndex = itemIndex;
 
-        if (PhotonNetwork.IsConnected && myPhotonView.IsMine)
-        {
-            myPhotonView.RPC(nameof(SyncUseConsumableItem),RpcTarget.Others, itemIndex, dmgType);
-        }
-
         ChangeBattleState(BattleState.PICKING_TARGET);
     }
 
     public virtual void ExecuteActionOn(CharacterBehaviour target)
     {
-        if (!PhotonNetwork.IsConnected || myPhotonView.IsMine)
-        {
-            CombatManager.instance.AddToCombatQueue(this);
-            currentTarget = target;
-            uiController.HideChatBubble();
+        CombatManager.instance.AddToCombatQueue(this);
+        currentTarget = target;
+        characterUIController.HideChatBubble();
 
-            if (PhotonNetwork.IsConnected)
-            {
-                int _targetViewID = currentTarget.GetComponent<PhotonView>().ViewID;
-
-                int _actionIndex = -1;
-                for (int i = 0; i < characterActions.Length; i++)
-                {
-                    if (currentPreAction == characterActions[i])
-                    {
-                        _actionIndex = i;
-                        break;
-                    }
-                }
-
-                myPhotonView.RPC(nameof(SyncExecuteAction), RpcTarget.Others, _targetViewID, _actionIndex);
-            }
-            StartCoroutine(ExecuteActionCoroutine(currentTarget));
-        }
+        StartCoroutine(ExecuteActionCoroutine(currentTarget));
     }
 
     IEnumerator ExecuteActionCoroutine(CharacterBehaviour target)
@@ -349,7 +316,7 @@ public class CharacterBehaviour : MonoBehaviour
 
         currentExecutingAction = currentPreAction;
         CombatManager.instance.HideAllEnemyPointers();
-        target.uiController.HidePointer();
+        target.characterUIController.HidePointer();
 
         yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() &&
                                          CombatManager.instance.IsMyTurn(this));
@@ -359,8 +326,8 @@ public class CharacterBehaviour : MonoBehaviour
         if (target.CurrentBattlePhase == BattleState.DEAD)
         {
             if (currentExecutingAction.IsHarmful)
-                target = CombatManager.instance.enemiesOnField[0];
-            else target = CombatManager.instance.playersOnField[0];
+                target = CombatManager.instance.EnemiesOnField[0];
+            else target = CombatManager.instance.PlayersOnField[0];
         }
 
 
@@ -372,33 +339,25 @@ public class CharacterBehaviour : MonoBehaviour
         else if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
         {
             var _rndValue = UnityEngine.Random.value;
-
-            if (!PhotonNetwork.IsConnected || myPhotonView.IsMine)
-            {
-                isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
-
-                if (PhotonNetwork.IsConnected)
-                    myPhotonView.RPC(nameof(SyncIsDoingCritDamage), RpcTarget.Others, isDoingCritDamageAction);
-            }
+            isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
         }
 
         if (currentExecutingAction.goToTarget)
         {
-            TrailEffect _trailEffect = GetComponentInChildren<TrailEffect>();
-
-            if (_trailEffect)
-                _trailEffect.ShowTrail();
+            if (trailEffect)
+                trailEffect.ShowTrail();
 
             MoveToTarget(target);
+
             yield return new WaitForSeconds(myAnimController.SecondsToReachTarget);
 
-            if (_trailEffect)
-                _trailEffect.HideTrail();
+            if (trailEffect)
+                trailEffect.HideTrail();
         }
 
         myAnimController.PlayAnimation(currentExecutingAction.animationCycle.name);
 
-        if (currentExecutingAction.projectile!=null)
+        if (currentExecutingAction.projectile != null)
         {
             if (currentExecutingAction.isAreaOfEffect == false)
             {
@@ -410,11 +369,11 @@ public class CharacterBehaviour : MonoBehaviour
             else
             {
                 yield return new WaitForSeconds(0.25f);
-                for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
+                for (int i = 0; i < CombatManager.instance.EnemiesOnField.Count; i++)
                 {
                     SpellBehaviour _instantiatedProjectile = Instantiate(currentExecutingAction.projectile.gameObject, myAnimController.ProjectileSpawnPoint.position, Quaternion.identity).GetComponent<SpellBehaviour>();
                     _instantiatedProjectile.transform.SetParent(this.gameObject.transform);
-                    _instantiatedProjectile.Execute(myAnimController.ProjectileSpawnPoint.position, CombatManager.instance.enemiesOnField[i]);
+                    _instantiatedProjectile.Execute(myAnimController.ProjectileSpawnPoint.position, CombatManager.instance.EnemiesOnField[i]);
                 }
                 yield return new WaitForSeconds(0.25f);
             }
@@ -441,10 +400,6 @@ public class CharacterBehaviour : MonoBehaviour
         ChangeBattleState(BattleState.RECHARGING);
     }
 
-    #endregion
-
-    #region STATE MACHINE
-
     public void ChangeBattleState(BattleState phase)
     {
         StartCoroutine(ChangeBattleStateCoroutine(phase));
@@ -466,34 +421,20 @@ public class CharacterBehaviour : MonoBehaviour
 
             case BattleState.READY:
 
-                if (uiController.FindMainBattlePanel())
+                if (characterUIController.FindMainBattlePanel())
                 {
-                    if (!PhotonNetwork.IsConnected)
-                    {
-                        if (CombatManager.instance.CurrentActivePlayer == null)
-                            CombatManager.instance.SetCurrentActivePlayer(this);
-                        else if (CombatManager.instance.CurrentActivePlayer == this)
-                            UIController.ShowMainBattlePanel();
-                        else CombatManager.instance.LookForReadyPlayer();
-                    }
-
-                    else
-                    {
-                        if (!MyPhotonView.IsMine)
-                            uiController.ShowChatBubble();
-                        else
-                        {
-                            CombatManager.instance.SetCurrentActivePlayer(this);
-                            uiController.HideChatBubble();
-                        }
-                    }
+                    if (CombatManager.instance.CurrentActivePlayer == null)
+                        CombatManager.instance.SetCurrentActivePlayer(this);
+                    else if (CombatManager.instance.CurrentActivePlayer == this)
+                        CharacterUIController.ShowMainBattlePanel();
+                    else CombatManager.instance.LookForReadyPlayer();
                 }
 
                 break;
 
             case BattleState.PICKING_TARGET:
 
-                uiController.HideMainBattlePanel();
+                characterUIController.HideMainBattlePanel();
                 if (currentPreAction.IsHarmful)
                     CombatManager.instance.SetTargetedEnemyByIndex(0, currentPreAction.isAreaOfEffect);
                 else CombatManager.instance.SetTargetedFriendlyTargetByIndex(0, currentPreAction.isAreaOfEffect);
@@ -518,7 +459,7 @@ public class CharacterBehaviour : MonoBehaviour
                     myAnimController.PlayAnimation(myAnimController.DeadAnimationName);
                     Material _mat = GetComponentInChildren<SpriteRenderer>().material;
                     _mat.SetFloat("_GreyscaleBlend", 1);
-                    uiController.HideCanvas(10, 0);
+                    characterUIController.HideCanvas(10, 0);
 
                     if (CombatManager.instance.CurrentActivePlayer == this)
                         CombatManager.instance.LookForReadyPlayer();
@@ -529,7 +470,7 @@ public class CharacterBehaviour : MonoBehaviour
                 else
                 {
                     myAnimController.DisableAnimator();
-                    uiController.HideCanvas(5, .25f);
+                    characterUIController.HideCanvas(5, .25f);
                     combatEffects.DieEffect();
                     CombatManager.instance.RemoveFromField(this.GetComponent<EnemyBehaviour>());
 
@@ -549,7 +490,7 @@ public class CharacterBehaviour : MonoBehaviour
 
             case BattleState.GAMEWIN:
                 myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
-                uiController.HideCanvas();
+                characterUIController.HideCanvas();
                 yield return new WaitForSeconds(.5f);
                 StopAllCoroutines();
                 break;
@@ -563,7 +504,7 @@ public class CharacterBehaviour : MonoBehaviour
 
     IEnumerator RechargingCoroutine()
     {
-        if (!uiController.cooldownBar)
+        if (!characterUIController.cooldownBar)
             yield break;
 
         currentCooldown = 0;
@@ -573,19 +514,15 @@ public class CharacterBehaviour : MonoBehaviour
         while (currentCooldown < myStats.rechargeRate)
         {
             currentCooldown += Time.deltaTime;
-            uiController.cooldownBar.fillAmount = currentCooldown / myStats.rechargeRate;
+            characterUIController.cooldownBar.fillAmount = currentCooldown / myStats.rechargeRate;
             yield return null;
         }
         ChangeBattleState(BattleState.READY);
     }
 
-    #endregion
-
-    #region GAME FLOW
-
     public void ShowDescription(int skillIndex)
     {
-        UIController.ShowDescriptionTooltip(characterActions[2 + skillIndex].description);
+        CharacterUIController.ShowDescriptionTooltip(characterActions[2 + skillIndex].description);
     }
 
     public void SwapActiveCharacter()
@@ -596,7 +533,7 @@ public class CharacterBehaviour : MonoBehaviour
     IEnumerator SwapActiveCharacter_Coroutine()
     {
         yield return new WaitForSeconds(0.02f);
-        UIController.HideMainBattlePanel();
+        CharacterUIController.HideMainBattlePanel();
         CombatManager.instance.PickNextReadyCharacter();
     }
 
@@ -604,44 +541,4 @@ public class CharacterBehaviour : MonoBehaviour
     {
         ChangeBattleState(BattleState.GAMEWIN);
     }
-
-    #endregion
-
-    #region ONLINE
-
-    [PunRPC]
-    public void SyncExecuteAction(int viewID, int actionIndex)
-    {
-        currentPreAction = characterActions[actionIndex];
-        Debug.LogWarning("Received RPC action => " + currentPreAction.actionType);
-        currentTarget = PhotonView.Find(viewID).GetComponent<CharacterBehaviour>();
-        CombatManager.instance.AddToCombatQueue(this);
-        uiController.HideChatBubble();
-
-        StartCoroutine(ExecuteActionCoroutine(currentTarget));
-    }
-
-    [PunRPC]
-    public void SyncIsDoingCritDamage(bool result)
-    {
-        isDoingCritDamageAction = result;
-    }
-
-    [PunRPC]
-    void SyncCalculatedValue(int amount)
-    {
-        syncedCalculatedValue = amount;
-    }
-
-    [PunRPC]
-    public void SyncUseConsumableItem(int itemIndex, DamageType dmgType)
-    {
-        currentPreAction = characterActions[characterActions.Length - 1];
-        currentConsumableItemIndex = itemIndex;
-        currentPreAction.damageType = dmgType;
-    }
-
-    #endregion
-
-
 }

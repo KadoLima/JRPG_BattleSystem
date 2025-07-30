@@ -1,15 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Photon.Pun;
 
 public class InputManager : MonoBehaviour
 {
 
     public void OnMenus_Confirm(InputValue value)
     {
-
         if (GameManager.instance.GameWon)
             return;
 
@@ -22,18 +18,17 @@ public class InputManager : MonoBehaviour
         {
             if (_activePlayer.CurrentPreAction.IsHarmful)
             {
-                _activePlayer.ExecuteActionOn(CombatManager.instance.enemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
+                _activePlayer.ExecuteActionOn(CombatManager.instance.EnemiesOnField[CombatManager.instance.CurrentTargetEnemyIndex]);
             }
             else
             {
-                _activePlayer.ExecuteActionOn(CombatManager.instance.playersOnField[CombatManager.instance.CurrentFriendlyTargetIndex]);
+                _activePlayer.ExecuteActionOn(CombatManager.instance.PlayersOnField[CombatManager.instance.CurrentFriendlyTargetIndex]);
             }
         }
     }
 
     public void OnMenus_Back(InputValue value)
     {
-
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer == null)
@@ -51,9 +46,6 @@ public class InputManager : MonoBehaviour
 
     public void OnSwapActiveCharacter(InputValue value)
     {
-        if (PhotonNetwork.IsConnected)
-            return;
-
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer == null)
@@ -104,15 +96,8 @@ public class InputManager : MonoBehaviour
 
     public void OnPauseGame(InputValue value)
     {
-        if (PhotonNetwork.IsConnected && MultiplayerManager.instance.ConnectedPlayersCount() < 2)
-            return;
-
-        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
-        {
-            if (!GameManager.instance.IsPaused)
-                GameManager.instance.PauseGame();
-            else GameManager.instance.ResumeGame();
-        }
+        if (!GameManager.instance.IsPaused)
+            GameManager.instance.PauseGame();
+        else GameManager.instance.ResumeGame();
     }
- 
 }

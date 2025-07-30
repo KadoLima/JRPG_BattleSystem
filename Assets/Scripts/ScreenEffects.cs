@@ -67,5 +67,4 @@ public class ScreenEffects : MonoBehaviour
         _sequence.Append(critEffect.DOFade(.8f, .1f));
         _sequence.Append(critEffect.DOFade(0, .05f));
     }
-
 }

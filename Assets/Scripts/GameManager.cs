@@ -1,14 +1,9 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using Photon.Pun;
-using Photon.Realtime;
 
-public class GameManager : MonoBehaviourPunCallbacks
+public class GameManager : MonoBehaviour
 {
     bool gameStarted;
     public bool GameStarted
@@ -31,7 +26,6 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     GameObject lastSelected;
     EventSystem eventSystem;
-    PhotonView myPhotonView;
 
     [Header("DEBUG TOOLS")]
     [SerializeField] bool enemiesWontAttack;
@@ -51,7 +45,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         Time.timeScale = 1;
 
         eventSystem = EventSystem.current;
-        myPhotonView = GetComponent<PhotonView>();
 
         ToggleDebugLog();
     }
@@ -60,10 +53,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     private void Start()
     {
         gameStarted = true;
-
-        if (PhotonNetwork.IsConnected)
-            PhotonNetwork.MinimalTimeScaleToDispatchInFixedUpdate = 0;
-
     }
 
     private static void ToggleDebugLog()
@@ -82,36 +71,18 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public void PauseGame()
     {
-        if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
-        {
-            lastSelected = eventSystem.currentSelectedGameObject;
-            isPaused = true;
-            OnGamePaused?.Invoke();
-            Time.timeScale = 0;
-
-            if (PhotonNetwork.IsConnected)
-            {
-                myPhotonView.RPC(nameof(SyncPause), RpcTarget.Others, isPaused);
-            }
-
-        }
-
+        lastSelected = eventSystem.currentSelectedGameObject;
+        isPaused = true;
+        OnGamePaused?.Invoke();
+        Time.timeScale = 0;
     }
 
     public void ResumeGame()
     {
-        if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
-        {
-            eventSystem.SetSelectedGameObject(lastSelected);
-            isPaused = false;
-            Time.timeScale = 1;
-            OnGameResumed?.Invoke();
-
-            if (PhotonNetwork.IsConnected)
-            {
-                myPhotonView.RPC(nameof(SyncResume), RpcTarget.Others, isPaused);
-            }
-        }
+        eventSystem.SetSelectedGameObject(lastSelected);
+        isPaused = false;
+        Time.timeScale = 1;
+        OnGameResumed?.Invoke();
     }
 
     public void LoadMenuScene()
@@ -122,50 +93,11 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public void RestartCurrentScene()
     {
-        if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
-        {
-            PhotonNetwork.DestroyAll();
-            myPhotonView.RPC(nameof(SyncRestartScene), RpcTarget.Others);
-            PhotonNetwork.LoadLevel(SceneManager.GetActiveScene().buildIndex);
-        }
-        else
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void QuitGame()
     {
         LoadMenuScene();
     }
-
-    [PunRPC]
-    void SyncPause(bool isPausedValue)
-    {
-        isPaused = isPausedValue;
-        OnGamePaused?.Invoke();
-        Time.timeScale = 0;
-    }
-
-    [PunRPC]
-    void SyncResume(bool isPausedValue)
-    {
-        isPaused = isPausedValue;
-        Time.timeScale = 1;
-        OnGameResumed?.Invoke();
-    }
-
-    [PunRPC]
-    void SyncRestartScene()
-    {
-        PhotonNetwork.LoadLevel(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    public override void OnPlayerLeftRoom(Player otherPlayer)
-    {
-        Time.timeScale = 0;
-        OnPlayerDisconnectedFromGame?.Invoke();
-    }
-
-
 }

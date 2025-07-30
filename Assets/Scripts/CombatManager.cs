@@ -1,9 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using Photon.Pun;
-using System.Linq;
 
 public enum BattleState
 {
@@ -22,54 +19,43 @@ public enum BattleState
 public class CombatManager : MonoBehaviour
 {
     [SerializeField] Transform playersParent;
-    public Transform PlayersParent => playersParent;
-
-    public List<CharacterBehaviour> playersOnField = new List<CharacterBehaviour>();
-
     [SerializeField] Transform enemiesParent;
-    public Transform EnemiesParent => enemiesParent;
+    [SerializeField] GameOverScreen gameOverScreen;
+    [SerializeField] List<CharacterBehaviour> combatQueue = new List<CharacterBehaviour>();
+    [Tooltip("Delay when removing character from queue")][SerializeField] float queueDelay = 1.25f;
+    [SerializeField] List<EnemyBehaviour> enemiesOnField = new List<EnemyBehaviour>();
+    [SerializeField] List<CharacterBehaviour> playersOnField = new List<CharacterBehaviour>();
 
-    public List<EnemyBehaviour> enemiesOnField = new List<EnemyBehaviour>();
-
-    public static CombatManager instance;
-
+    int totalXPEarned = 0;
     int currentTargetEnemyIndex = 0;
     int currentFriendlyTargetIndex = 0;
+
+    CharacterBehaviour currentActivePlayer = null;
+
+    public List<CharacterBehaviour> PlayersOnField => playersOnField;
+    public List<EnemyBehaviour> EnemiesOnField => enemiesOnField;
+    public Transform PlayersParent => playersParent;
+    public Transform EnemiesParent => enemiesParent;
     public int CurrentTargetEnemyIndex => currentTargetEnemyIndex;
     public int CurrentFriendlyTargetIndex => currentFriendlyTargetIndex;
 
-    CharacterBehaviour currentActivePlayer = null;
     public CharacterBehaviour CurrentActivePlayer
     {
         get => currentActivePlayer;
         set => currentActivePlayer = value;
     }
 
-    int totalXPEarned = 0;
-
-    [Space(20)]
-    [SerializeField] GameOverScreen gameOverScreen;
-
-    [Header("COMBAT QUEUE")]
-    [SerializeField] List<CharacterBehaviour> combatQueue = new List<CharacterBehaviour>();
     public List<CharacterBehaviour> CombatQueue
     {
         get => combatQueue;
         set => combatQueue = value;
     }
 
-    [Header("Delay when removing character from queue")]
-    [SerializeField] float queueDelay = 1.25f;
-
-    PhotonView myPhotonView;
-    public PhotonView MyPhotonView => myPhotonView;
-
+    public static CombatManager instance;
 
     private void Awake()
     {
         instance = this;
-
-        myPhotonView = GetComponent<PhotonView>();
     }
 
     private void Update()
@@ -79,7 +65,16 @@ public class CombatManager : MonoBehaviour
 
         if (!GameManager.instance.GameStarted)
             return;
+    }
 
+    public void AddPlayerOnField(CharacterBehaviour playerToAdd)
+    {
+        playersOnField.Add(playerToAdd);
+    }
+
+    public void AddEnemyOnField(EnemyBehaviour enemyToAdd)
+    {
+        enemiesOnField.Add(enemyToAdd);
     }
 
     public bool IsFieldClear()
@@ -110,16 +105,12 @@ public class CombatManager : MonoBehaviour
         return false;
     }   
     
-
     public EnemyBehaviour CurrentReadyEnemy()
     {
         if (enemiesOnField.Count == 1)
             return enemiesOnField[0];
 
         int _randomEnemyIndex = Random.Range(0, enemiesOnField.Count);
-
-        Debug.LogWarning(_randomEnemyIndex);
-
 
         while (enemiesOnField[_randomEnemyIndex].CurrentBattlePhase == BattleState.EXECUTING_ACTION)
         {
@@ -129,8 +120,6 @@ public class CombatManager : MonoBehaviour
         var _currentEnemy = enemiesOnField[_randomEnemyIndex];
         return _currentEnemy;
     }
-
-
 
     public CharacterBehaviour GetRandomPlayer()
     {
@@ -155,22 +144,7 @@ public class CombatManager : MonoBehaviour
 
     public void AddToCombatQueue(CharacterBehaviour characterToAdd)
     {
-
-        if (!PhotonNetwork.IsConnected)
-        {
-            combatQueue.Add(characterToAdd);
-            return;
-        }
-
-        if (PhotonNetwork.IsMasterClient)
-        {
-            combatQueue.Add(characterToAdd);
-
-            int[] _combatQueueViewIDs = UpdateCombatQueue();
-
-            MyPhotonView.RPC(nameof(SyncCombatQueue), RpcTarget.Others, _combatQueueViewIDs);
-        }
-
+        combatQueue.Add(characterToAdd);
     }
 
     public void RemoveFromCombatQueue(CharacterBehaviour characterToRemove)
@@ -178,39 +152,11 @@ public class CombatManager : MonoBehaviour
         StartCoroutine(RemoveFromCombatQueueCoroutine(characterToRemove));
     }
 
-    private static int[] UpdateCombatQueue()
-    {
-        CharacterBehaviour[] _combatQueueArray = CombatManager.instance.CombatQueue.ToArray();
-
-        int[] combatQueueViewIDs = new int[_combatQueueArray.Length];
-
-        for (int i = 0; i < _combatQueueArray.Length; i++)
-        {
-            combatQueueViewIDs[i] = _combatQueueArray[i].MyPhotonView.ViewID;
-        }
-
-        return combatQueueViewIDs;
-    }
-
     IEnumerator RemoveFromCombatQueueCoroutine(CharacterBehaviour characterToRemove)
     {
         yield return new WaitForSeconds(queueDelay);
 
-        if (!PhotonNetwork.IsConnected)
-        {
-            combatQueue.Remove(characterToRemove);
-            yield break;
-        }
-
-        if (PhotonNetwork.IsMasterClient)
-        {
-            combatQueue.Remove(characterToRemove);
-
-            int[] _combatQueueViewIDs = UpdateCombatQueue();
-
-            MyPhotonView.RPC(nameof(SyncCombatQueue), RpcTarget.Others, _combatQueueViewIDs);
-
-        }
+        combatQueue.Remove(characterToRemove);
     }
 
     public void AddToTotalXP(int amount)
@@ -267,12 +213,11 @@ public class CombatManager : MonoBehaviour
 
     public void SetCurrentActivePlayer(CharacterBehaviour c)
     {
-
         currentActivePlayer = c;
 
-        if (c != null && (!PhotonNetwork.IsConnected || c.MyPhotonView.IsMine))
+        if (c != null)
         {
-            c.UIController.ShowMainBattlePanel();
+            c.CharacterUIController.ShowMainBattlePanel();
         }
     }
 
@@ -299,17 +244,6 @@ public class CombatManager : MonoBehaviour
         SetCurrentActivePlayer(playersOnField[_index]);
     }
 
-    #region Enemy Target
-    //public void RandomEnemyStartAction(int forceEnemyIndex = -1)
-    //{
-    //    EnemyBehaviour _rndEnemy;
-    //    int _forceEnemyIndex = forceEnemyIndex;
-
-    //    if (_forceEnemyIndex != -1)
-    //        _rndEnemy = enemiesOnField[_forceEnemyIndex];
-    //    else _rndEnemy = enemiesOnField[Random.Range(0, enemiesOnField.Count)];
-    //}
-
     public void SetTargetedEnemyByIndex(int index, bool isAreaOfEffect = false)
     {
         if (enemiesOnField.Count == 0)
@@ -333,9 +267,9 @@ public class CombatManager : MonoBehaviour
         {
             if (i == index)
             {
-                enemiesOnField[i].UIController.ShowPointer();
+                enemiesOnField[i].CharacterUIController.ShowPointer();
             }
-            else enemiesOnField[i].UIController.HidePointer();
+            else enemiesOnField[i].CharacterUIController.HidePointer();
         }
     }
 
@@ -347,7 +281,6 @@ public class CombatManager : MonoBehaviour
             currentTargetEnemyIndex = 0;
 
         SetTargetedEnemyByIndex(currentTargetEnemyIndex);
-
     }
 
     public void DecreaseTargetEnemyIndex()
@@ -364,7 +297,7 @@ public class CombatManager : MonoBehaviour
     {
         foreach (EnemyBehaviour enemy in enemiesOnField)
         {
-            enemy.UIController.ShowPointer();
+            enemy.CharacterUIController.ShowPointer();
         }
     }
 
@@ -372,7 +305,7 @@ public class CombatManager : MonoBehaviour
     {
         foreach (EnemyBehaviour enemy in enemiesOnField)
         {
-            enemy.UIController.HidePointer();
+            enemy.CharacterUIController.HidePointer();
         }
     }
 
@@ -384,12 +317,9 @@ public class CombatManager : MonoBehaviour
     IEnumerator RemoveFromFieldCoroutine(EnemyBehaviour enemy)
     {
         yield return new WaitForSeconds(0.02f);
-        if (enemy.GetComponent<EnemyBehaviour>())
-        {
-            enemiesOnField.Remove(enemy.GetComponent<EnemyBehaviour>());
-            CheckWinConditionCoroutine();
-        }
-        else playersOnField.Remove(enemy);
+
+        enemiesOnField.Remove(enemy);
+        CheckWinConditionCoroutine();
     }
 
     void CheckWinConditionCoroutine()
@@ -403,7 +333,6 @@ public class CombatManager : MonoBehaviour
 
     public bool AllPlayersDead()
     {
-
         foreach (CharacterBehaviour p in playersOnField)
         {
             if (p.CurrentBattlePhase != BattleState.DEAD)
@@ -411,8 +340,7 @@ public class CombatManager : MonoBehaviour
                 return false;
             }
         }
-        return true;
-        
+        return true;   
     }
 
     public IEnumerator ShowGameOverIfNeeded_Coroutine()
@@ -425,12 +353,6 @@ public class CombatManager : MonoBehaviour
             gameOverScreen.ShowGameOverScreen();
         }
     }
-
-    #endregion
-
-
-    #region Friendly Target
-
 
     public void SetTargetedFriendlyTargetByIndex(int index, bool isAreaOfEffect = false)
     {
@@ -445,8 +367,8 @@ public class CombatManager : MonoBehaviour
         for (int i = 0; i < playersOnField.Count; i++)
         {
             if (i == index)
-                playersOnField[i].UIController.ShowPointer();
-            else playersOnField[i].UIController.HidePointer();
+                playersOnField[i].CharacterUIController.ShowPointer();
+            else playersOnField[i].CharacterUIController.HidePointer();
         }
     }
 
@@ -458,7 +380,6 @@ public class CombatManager : MonoBehaviour
             currentFriendlyTargetIndex = 0;
 
         SetTargetedFriendlyTargetByIndex(currentFriendlyTargetIndex);
-
     }
 
     public void DecreaseFriendlyTargetIndex()
@@ -474,39 +395,12 @@ public class CombatManager : MonoBehaviour
     public void ShowAllFriendlyTargetPointers()
     {
         foreach (CharacterBehaviour character in playersOnField)
-            character.UIController.ShowPointer();
+            character.CharacterUIController.ShowPointer();
     }
 
     public void HideAllFriendlyTargetPointers()
     {
         foreach (CharacterBehaviour character in playersOnField)
-            character.UIController.HidePointer();
-
+            character.CharacterUIController.HidePointer();
     }
-
-
-    #endregion
-
-
-    #region ONLINE
-
-    [PunRPC]
-    protected void SyncCombatQueue(int[] combatQueueViewIDs)
-    {
-        CharacterBehaviour[] _combatQueueArray = new CharacterBehaviour[combatQueueViewIDs.Length];
-
-        for (int i = 0; i < combatQueueViewIDs.Length; i++)
-        {
-            PhotonView photonView = PhotonView.Find(combatQueueViewIDs[i]);
-            if (photonView != null)
-            {
-                _combatQueueArray[i] = photonView.GetComponent<CharacterBehaviour>();
-            }
-        }
-
-        CombatManager.instance.CombatQueue = _combatQueueArray.ToList();
-    }
-
-    #endregion
-
 }

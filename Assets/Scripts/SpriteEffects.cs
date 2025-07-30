@@ -1,28 +1,25 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using System;
 
 public class SpriteEffects : MonoBehaviour
 {
-    SpriteRenderer mySpriteRenderer;
-    int id;
     [SerializeField] Color takeDamageColor;
     [SerializeField] SpriteRenderer shadow;
-
     [SerializeField] Transform[] spotsToGetHit;
 
-    public Transform[] SpotsToGetHit => spotsToGetHit;
-
+    SpriteRenderer mySpriteRenderer;
     Material myMaterial;
+    Animator animator;
+    int id;
+
+    public Transform[] SpotsToGetHit => spotsToGetHit;
 
     public static Action<CharacterBehaviour> OnHit;
 
     private void OnEnable()
     {
-        id = GetComponentInParent<CharacterBehaviour>().ID;
-
         OnHit += HitEffect;
     }
 
@@ -33,9 +30,13 @@ public class SpriteEffects : MonoBehaviour
 
     private void Start()
     {
+        id = GetComponentInParent<CharacterBehaviour>().ID;
+
         mySpriteRenderer = GetComponent<SpriteRenderer>();
 
         myMaterial = GetComponent<SpriteRenderer>().material;
+
+        animator = mySpriteRenderer.GetComponent<Animator>();
     }
 
     public void HitAction() //called as an Animation Event through the Animator
@@ -52,8 +53,8 @@ public class SpriteEffects : MonoBehaviour
 
             if (_player.CurrentPreAction.isAreaOfEffect)
             {
-                for (int i = 0; i < CombatManager.instance.enemiesOnField.Count; i++)
-                    CombatManager.instance.enemiesOnField[i].GetComponentInChildren<SpriteEffects>().FlashRedAndPushBack();
+                for (int i = 0; i < CombatManager.instance.EnemiesOnField.Count; i++)
+                    CombatManager.instance.EnemiesOnField[i].GetComponentInChildren<SpriteEffects>().FlashRedAndPushBack();
             }
             else
                 _player.CurrentTarget.GetComponentInChildren<SpriteEffects>().FlashRedAndPushBack();
@@ -75,7 +76,7 @@ public class SpriteEffects : MonoBehaviour
 
     IEnumerator FlashRedAndPullBack_Coroutine()
     {
-        mySpriteRenderer.GetComponent<Animator>().SetTrigger("takeDamage");
+        animator.SetTrigger("takeDamage");
         int _pushDirection = (mySpriteRenderer.transform.position.x <= 0) ? -2 : 2;
 
         Tweener _colorTween = mySpriteRenderer.DOColor(takeDamageColor, .1f);
@@ -117,5 +118,4 @@ public class SpriteEffects : MonoBehaviour
             yield return null;
         }
     }
-
 }

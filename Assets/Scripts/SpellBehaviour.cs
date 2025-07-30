@@ -1,11 +1,9 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
 public class SpellBehaviour : MonoBehaviour
 {
-
     public enum SpellType
     {
         PROJECTILE,
@@ -24,8 +22,11 @@ public class SpellBehaviour : MonoBehaviour
     [SerializeField] float projectileLifetime = 0.5f;
     [SerializeField] SpellType spellType;
 
-    void Start()
+    private SpriteRenderer spriteRenderer;
+
+    private void Start()
     {
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     public void Execute(Vector3 spawnPoint, CharacterBehaviour target)
@@ -56,7 +57,6 @@ public class SpellBehaviour : MonoBehaviour
         }
 
         FadeOutAndDestroy(projectileLifetime);
-
     }
 
     private void OnEnable()
@@ -80,8 +80,7 @@ public class SpellBehaviour : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         float _fadeOutTime = .25f;
-        SpriteRenderer _spriteRenderer = GetComponent<SpriteRenderer>();
-        _spriteRenderer.DOColor(new Color(1, 1, 1, 0), _fadeOutTime);
+        spriteRenderer.DOColor(new Color(1, 1, 1, 0), _fadeOutTime);
         Destroy(this.gameObject, _fadeOutTime + .5f);
     }
 }

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
@@ -52,16 +51,6 @@ public class StartMenuUIController : MonoBehaviour
         eventSystem = EventSystem.current;
     }
 
-    private void OnEnable()
-    {
-        MultiplayerManager.OnConnectedToLobby += ShowContent;
-    }
-
-    private void OnDisable()
-    {
-        MultiplayerManager.OnConnectedToLobby -= ShowContent;
-    }
-
     void Start()
     {
         AssignButtons();
@@ -73,7 +62,6 @@ public class StartMenuUIController : MonoBehaviour
     {
         if (currentContent != contents[0] && currentContent != contents[4])
         {
-            MultiplayerManager.ForceDisconnect();
             HideContents();
             HideErrorMessage();
 
@@ -193,19 +181,10 @@ public class StartMenuUIController : MonoBehaviour
     void AssignButtons()
     {
         contents[0].contentButtons[0].onClick.AddListener(delegate { FadeToDustAndLoadScene(1); });
-        contents[0].contentButtons[1].onClick.AddListener(ShowCoopMenu);
-
-        contents[1].contentButtons[0].onClick.AddListener(ShowCreateNewLobbyContent);
-        contents[1].contentButtons[1].onClick.AddListener(ShowJoinLobbyContent);
-
-        contents[2].contentButtons[0].onClick.AddListener(FinishCreatingLobby); 
-        
-        contents[3].contentButtons[0].onClick.AddListener(FinishJoiningLobby);
     }
 
     public void FadeToDustAndLoadScene(int sceneIndex)
     {
-
         foreach (TextMeshProUGUI item in objsToFadeOut)
         {
             var _canvasGrp = item.GetComponent<CanvasGroup>();
@@ -220,102 +199,6 @@ public class StartMenuUIController : MonoBehaviour
         dustStorm.PlayParticles();
         fadeAndLoadSequence.AppendInterval(2.25f);
         fadeAndLoadSequence.OnComplete(() => SceneManager.LoadScene(sceneIndex));
-    }
-
-    void ShowCoopMenu()
-    {
-        Sequence _hideMainContent = DOTween.Sequence();
-        _hideMainContent.Append(currentContent.contentContainer.GetComponent<CanvasGroup>().DOFade(0, .2f));
-        _hideMainContent.OnComplete(() => currentContent.contentContainer.gameObject.SetActive(false));
-
-        connectingSign.gameObject.SetActive(true);
-        Sequence _changeToCoopMenu = DOTween.Sequence();
-        _changeToCoopMenu.Append(connectingSign.DOFade(1, 0.2f));
-        _changeToCoopMenu.OnComplete(() => MultiplayerManager.instance.InitializeConnectionToServer());
-    }
-
-    public void ShowCreateNewLobbyContent()
-    {
-        currentContent.contentContainer.gameObject.SetActive(false);
-        contents[2].contentContainer.gameObject.SetActive(true);
-        currentContent = contents[2];
-
-        eventSystem.SetSelectedGameObject(contents[2].contentInputField.gameObject);
-    }
-
-    public void ShowJoinLobbyContent()
-    {
-        currentContent.contentContainer.gameObject.SetActive(false);
-        contents[3].contentContainer.gameObject.SetActive(true);
-        currentContent = contents[3];
-
-        eventSystem.SetSelectedGameObject(contents[3].contentInputField.gameObject);
-    }
-
-    public void OnEndCreatingLobbyName()
-    {
-        eventSystem.SetSelectedGameObject(contents[2].contentButtons[0].gameObject);
-    }
-
-    public void OnEndJoinLobbyName()
-    {
-        eventSystem.SetSelectedGameObject(contents[3].contentButtons[0].gameObject);
-    }
-
-    public void FinishCreatingLobby()
-    {
-        if (string.IsNullOrEmpty(contents[2].contentInputField.text))
-        {
-            Debug.LogWarning("Input field is empty!");
-            eventSystem.SetSelectedGameObject(contents[2].contentInputField.gameObject);
-            ShowErrorMessage("Invalid name.");
-            return;
-        }
-
-        MultiplayerManager.instance.CreateRoom(contents[2].contentInputField.text);
-        StartCoroutine(WaitForPlayersAndLoadGameScene());
-    }
-    public void FinishJoiningLobby()
-    {
-        if (string.IsNullOrEmpty(contents[3].contentInputField.text))
-        {
-            Debug.LogWarning("Input field is empty!");
-            eventSystem.SetSelectedGameObject(contents[3].contentInputField.gameObject);
-            ShowErrorMessage("Invalid name.");
-            return;
-        }
-
-        MultiplayerManager.instance.JoinRoom(contents[3].contentInputField.text);
-        StartCoroutine(WaitForPlayersAndLoadGameScene());
-    }
-
-    IEnumerator WaitForPlayersAndLoadGameScene()
-    {
-        HideErrorMessage();
-
-        yield return new WaitForSeconds(0.5f);
-
-        int _attempts = 90;
-
-        for (int i = 0; i < +_attempts; i++)
-        {
-            if (MultiplayerManager.instance.RoomJoined)
-            {
-                break;
-            }
-        }
-
-        if (!MultiplayerManager.instance.RoomJoined)
-        {
-            eventSystem.SetSelectedGameObject(currentContent.contentInputField.gameObject);
-            ShowErrorMessage("Room not found!");
-            yield break;
-        }
-
-        ShowContent(4);
-        yield return new WaitUntil(() => MultiplayerManager.instance.ConnectedPlayersCount() > 1);
-        yield return new WaitForSeconds(.5f);
-        FadeToDustAndLoadScene(2);
     }
 
     public void ShowErrorMessage(string text)

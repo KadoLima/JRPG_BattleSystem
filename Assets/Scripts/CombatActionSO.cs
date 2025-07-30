@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum ActionType
@@ -18,7 +16,6 @@ public enum DamageType
     UNDEFINED
 }
 
-
 [CreateAssetMenu(fileName = "New CombatAction", menuName = "Combat Actions/New CombatAction")]
 [System.Serializable]
 public class CombatActionSO : ScriptableObject
@@ -35,5 +32,4 @@ public class CombatActionSO : ScriptableObject
     public AnimationCycle animationCycle;
 
     public bool IsHarmful => this.damageType == DamageType.HARMFUL;
-
 }

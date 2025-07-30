@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -11,13 +9,11 @@ public class TextEffect : MonoBehaviour
 
     [SerializeField] float wobblingVar = 3f;
 
-    // Start is called before the first frame update
     void Start()
     {
         textMesh = GetComponent<TMP_Text>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         textMesh.ForceMeshUpdate();

@@ -1,20 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class HighlightButton : MonoBehaviour
 {
+    [SerializeField] float scaleMultiplier = 1;
+
     Tweener tweener;
     Button button;
-    [SerializeField] float scaleMultiplier = 1;
+    RectTransform rectTransform;
+
+    private void Awake()
+    {
+        button = GetComponentInChildren<Button>();
+        rectTransform = GetComponent<RectTransform>();
+    }
 
     private void OnEnable()
     {
-        button = GetComponentInChildren<Button>();
-
         if (button != null)
             button.interactable = true;
     }
@@ -38,8 +41,7 @@ public class HighlightButton : MonoBehaviour
         if (button)
             button.interactable = false;
 
-        RectTransform _rectTransform = GetComponent<RectTransform>();
-        _rectTransform.DOAnchorPosX(_rectTransform.anchoredPosition.x + 5, .1f).SetLoops(2, LoopType.Yoyo);
+        rectTransform.DOAnchorPosX(rectTransform.anchoredPosition.x + 5, .1f).SetLoops(2, LoopType.Yoyo);
     }
 
 }
