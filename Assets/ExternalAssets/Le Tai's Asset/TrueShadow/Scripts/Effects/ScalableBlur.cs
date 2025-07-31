@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -8,18 +10,9 @@ public class ScalableBlur : IBlurAlgorithm
     Material           material;
     ScalableBlurConfig config;
 
-    static readonly int       BLUE_NOISE_ID  = Shader.PropertyToID("_BlueNoise");
-    static readonly int       TARGET_SIZE_ID = Shader.PropertyToID("_TargetSize");
-    readonly        Texture2D blueNoise;
-
     const int BLUR_PASS        = 0;
     const int CROP_BLUR_PASS   = 1;
     const int DITHER_BLUR_PASS = 2;
-
-    public ScalableBlur()
-    {
-        blueNoise = Resources.Load<Texture2D>("True Shadow Blue Noise");
-    }
 
     Material Material
     {
@@ -40,10 +33,12 @@ public class ScalableBlur : IBlurAlgorithm
         this.config = (ScalableBlurConfig)config;
     }
 
-    public void Blur(CommandBuffer          cmd,
-                     RenderTargetIdentifier src,
-                     Rect                   srcCropRegion,
-                     RenderTexture          target)
+    public void Blur(
+        CommandBuffer          cmd,
+        RenderTargetIdentifier src,
+        Rect                   srcCropRegion,
+        RenderTexture          target
+    )
     {
         float radius = config.Radius;
         Material.SetFloat(ShaderProperties.blurRadius, radius);
@@ -63,8 +58,8 @@ public class ScalableBlur : IBlurAlgorithm
             BlurAtDepth(cmd, i, target);
         }
 
-        Material.SetTexture(BLUE_NOISE_ID, blueNoise);
-        Material.SetVector(TARGET_SIZE_ID, new Vector4(target.width, target.height));
+        Material.SetTexture(ShaderId.BLUE_NOISE, Resources.BLUE_NOISE);
+        Material.SetVector(ShaderId.TARGET_SIZE, new Vector4(target.width, target.height));
         // cmd.BlitFullscreenTriangle(ShaderProperties.intermediateRT[stepCount - 1], target, Material, BLUR_PASS);
         cmd.Blit(ShaderProperties.intermediateRT[stepCount - 1], target, Material, DITHER_BLUR_PASS);
 
@@ -86,10 +81,12 @@ public class ScalableBlur : IBlurAlgorithm
         );
     }
 
-    static void CreateTempRenderTextureFrom(CommandBuffer cmd,
-                                            int           nameId,
-                                            RenderTexture src,
-                                            int           downsampleFactor)
+    static void CreateTempRenderTextureFrom(
+        CommandBuffer cmd,
+        int           nameId,
+        RenderTexture src,
+        int           downsampleFactor
+    )
     {
         int w = src.width >> downsampleFactor; //= width / 2^downsample
         int h = src.height >> downsampleFactor;

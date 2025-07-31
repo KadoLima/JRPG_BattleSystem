@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,9 +19,11 @@ class ChangeTracker<T> : IChangeTracker
     readonly Func<T, T>       onChange;
     readonly Func<T, T, bool> compare;
 
-    public ChangeTracker(Func<T>          getValue,
-                         Func<T, T>       onChange,
-                         Func<T, T, bool> compare = null)
+    public ChangeTracker(
+        Func<T>          getValue,
+        Func<T, T>       onChange,
+        Func<T, T, bool> compare = null
+    )
     {
         this.getValue = getValue;
         this.onChange = onChange;
@@ -47,12 +51,12 @@ public partial class TrueShadow
 {
     Action               checkHierarchyDirtiedDelegate;
     IChangeTracker[]     transformTrackers;
-    ChangeTracker<int>[] hierachyTrackers;
+    ChangeTracker<int>[] hierarchyTrackers;
 
     void InitInvalidator()
     {
         checkHierarchyDirtiedDelegate = CheckHierarchyDirtied;
-        hierachyTrackers = new[] {
+        hierarchyTrackers = new[] {
             new ChangeTracker<int>(
                 () => RectTransform.GetSiblingIndex(),
                 newValue =>
@@ -97,10 +101,20 @@ public partial class TrueShadow
                 },
                 (prev, curr) => prev == curr
             ),
+            new ChangeTracker<Color>(
+                () => CanvasRenderer.GetColor(),
+                newValue =>
+                {
+                    SetLayoutDirty();
+                    return newValue;
+                },
+                (prev, curr) => prev == curr
+            )
         };
 
 #if TMP_PRESENT
-        if (Graphic is TMPro.TextMeshProUGUI)
+        if (Graphic is TMPro.TextMeshProUGUI
+         || Graphic is TMPro.TMP_SubMeshUI)
         {
             var old = transformTrackers;
             transformTrackers = new IChangeTracker[old.Length + 1];
@@ -124,8 +138,8 @@ public partial class TrueShadow
 
                     var diff = curr - prev;
                     return Mathf.Abs(diff.x / prev.x) < .25f
-                        && Mathf.Abs(diff.y / prev.y) < .25f
-                        && Mathf.Abs(diff.z / prev.z) < .25f;
+                     && Mathf.Abs(diff.y / prev.y) < .25f
+                     && Mathf.Abs(diff.z / prev.z) < .25f;
                 }
             );
         }
@@ -168,20 +182,20 @@ public partial class TrueShadow
 
     internal void CheckHierarchyDirtied()
     {
-        if (ShadowAsSibling && hierachyTrackers != null)
+        if (ShadowAsSibling && hierarchyTrackers != null)
         {
-            for (var i = 0; i < hierachyTrackers.Length; i++)
+            for (var i = 0; i < hierarchyTrackers.Length; i++)
             {
-                hierachyTrackers[i].Check();
+                hierarchyTrackers[i].Check();
             }
         }
     }
 
     internal void ForgetSiblingIndexChanges()
     {
-        for (var i = 0; i < hierachyTrackers.Length; i++)
+        for (var i = 0; i < hierarchyTrackers.Length; i++)
         {
-            hierachyTrackers[i].Forget();
+            hierarchyTrackers[i].Forget();
         }
     }
 
@@ -195,6 +209,11 @@ public partial class TrueShadow
         {
             UseGlobalAngle = true;
         }
+    }
+
+    protected override void OnValidate()
+    {
+        SetLayoutTextureDirty();
     }
 #endif
 
@@ -227,21 +246,37 @@ public partial class TrueShadow
 
     public void ModifyMesh(Mesh mesh)
     {
+        if (casterMeshProvider != null)
+            return;
+
         if (!isActiveAndEnabled) return;
 
-        if (SpriteMesh) Utility.SafeDestroy(SpriteMesh);
-        SpriteMesh = Instantiate(mesh);
+        SpriteMeshHandle.Dispose();
+        SpriteMeshHandle = ObjectHandle.Borrow(Instantiate(mesh));
+        ModifyShadowCastingMesh(SpriteMeshHandle.obj);
 
         SetLayoutTextureDirty();
     }
 
     public void ModifyMesh(VertexHelper verts)
     {
+        if (casterMeshProvider != null)
+            return;
+
         if (!isActiveAndEnabled) return;
 
-        // For when pressing play while in prefab mode
-        if (!SpriteMesh) SpriteMesh = new Mesh();
-        verts.FillMesh(SpriteMesh);
+#if TMP_PRESENT
+        if (!(Graphic is TMPro.TextMeshProUGUI))
+        {
+#endif
+            // For when pressing play while in prefab mode
+            if (!SpriteMeshHandle.obj) SpriteMeshHandle = ObjectHandle.Take(new Mesh());
+
+            verts.FillMesh(SpriteMeshHandle.obj);
+            ModifyShadowCastingMesh(SpriteMeshHandle.obj);
+#if TMP_PRESENT
+        }
+#endif
 
         SetLayoutTextureDirty();
     }
@@ -249,12 +284,24 @@ public partial class TrueShadow
     void SetLayoutTextureDirty()
     {
 #if TMP_PRESENT
+        Mesh tmpMesh = null;
         if (Graphic is TMPro.TextMeshProUGUI tmp)
         {
-            if (tmp.text.Length == 0)
-                SpriteMesh = null;
-            else
-                SpriteMesh = tmp.mesh;
+            tmpMesh = string.IsNullOrEmpty(tmp.text) ? null : tmp.mesh;
+        }
+        else if (Graphic is TMPro.TMP_SubMeshUI stmp)
+        {
+            var isEmpty = string.IsNullOrEmpty(stmp.textComponent.text);
+#if UNITY_2022_2 || UNITY_2023_2_OR_NEWER
+            isEmpty |= !stmp.canvasRenderer.GetMesh(); // This is a different mesh than stmp.mesh
+#endif
+            tmpMesh = isEmpty ? null : stmp.mesh;
+        }
+
+        if (tmpMesh != null)
+        {
+            SpriteMeshHandle.Dispose();
+            SpriteMeshHandle = ObjectHandle.Borrow(tmpMesh);
         }
 #endif
         SetLayoutDirty();

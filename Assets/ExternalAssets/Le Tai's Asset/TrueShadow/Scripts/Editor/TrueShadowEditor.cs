@@ -1,3 +1,6 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using LeTai.TrueShadow.PluginInterfaces;
@@ -12,6 +15,7 @@ namespace LeTai.TrueShadow.Editor
 [CustomEditor(typeof(TrueShadow))]
 public class TrueShadowEditor : UnityEditor.Editor
 {
+    EditorProperty algorithmProp;
     EditorProperty insetProp;
     EditorProperty sizeProp;
     EditorProperty spreadProp;
@@ -22,7 +26,8 @@ public class TrueShadowEditor : UnityEditor.Editor
     EditorProperty blendModeProp;
     EditorProperty multiplyCasterAlphaProp;
     EditorProperty ignoreCasterColorProp;
-    EditorProperty colorBleedModeProp;
+    EditorProperty skipTextHashingProp;
+    EditorProperty deallocateOnDisable;
     EditorProperty disableFitCompensationProp;
 
 #if LETAI_TRUESHADOW_DEBUG
@@ -36,11 +41,12 @@ public class TrueShadowEditor : UnityEditor.Editor
     static bool showAdvanced;
 
     static Texture    warningIcon;
-    static GUIStyle   hashWarningStyle;
-    static GUIContent hashWarningLabel;
+    static GUIStyle   warningStyle;
+    static GUIContent warningIconLabel;
 
     void OnEnable()
     {
+        algorithmProp              = new EditorProperty(serializedObject, nameof(TrueShadow.Algorithm));
         insetProp                  = new EditorProperty(serializedObject, nameof(TrueShadow.Inset));
         sizeProp                   = new EditorProperty(serializedObject, nameof(TrueShadow.Size));
         spreadProp                 = new EditorProperty(serializedObject, nameof(TrueShadow.Spread));
@@ -51,7 +57,8 @@ public class TrueShadowEditor : UnityEditor.Editor
         blendModeProp              = new EditorProperty(serializedObject, nameof(TrueShadow.BlendMode));
         multiplyCasterAlphaProp    = new EditorProperty(serializedObject, nameof(TrueShadow.UseCasterAlpha));
         ignoreCasterColorProp      = new EditorProperty(serializedObject, nameof(TrueShadow.IgnoreCasterColor));
-        colorBleedModeProp         = new EditorProperty(serializedObject, nameof(TrueShadow.ColorBleedMode));
+        skipTextHashingProp        = new EditorProperty(serializedObject, nameof(TrueShadow.SkipTextHashing));
+        deallocateOnDisable        = new EditorProperty(serializedObject, nameof(TrueShadow.DeallocateOnDisable));
         disableFitCompensationProp = new EditorProperty(serializedObject, nameof(TrueShadow.DisableFitCompensation));
 
 #if LETAI_TRUESHADOW_DEBUG
@@ -74,9 +81,9 @@ public class TrueShadowEditor : UnityEditor.Editor
                         ?.GetValue(null) as Texture;
         }
 
-        hashWarningLabel = new GUIContent(warningIcon);
-        hashWarningStyle = new GUIStyle(EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector)
-                                                        .FindStyle("WordWrappedLabel")) {
+        warningIconLabel = new GUIContent(warningIcon);
+        warningStyle = new GUIStyle(EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector)
+                                                    .FindStyle("WordWrappedLabel")) {
             richText = true
         };
     }
@@ -85,17 +92,22 @@ public class TrueShadowEditor : UnityEditor.Editor
     {
         serializedObject.Update();
 
-        var ts = (TrueShadow)target;
+        var tss = targets.Cast<TrueShadow>().ToList();
 
-        DrawPresetButtons(ts);
+        DrawPresetButtons(tss);
 
         Space();
 
+        algorithmProp.Draw();
+        Space();
         insetProp.Draw();
         sizeProp.Draw();
         spreadProp.Draw();
-        useGlobalAngleProp.Draw(GUILayout.ExpandWidth(!ts.UseGlobalAngle));
-        if (ts.UseGlobalAngle)
+
+        var useGlobalAngle = tss.Any(s => s.UseGlobalAngle);
+        var useLocalAngle  = tss.Any(s => !s.UseGlobalAngle);
+        useGlobalAngleProp.Draw(GUILayout.ExpandWidth(!useGlobalAngle));
+        if (useGlobalAngle)
         {
             var settingRect = GUILayoutUtility.GetLastRect();
             settingRect.xMin  += EditorGUIUtility.labelWidth + EditorGUIUtility.singleLineHeight;
@@ -105,31 +117,65 @@ public class TrueShadowEditor : UnityEditor.Editor
                 SettingsService.OpenProjectSettings("Project/True Shadow");
             }
         }
-        else
+
+        if (useLocalAngle)
         {
             angleProp.Draw();
+            if (useGlobalAngle)
+                HelpBox("Some selected object(s) use global angle instead", MessageType.Info);
         }
 
         distanceProp.Draw();
         colorProp.Draw();
-        if (ts.UsingRendererMaterialProvider)
+        var hasCustomMaterialProvider = tss.Any(s => s.UsingRendererMaterialProvider);
+        if (hasCustomMaterialProvider)
         {
             using (new EditorGUI.DisabledScope(true))
                 LabelField(blendModeProp.serializedProperty.displayName, "Custom Material");
         }
-        else
+
+        if (tss.Any(s => !s.UsingRendererMaterialProvider))
         {
             blendModeProp.Draw();
+            if (hasCustomMaterialProvider)
+                HelpBox("Some selected object(s) use a custom material instead", MessageType.Info);
         }
 
         DrawAdvancedSettings();
+
+#if TMP_PRESENT
+        if (tss.Select(s => s.Graphic).OfType<TMPro.TextMeshProUGUI>().Any(tmp => tmp.fontSharedMaterials?.Length > 1))
+        {
+            if (GUILayout.Button("Copy to Sub-Meshes"))
+            {
+                foreach (var ts in tss)
+                {
+                    ts.CopyToTMPSubMeshes();
+                }
+            }
+
+            using (var _ = new VerticalScope(EditorStyles.helpBox))
+            {
+                warningIconLabel.text = "Shadows will not updates";
+                GUILayout.Label(warningIconLabel);
+                GUILayout.Label($"Sub-Mesh objects' shadows will not updates automatically to avoid large performance cost.\n\n" +
+                                $"Call trueShadow.{nameof(TrueShadow.CopyToTMPSubMeshes)}() after you modify the text or shadow",
+                                warningStyle);
+
+                if (GUILayout.Button("More info and code example", EditorStyles.linkLabel))
+                {
+                    Application.OpenURL("https://leloctai.com/trueshadow/docs/articles/tmp.html");
+                }
+            }
+        }
+#endif
 
         DrawHashWarning();
 
         serializedObject.ApplyModifiedProperties();
     }
 
-    void DrawPresetButtons(TrueShadow ts)
+    void DrawPresetButtons(IEnumerable<TrueShadow> tss)
     {
         if (!ProjectSettings.Instance.ShowQuickPresetsButtons) return;
 
@@ -139,8 +185,12 @@ public class TrueShadowEditor : UnityEditor.Editor
             var selected = GUILayout.Toolbar(-1, presets.Select(p => p.name).ToArray());
             if (selected != -1)
             {
-                Undo.RecordObject(ts, "Apply Quick Preset on " + ts.name);
-                presets[selected].Apply(ts);
+                foreach (var ts in tss)
+                {
+                    Undo.RecordObject(ts, "Apply Quick Preset on " + ts.name);
+                    presets[selected].Apply(ts);
+                }
+
                 EditorApplication.QueuePlayerLoopUpdate();
             }
 
@@ -161,7 +211,8 @@ public class TrueShadowEditor : UnityEditor.Editor
                 {
                     multiplyCasterAlphaProp.Draw();
                     ignoreCasterColorProp.Draw();
-                    colorBleedModeProp.Draw();
+                    skipTextHashingProp.Draw();
+                    deallocateOnDisable.Draw();
                     disableFitCompensationProp.Draw();
 
                     if (KnobPropertyDrawer.procrastinationMode)
@@ -194,30 +245,53 @@ public class TrueShadowEditor : UnityEditor.Editor
         "UnityEngine.UI.RawImage",
         "UnityEngine.UI.Text",
         "TMPro.TextMeshProUGUI",
+        "TMPro.TMP_SubMeshUI",
         "Unity.VectorGraphics.SVGImage",
+    };
+
+    static readonly string[] KNOWN_SHADER_PREFIXES = {
+        "UI/Default",
+        "TextMeshPro/",
     };
 
 
     void DrawHashWarning()
     {
-        var ts = (TrueShadow)target;
+        var tss = targets.Cast<TrueShadow>().ToList();
 
-        if (ts.GetComponent<ITrueShadowCustomHashProvider>() != null)
+        if (tss.Select(s => s.GetComponent<ITrueShadowCustomHashProvider>()).Any(s => s != null))
             return;
 
-        var casterType = ts.GetComponent<Graphic>().GetType();
-        if (KNOWN_TYPES.Contains(casterType.FullName))
+        if (tss.Select(s => s.GetComponent<ITrueShadowCustomHashProviderV2>()).Any(s => s != null))
             return;
 
-        hashWarningLabel.text = "Shadow may not update with changes";
+        var graphics = tss.Select(s => s.GetComponent<Graphic>()).ToList();
+        var unknownTypes = graphics.Select(g => g.GetType())
+                                   .Where(t => !KNOWN_TYPES.Contains(t.FullName))
+                                   .ToList();
+
+        var unknownShaders = graphics.Select(g => g.materialForRendering.shader.name)
+                                     .Where(sn => KNOWN_SHADER_PREFIXES.All(ks => !sn.StartsWith(ks)))
+                                     .ToList();
+
+        if (!unknownTypes.Any() && !unknownShaders.Any())
+            return;
+
+        string msg = "";
+        if (unknownTypes.Any())
+            msg = $"True Shadow can't tell 2 <i>{unknownTypes[0].Name}</i> apart." +
+                  $" The shadow may not update when the <i>{unknownTypes[0].Name}</i> changes.";
+        else if (unknownShaders.Any())
+            msg = $"Unrecognized Shader {unknownShaders[0]}. The shadow may not update when the material property changes.";
+
+        warningIconLabel.text = "Shadow may not update with changes";
 
         using (var _ = new VerticalScope(EditorStyles.helpBox))
         {
-            GUILayout.Label(hashWarningLabel);
-            GUILayout.Label($"True Shadow can't tell 2 <i>{casterType.Name}</i> apart." +
-                            $" The shadow may not update when the <i>{casterType.Name}</i> changes.\n" +
+            GUILayout.Label(warningIconLabel);
+            GUILayout.Label($"{msg}\n" +
                             $"To fix this, set the shadow CustomHash, or disable shadow caching for this element.",
-                            hashWarningStyle);
+                            warningStyle);
 
             if (GUILayout.Button("More info on CustomHash", EditorStyles.linkLabel))
             {
@@ -226,7 +300,10 @@ public class TrueShadowEditor : UnityEditor.Editor
 
             if (GUILayout.Button("Disable Shadow Cache for this element", EditorStyles.linkLabel))
             {
-                Undo.AddComponent<DisableShadowCache>(ts.gameObject);
+                foreach (var ts in tss)
+                {
+                    Undo.AddComponent<TrueShadowDisableCache>(ts.gameObject);
+                }
             }
         }
     }

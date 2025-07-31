@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -63,13 +65,14 @@ public class ShadowSorter : MonoBehaviour
 
     private static ShadowSorter instance;
 
+    [Obsolete]
     public static ShadowSorter Instance
     {
         get
         {
             if (!instance)
             {
-                var existings = FindObjectsOfType<ShadowSorter>();
+                var existings = Shims.FindObjectsOfType<ShadowSorter>();
                 for (int i = existings.Length - 1; i > 0; i--)
                 {
                     Destroy(existings[i]);
@@ -130,7 +133,7 @@ public class ShadowSorter : MonoBehaviour
                 continue;
 
             shadow.CheckHierarchyDirtied();
-            if (shadow.HierachyDirty)
+            if (shadow.HierarchyDirty)
                 AddSortEntry(shadow);
         }
 

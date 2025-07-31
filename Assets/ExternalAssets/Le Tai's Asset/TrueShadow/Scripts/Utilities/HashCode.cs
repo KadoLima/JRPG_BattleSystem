@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 namespace LeTai
 {
 // Extended from https://referencesource.microsoft.com/#mscorlib/system/tuple.cs,52

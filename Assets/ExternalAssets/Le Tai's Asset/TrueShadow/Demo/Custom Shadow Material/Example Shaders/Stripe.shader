@@ -83,6 +83,7 @@
                 half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 
                 half2 resInvariantUV = IN.vertex.xy / ((_ScreenParams.x + _ScreenParams.y) / 2);
+                resInvariantUV.y *= _ProjectionParams.x;
                 color *= lerp(_ColorA, _ColorB, stripe(resInvariantUV));
 
                 #ifdef UNITY_UI_CLIP_RECT

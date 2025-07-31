@@ -101,6 +101,7 @@
                 float4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 
                 float2 resInvariantUV = IN.vertex.xy / ((_ScreenParams.x + _ScreenParams.y) / 2);
+                resInvariantUV.y *= _ProjectionParams.x;
                 color.rgb += lerp(float3(0,0,0), _Text_Color.rgb * _Text_Color.a, code(resInvariantUV)) * color.a;
 
                 #ifdef UNITY_UI_CLIP_RECT

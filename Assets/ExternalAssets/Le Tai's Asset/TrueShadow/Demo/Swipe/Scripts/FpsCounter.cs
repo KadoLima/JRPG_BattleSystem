@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.UI;

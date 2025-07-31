@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -42,13 +44,13 @@ public class ProjectSettings : ScriptableObject
     public bool UseGlobalAngleByDefault
     {
         get => useGlobalAngleByDefault;
-        private set => useGlobalAngleByDefault = value;
+        set => useGlobalAngleByDefault = value;
     }
 
     public float GlobalAngle
     {
         get => globalAngle;
-        private set
+        set
         {
             globalAngle = value;
             globalAngleChanged?.Invoke(globalAngle);
@@ -64,7 +66,7 @@ public class ProjectSettings : ScriptableObject
     public List<QuickPreset> QuickPresets
     {
         get => quickPresets;
-        private set => quickPresets = value;
+        set => quickPresets = value;
     }
 
     public event Action<float> globalAngleChanged;

@@ -129,8 +129,8 @@
                 #endif
             }
 
-            half _Scale;
-            half _Bubbling;
+            half  _Scale;
+            half  _Bubbling;
             half2 _Scroll;
 
             fixed4 frag_custom(v2f IN) : SV_Target
@@ -138,6 +138,7 @@
                 half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd);
 
                 half2 resInvariantUV = IN.vertex.xy / ((_ScreenParams.x + _ScreenParams.y) / 2);
+                resInvariantUV.y *= _ProjectionParams.x;
                 half2 cell = cellular2x2x2(half3(resInvariantUV * _Scale + _Scroll * _Time.y, _Time.y * _Bubbling));
                 half a2 = smoothstep(.2, .0, color.a);
                 half n = smoothstep(0.5, 0.3, cell.x + a2);

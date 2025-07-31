@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System.Collections.Generic;
 using System.Linq;
 using LeTai.TrueShadow.PluginInterfaces;
@@ -9,53 +11,72 @@ namespace LeTai.TrueShadow
 public partial class TrueShadow
 {
     ITrueShadowCasterMaterialProvider           casterMaterialProvider;
+    ITrueShadowCasterSubMeshMaterialProvider    casterSubMeshMaterialProvider;
+    ITrueShadowCasterMeshProvider               casterMeshProvider;
     ITrueShadowCasterMaterialPropertiesModifier casterMaterialPropertiesModifier;
     ITrueShadowCasterMeshModifier               casterMeshModifier;
     ITrueShadowCasterClearColorProvider         casterClearColorProvider;
     ITrueShadowRendererMaterialProvider         rendererMaterialProvider;
     ITrueShadowRendererMaterialModifier         rendererMaterialModifier;
     ITrueShadowRendererMeshModifier             rendererMeshModifier;
+    ITrueShadowCustomHashProviderV2             customHashProviderV2;
 
     public bool UsingRendererMaterialProvider => rendererMaterialProvider != null;
 
     void InitializePlugins()
     {
         casterMaterialProvider           = GetComponent<ITrueShadowCasterMaterialProvider>();
+        casterSubMeshMaterialProvider    = GetComponent<ITrueShadowCasterSubMeshMaterialProvider>();
+        casterMeshProvider               = GetComponent<ITrueShadowCasterMeshProvider>();
         casterMaterialPropertiesModifier = GetComponent<ITrueShadowCasterMaterialPropertiesModifier>();
         casterMeshModifier               = GetComponent<ITrueShadowCasterMeshModifier>();
         casterClearColorProvider         = GetComponent<ITrueShadowCasterClearColorProvider>();
-        if (casterClearColorProvider != null)
-            ColorBleedMode = ColorBleedMode.Plugin;
 
         rendererMaterialProvider = GetComponent<ITrueShadowRendererMaterialProvider>();
         rendererMaterialModifier = GetComponent<ITrueShadowRendererMaterialModifier>();
         rendererMeshModifier     = GetComponent<ITrueShadowRendererMeshModifier>();
 
+        customHashProviderV2 = GetComponent<ITrueShadowCustomHashProviderV2>();
+
+        if (casterMeshProvider != null)
+        {
+            casterMeshProvider.trueShadowCasterMeshChanged += HandleCasterMeshProviderMeshChanged;
+        }
         if (casterMaterialProvider != null)
         {
             casterMaterialProvider.materialReplaced += HandleCasterMaterialReplaced;
             casterMaterialProvider.materialModified += HandleCasterMaterialModified;
         }
-
         if (rendererMaterialProvider != null)
         {
             rendererMaterialProvider.materialReplaced += HandleRendererMaterialReplaced;
             rendererMaterialProvider.materialModified += HandleRendererMaterialModified;
         }
+        if (customHashProviderV2 != null)
+        {
+            customHashProviderV2.trueShadowCustomHashChanged += HandleTrueShadowCustomHashChanged;
+        }
     }
 
     void TerminatePlugins()
     {
+        if (casterMeshProvider != null)
+        {
+            casterMeshProvider.trueShadowCasterMeshChanged -= HandleCasterMeshProviderMeshChanged;
+        }
         if (casterMaterialProvider != null)
         {
             casterMaterialProvider.materialReplaced -= HandleCasterMaterialReplaced;
             casterMaterialProvider.materialModified -= HandleCasterMaterialModified;
         }
-
         if (rendererMaterialProvider != null)
         {
             rendererMaterialProvider.materialReplaced -= HandleRendererMaterialReplaced;
             rendererMaterialProvider.materialModified -= HandleRendererMaterialModified;
+        }
+        if (customHashProviderV2 != null)
+        {
+            customHashProviderV2.trueShadowCustomHashChanged -= HandleTrueShadowCustomHashChanged;
         }
     }
 
@@ -63,6 +84,12 @@ public partial class TrueShadow
     {
         TerminatePlugins();
         InitializePlugins();
+    }
+
+    void HandleCasterMeshProviderMeshChanged(Mesh mesh)
+    {
+        SpriteMeshHandle = ObjectHandle.Borrow(mesh);
+        SetLayoutTextureDirty();
     }
 
     void HandleCasterMaterialReplaced()
@@ -87,21 +114,42 @@ public partial class TrueShadow
             shadowRenderer.SetMaterialDirty();
     }
 
+    void HandleTrueShadowCustomHashChanged(int customHash)
+    {
+        CustomHash = customHash;
+        SetLayoutTextureDirty();
+    }
+
     public virtual Material GetShadowCastingMaterial()
     {
+        if (casterSubMeshMaterialProvider != null)
+            return casterSubMeshMaterialProvider.GetTrueShadowCasterMaterialForSubMesh(0);
+
         Material provided = null;
 
         if (casterMaterialProvider != null)
             provided = casterMaterialProvider.GetTrueShadowCasterMaterial();
 
 #if TMP_PRESENT
-        else if (Graphic is TMPro.TextMeshProUGUI tmp)
+        else if (Graphic is TMPro.TextMeshProUGUI
+              || Graphic is TMPro.TMP_SubMeshUI)
         {
-            provided = tmp.materialForRendering;
+            provided = Graphic.materialForRendering;
         }
 #endif
 
         return provided != null ? provided : Graphic.material;
+    }
+
+    public virtual Material GetShadowCastingMaterialForSubMesh(int subMeshIndex)
+    {
+        if (casterSubMeshMaterialProvider == null)
+        {
+            Debug.LogError("Custom UI that use submeshes must implement ITrueShadowCasterSubMeshMaterialProvider");
+            return null;
+        }
+
+        return casterSubMeshMaterialProvider.GetTrueShadowCasterMaterialForSubMesh(subMeshIndex);
     }
 
     public virtual void ModifyShadowCastingMaterialProperties(MaterialPropertyBlock propertyBlock)

@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using static UnityEngine.RectTransform.Edge;

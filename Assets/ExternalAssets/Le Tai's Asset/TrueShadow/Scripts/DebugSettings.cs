@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 #if LETAI_TRUESHADOW_DEBUG
 using System;
 using UnityEngine;

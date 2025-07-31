@@ -108,7 +108,7 @@
                 half2 noiseUv = (i.texcoord.xy - .5) * _TargetSize;
                 half noise = tex2D(_BlueNoise, noiseUv * _BlueNoise_TexelSize.xy).r;
                 noise -= .5;
-                noise *= 1. / 256.;
+                noise *= 1. / 255.;
 
                 o += noise;
 

@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -16,9 +18,11 @@ public class AnimatedBiStateButton : MonoBehaviour,
         AnimateUp,
     }
 
-    public float          animationDuration  = .1f;
-    public AnimationCurve animationCurve     = AnimationCurve.EaseInOut(0, 0, 1, 1);
-    public bool           useEnterExitEvents = true;
+    public float          animationDuration = .1f;
+    public AnimationCurve animationCurve    = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+    [Tooltip("Animate if the pointer is hovered over the element while already pressed")]
+    public bool useEnterExitEvents = true;
 
     public event Action willPress;
     public event Action willRelease;

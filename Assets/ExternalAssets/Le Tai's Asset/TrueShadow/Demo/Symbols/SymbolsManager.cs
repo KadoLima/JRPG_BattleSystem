@@ -1,8 +1,12 @@
-﻿using LeTai.TrueShadow;
+﻿// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
+using LeTai.TrueShadow;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
+namespace LeTai.TrueShadow.Demo
+{
 public class SymbolsManager : MonoBehaviour
 {
 #pragma warning disable 0649
@@ -137,4 +141,5 @@ public class SymbolsManager : MonoBehaviour
             samples[i].Color = sampleColor;
         }
     }
+}
 }

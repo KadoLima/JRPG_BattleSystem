@@ -1,4 +1,6 @@
-﻿using LeTai.SwipeView;
+﻿// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
+using LeTai.SwipeView;
 using UnityEngine;
 using UnityEngine.UI;
 

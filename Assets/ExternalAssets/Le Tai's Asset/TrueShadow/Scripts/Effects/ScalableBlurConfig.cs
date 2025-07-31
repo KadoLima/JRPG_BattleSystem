@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using UnityEngine;
 using static UnityEngine.Mathf;
 
@@ -43,13 +45,15 @@ public class ScalableBlurConfig : BlurConfig
         set { maxDepth = Max(1, value); }
     }
 
+    public override int MinExtent => (Iteration + 1) * (Iteration + 1);
+
     /// <summary>
     /// User friendly property to control the amount of blur
     /// </summary>
     ///<value>
     /// Must be non-negative
     /// </value>
-    public float Strength
+    public override float Strength
     {
         get { return strength = radius * (3 * (1 << iteration) - 2) / UNIT_VARIANCE; }
         set
@@ -73,33 +77,15 @@ public class ScalableBlurConfig : BlurConfig
     /// </summary>
     protected virtual void SetAdvancedFieldFromSimple()
     {
-        if (strength < 1e-2)
-        {
-            iteration = 0;
-            radius    = 0;
-            return;
-        }
+        strength = Clamp(strength, 0, (1 << 14) * (1 << 14));
 
-        var variance = strength * UNIT_VARIANCE;
+        var scaledStrength = strength * .66f;
 
-        // Each level of the pyramid have double the effective radius of the last, so total effective radius would be:
-        // S = (2^0 + 2^1 +...+ 2^iteration +...+ 2^1 + 2^0) * R
-        // https://en.wikipedia.org/wiki/1_%2B_2_%2B_4_%2B_8_%2B_%E2%8B%AF
-        // S = (3 * 2^I - 2) * R
-        // so:
-        // I = log((s + 2r)/ (3r))/log(2)
-        // and:
-        // R = S / (3 * 2^I - 2)
-        //
-        // Experimental result show that best result are obtained with R <= 2^I - 1, so:
-        // I >= log(1/6 * (sqrt(12S + 1) + 5))/log(2)
-        //
-        // There still some artifact at the lower end, not sure how to handle that yet
-        // TODO: use a different algorithm for low Strength.
-
-        iteration = CeilToInt(Log(1 / 6f * (Sqrt(12 * variance + 1) + 5)) / Log(2));
-
-        radius = variance / (3 * (1 << iteration) - 2);
+        radius    = Sqrt(scaledStrength);
+        iteration = 0;
+        while ((1 << iteration) < radius)
+            iteration++;
+        radius = scaledStrength / (1 << iteration);
     }
 
     void OnValidate()

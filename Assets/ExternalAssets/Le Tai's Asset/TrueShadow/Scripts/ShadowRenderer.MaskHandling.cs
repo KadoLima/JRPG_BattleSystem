@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -36,10 +38,8 @@ public partial class ShadowRenderer
         var  casterMask   = shadow.GetComponent<Mask>();
         bool casterIsMask = casterMask != null && casterMask.isActiveAndEnabled;
 
-        int hash = HashUtils.CombineHashCodes(
-            casterIsMask.GetHashCode(),
-            baseMaterial.GetHashCode()
-        );
+        var baseMatHash = casterIsMask ? baseMaterial.ComputeCRC() : baseMaterial.GetHashCode();
+        int hash = HashUtils.CombineHashCodes(casterIsMask.GetHashCode(), baseMatHash);
 
         MASK_MATERIALS_CACHE.TryGetValue(hash, out var mat);
 

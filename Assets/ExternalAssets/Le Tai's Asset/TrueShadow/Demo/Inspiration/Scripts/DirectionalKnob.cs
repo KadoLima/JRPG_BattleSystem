@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;

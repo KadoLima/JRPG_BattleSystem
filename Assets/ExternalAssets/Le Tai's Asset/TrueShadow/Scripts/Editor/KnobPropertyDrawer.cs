@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System;
 using System.Reflection;
 using UnityEditor;
@@ -15,9 +17,9 @@ public class KnobPropertyDrawer : PropertyDrawer
     static readonly Texture2D KNOB_BG_TEXTURE = Utility.FindEditorResource<Texture2D>("Knob_BG");
     static readonly Texture2D KNOB_FG_TEXTURE = Utility.FindEditorResource<Texture2D>("Knob_FG");
 
-    static readonly MethodInfo DO_FLOAT_FIELD_METHOD;
-    static readonly FieldInfo  RECYCLED_EDITOR_PROPERTY;
-    static readonly FieldInfo  FLOAT_FIELD_FORMAT_STRING_CONST;
+    static readonly MethodInfo   DO_FLOAT_FIELD_METHOD;
+    static readonly Func<object> RECYCLED_EDITOR_GETTER;
+    static readonly FieldInfo    FLOAT_FIELD_FORMAT_STRING_CONST;
 
     static readonly Color KNOB_BG_COLOR;
     static readonly Color KNOB_FG_COLOR;
@@ -40,8 +42,19 @@ public class KnobPropertyDrawer : PropertyDrawer
             typeof(bool)
         };
         DO_FLOAT_FIELD_METHOD           = editorGUIType.GetMethod("DoFloatField", flags, null, argumentTypes, null);
-        RECYCLED_EDITOR_PROPERTY        = editorGUIType.GetField("s_RecycledEditor",        flags);
         FLOAT_FIELD_FORMAT_STRING_CONST = editorGUIType.GetField("kFloatFieldFormatString", flags);
+
+        var recycledEditorField = editorGUIType.GetField("s_RecycledEditor", flags);
+        if (recycledEditorField != null)
+        {
+            RECYCLED_EDITOR_GETTER = () => recycledEditorField.GetValue(null);
+        }
+        else
+        {
+            var recycledEditorProperty = editorGUIType.GetProperty("s_RecycledEditor", flags);
+            RECYCLED_EDITOR_GETTER = () => recycledEditorProperty.GetValue(null);
+        }
+
 
         if (EGU.isProSkin)
         {
@@ -57,20 +70,22 @@ public class KnobPropertyDrawer : PropertyDrawer
         }
     }
 
-    static float DoFloatFieldInternal(Rect     position,
-                                      Rect     dragHotZone,
-                                      int      id,
-                                      float    value,
-                                      string   formatString = null,
-                                      GUIStyle style        = null,
-                                      bool     draggable    = true)
+    static float DoFloatFieldInternal(
+        Rect     position,
+        Rect     dragHotZone,
+        int      id,
+        float    value,
+        string   formatString = null,
+        GUIStyle style        = null,
+        bool     draggable    = true
+    )
     {
         style        = style ?? EditorStyles.numberField;
-        formatString = formatString ?? (string) FLOAT_FIELD_FORMAT_STRING_CONST.GetValue(null);
+        formatString = formatString ?? (string)FLOAT_FIELD_FORMAT_STRING_CONST.GetValue(null);
 
-        var editor = RECYCLED_EDITOR_PROPERTY.GetValue(null);
+        var editor = RECYCLED_EDITOR_GETTER.Invoke();
 
-        return (float) DO_FLOAT_FIELD_METHOD.Invoke(null, new[] {
+        return (float)DO_FLOAT_FIELD_METHOD.Invoke(null, new[] {
             editor,
             position,
             dragHotZone,

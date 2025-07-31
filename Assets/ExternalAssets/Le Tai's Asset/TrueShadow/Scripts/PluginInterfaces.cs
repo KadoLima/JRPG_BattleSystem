@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +11,16 @@ public interface ITrueShadowCasterMaterialProvider
     event Action materialReplaced;
     event Action materialModified;
     Material     GetTrueShadowCasterMaterial();
+}
+
+public interface ITrueShadowCasterSubMeshMaterialProvider
+{
+    Material GetTrueShadowCasterMaterialForSubMesh(int subMeshIndex);
+}
+
+public interface ITrueShadowCasterMeshProvider
+{
+    event Action<Mesh> trueShadowCasterMeshChanged;
 }
 
 public interface ITrueShadowCasterMeshModifier
@@ -43,5 +55,13 @@ public interface ITrueShadowRendererMeshModifier
     void ModifyTrueShadowRendererMesh(VertexHelper vertexHelper);
 }
 
+/// <summary>
+/// Use <see cref="ITrueShadowCustomHashProviderV2"/> instead
+/// </summary>
 public interface ITrueShadowCustomHashProvider { }
+
+public interface ITrueShadowCustomHashProviderV2
+{
+    public event Action<int> trueShadowCustomHashChanged;
+}
 }

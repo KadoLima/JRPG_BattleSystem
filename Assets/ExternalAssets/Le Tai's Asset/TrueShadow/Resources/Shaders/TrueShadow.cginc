@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 #pragma target 2.0
 
 #include "UnityCG.cginc"

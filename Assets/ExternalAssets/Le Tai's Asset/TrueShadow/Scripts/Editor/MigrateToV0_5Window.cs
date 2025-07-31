@@ -96,7 +96,7 @@ public class MigrateToVV1Window : EditorWindow
 
             foreach (var shadow in prefabRoot.GetComponentsInChildren<TrueShadow>())
             {
-                shadow.ColorBleedMode = ColorBleedMode.Black;
+                //shadow.ColorBleedMode = ColorBleedMode.Black;
                 changed               = true;
             }
 
@@ -118,7 +118,7 @@ public class MigrateToVV1Window : EditorWindow
         Undo.RecordObjects(inScene, "Migrate to 0.5");
         foreach (var shadow in inScene)
         {
-            shadow.ColorBleedMode = ColorBleedMode.Black;
+            //shadow.ColorBleedMode = ColorBleedMode.Black;
         }
     }
 }

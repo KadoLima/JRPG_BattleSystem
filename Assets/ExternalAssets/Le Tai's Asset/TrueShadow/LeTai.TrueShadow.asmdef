@@ -15,6 +15,11 @@
             "name": "com.unity.textmeshpro",
             "expression": "2",
             "define": "TMP_PRESENT"
+        },
+        {
+            "name": "Unity",
+            "expression": "2023.2",
+            "define": "TMP_PRESENT"
         }
     ],
     "noEngineReferences": false

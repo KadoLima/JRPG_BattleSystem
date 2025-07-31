@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System;
 using System.Diagnostics;
 using UnityEngine;
@@ -12,14 +14,14 @@ public partial class ShadowRenderer : MonoBehaviour, ILayoutIgnorer, IMaterialMo
 {
     public bool ignoreLayout => true;
 
-#pragma warning disable CS0103
-    static bool needRedraw = false;
-#pragma warning restore CS0103
+#pragma warning disable CS0414
+    static int reDrawAllFrameIndex = -1;
+#pragma warning restore CS0414
 
     [Conditional("UNITY_EDITOR")]
-    internal static void QueueRedraw()
+    internal static void QueueReDrawAll()
     {
-        needRedraw = true;
+        reDrawAllFrameIndex = Time.frameCount + 1;
     }
 
     internal CanvasRenderer CanvasRenderer { get; private set; }
@@ -68,17 +70,40 @@ public partial class ShadowRenderer : MonoBehaviour, ILayoutIgnorer, IMaterialMo
         UnityEditor.SceneVisibilityManager.instance.DisablePicking(obj, true);
 #endif
 
+
+        RectTransform rt;
+        RawImage      graphic;
+// All these seem unnecessary
+// #if UNITY_EDITOR
+//         UnityEditor.Undo.RegisterCreatedObjectUndo(obj, "");
+//         rt = UnityEditor.Undo.AddComponent<RectTransform>(obj);
+//         UnityEditor.Undo.AddComponent<CanvasRenderer>(obj);
+//         graphic  = UnityEditor.Undo.AddComponent<RawImage>(obj);
+//         renderer = UnityEditor.Undo.AddComponent<ShadowRenderer>(obj);
+//         UnityEditor.Undo.RecordObject(obj, "");
+// #else
+        rt = obj.AddComponent<RectTransform>();
+        obj.AddComponent<CanvasRenderer>();
+        graphic  = obj.AddComponent<RawImage>();
+        renderer = obj.AddComponent<ShadowRenderer>();
+// #endif
+#if UNITY_EDITOR
+        // Despite the object should not participate in undoing,
+        // not registering it cause some kind of broken state in the Undo system.
+        // in 2021.3.18, a crash will happen regardless of any form of registering. 2021.3.28 seem to have fixed this
+        // low patch versions of 22 and 23 also crash, but only without this call
+        // higher patch versions will throw a warning without this call
+        UnityEditor.Undo.RecordObject(obj, "");
+#endif
+
         shadow.SetHierachyDirty();
 
-        var rt = obj.AddComponent<RectTransform>();
         rt.anchorMin = Vector2.zero;
         rt.anchorMax = Vector2.zero;
 
-        var graphic = obj.AddComponent<RawImage>();
         graphic.raycastTarget = false;
         graphic.color         = shadow.Color;
 
-        renderer         = obj.AddComponent<ShadowRenderer>();
         renderer.shadow  = shadow;
         renderer.rt      = rt;
         renderer.graphic = graphic;
@@ -100,7 +125,15 @@ public partial class ShadowRenderer : MonoBehaviour, ILayoutIgnorer, IMaterialMo
         if (shadow.Graphic is MaskableGraphic mg)
             graphic.maskable = mg.maskable;
 
-        graphic.material = shadow.GetShadowRenderingMaterial();
+        if (CanvasUpdateRegistry.IsRebuildingGraphics())
+        {
+            this.NextFrames(() => graphic.material = shadow.GetShadowRenderingMaterial());
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+#endif
+        }
+        else
+            graphic.material = shadow.GetShadowRenderingMaterial();
     }
 
     internal void ReLayout()
@@ -108,20 +141,12 @@ public partial class ShadowRenderer : MonoBehaviour, ILayoutIgnorer, IMaterialMo
         if (!isActiveAndEnabled)
             return;
 
-        var casterRt = shadow.RectTransform;
-        if (!casterRt)
-        {
-            CanvasRenderer.SetAlpha(0);
-            return;
-        }
+        var casterRt   = shadow.RectTransform;
+        var spriteMesh = shadow.SpriteMeshHandle.obj;
 
-        if (!shadowTexture)
-        {
-            CanvasRenderer.SetAlpha(0);
-            return;
-        }
-
-        if (!shadow.SpriteMesh)
+        if (!casterRt
+         || !shadowTexture
+         || !spriteMesh)
         {
             CanvasRenderer.SetAlpha(0);
             return;
@@ -129,27 +154,28 @@ public partial class ShadowRenderer : MonoBehaviour, ILayoutIgnorer, IMaterialMo
 
         var nudgeSize = !(shadow.DisableFitCompensation || shadow.Graphic is Text);
 #if TMP_PRESENT
-        nudgeSize = nudgeSize && !(shadow.Graphic is TMPro.TextMeshProUGUI);
+        nudgeSize = nudgeSize && !(shadow.Graphic is TMPro.TextMeshProUGUI || shadow.Graphic is TMPro.TMP_SubMeshUI);
 #endif
 
-        var container   = shadow.ShadowContainer;
-        var canvasScale = container?.Snapshot?.canvasScale ?? graphic.canvas.scaleFactor;
+        var container      = shadow.ShadowContainer;
+        var canvasScale    = container?.Snapshot?.canvasScale ?? graphic.canvas.scaleFactor;
+        var canvasScaleRcp = 1f / canvasScale;
 
-        var casterMeshBounds = shadow.SpriteMesh.bounds;
+        var casterMeshBounds = spriteMesh.bounds;
 
         var misalignRatio = container == null
-                                ? Vector2.one
-                                : (Vector2)casterMeshBounds.size * canvasScale / (Vector2)container.ImprintSize;
+            ? Vector2.one
+            : (Vector2)casterMeshBounds.size * canvasScale / (Vector2)container.ImprintSize;
 
         var shadowTexSize = new Vector2(shadowTexture.width, shadowTexture.height);
         shadowTexSize *= misalignRatio;
-        shadowTexSize /= canvasScale;
+        shadowTexSize *= canvasScaleRcp;
         if (nudgeSize)
         {
             if (shadow.Inset)
-                shadowTexSize += Vector2.one / canvasScale;
+                shadowTexSize += Vector2.one * canvasScaleRcp;
             else
-                shadowTexSize -= Vector2.one / canvasScale;
+                shadowTexSize -= Vector2.one * canvasScaleRcp;
         }
 
         if (shadowTexSize.x < 1e-3f || shadowTexSize.y < 1e-3f)
@@ -162,13 +188,13 @@ public partial class ShadowRenderer : MonoBehaviour, ILayoutIgnorer, IMaterialMo
 
 
         float paddingLS = container?.Padding ?? Mathf.CeilToInt(shadow.Size * canvasScale);
-        paddingLS /= canvasScale;
+        paddingLS *= canvasScaleRcp;
         if (nudgeSize)
         {
             if (shadow.Inset)
-                paddingLS += .5f / canvasScale;
+                paddingLS += .5f * canvasScaleRcp;
             else
-                paddingLS -= .5f / canvasScale;
+                paddingLS -= .5f * canvasScaleRcp;
         }
 
         // pivot should be relative to the un-blurred part of the texture, not the whole mesh
@@ -176,13 +202,13 @@ public partial class ShadowRenderer : MonoBehaviour, ILayoutIgnorer, IMaterialMo
         rt.pivot = (casterPivotLS + paddingLS * misalignRatio) / shadowTexSize;
 
 
-        var canvasRelativeOffset = container?.Snapshot?.canvasRelativeOffset / canvasScale ?? shadow.Offset;
+        var canvasRelativeOffset = container?.Snapshot?.canvasRelativeOffset * canvasScaleRcp ?? shadow.Offset;
         var offset = shadow.ShadowAsSibling
-                         ? shadow.Offset.WithZ(0)
-                         : canvasRelativeOffset.WithZ(0);
+            ? shadow.Offset.WithZ(0)
+            : canvasRelativeOffset.WithZ(0);
         rt.localPosition = shadow.ShadowAsSibling
-                               ? casterRt.localPosition + offset
-                               : offset;
+            ? casterRt.localPosition + offset
+            : offset;
 
         rt.localRotation = shadow.ShadowAsSibling ? casterRt.localRotation : Quaternion.identity;
         rt.localScale    = shadow.ShadowAsSibling ? casterRt.localScale : Vector3.one;
@@ -191,6 +217,12 @@ public partial class ShadowRenderer : MonoBehaviour, ILayoutIgnorer, IMaterialMo
         var color = shadow.Color;
         if (shadow.UseCasterAlpha)
             color.a *= shadow.Graphic.color.a;
+        if (shadow.Size < 1f && shadow.OffsetDistance < 1f)
+        {
+            var fade = 1f - Mathf.Min(1f, shadow.Size + shadow.OffsetDistance);
+            fade    *= fade;
+            color.a *= 1 - fade;
+        }
         graphic.color = color;
 
         CanvasRenderer.SetColor(shadow.IgnoreCasterColor ? Color.white : shadow.CanvasRenderer.GetColor());
@@ -233,8 +265,10 @@ public partial class ShadowRenderer : MonoBehaviour, ILayoutIgnorer, IMaterialMo
         if (willBeDestroyed || !gameObject) return;
 
 #if UNITY_EDITOR
-        if (!Application.isPlaying && needRedraw)
+        if (!Application.isPlaying && reDrawAllFrameIndex == Time.frameCount)
+        {
             graphic.SetAllDirty();
+        }
 #endif
     }
 

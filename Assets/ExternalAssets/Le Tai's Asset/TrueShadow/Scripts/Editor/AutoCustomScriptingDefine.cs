@@ -1,13 +1,16 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Build;
 
 namespace LeTai.TrueShadow.Editor
 {
 [InitializeOnLoad]
 public static class AutoCustomScriptingDefine
 {
-    internal static readonly HashSet<string> SYMBOLS = new HashSet<string> {"LETAI_TRUESHADOW"};
+    internal static readonly HashSet<string> SYMBOLS = new HashSet<string> { "LETAI_TRUESHADOW" };
 
     static AutoCustomScriptingDefine()
     {
@@ -21,13 +24,29 @@ public static class AutoCustomScriptingDefine
 
     static void AddMissingSymbols(BuildTarget buildTarget)
     {
-        var currentGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
-        var defines      = PlayerSettings.GetScriptingDefineSymbolsForGroup(currentGroup).Split(';').ToList();
-        var missing      = SYMBOLS.Except(defines).ToList();
+        var    currentGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
+        string definesStr;
+#if UNITY_2021_2_OR_NEWER
+        var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(currentGroup);
+        definesStr = PlayerSettings.GetScriptingDefineSymbols(namedBuildTarget);
+#else
+        definesStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(currentGroup);
+#endif
+        var defines = definesStr.Split(';').ToList();
+
+
+        var missing = SYMBOLS.Except(defines).ToList();
         defines.AddRange(missing);
 
         if (missing.Count > 0)
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(currentGroup, string.Join(";", defines));
+        {
+            var newDefinesStr = string.Join(";", defines);
+#if UNITY_2021_2_OR_NEWER
+            PlayerSettings.SetScriptingDefineSymbols(namedBuildTarget, newDefinesStr);
+#else
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(currentGroup, newDefinesStr);
+#endif
+        }
     }
 }
 }

@@ -1,3 +1,5 @@
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
 using UnityEditor;
 using UnityEngine;
 using static UnityEditor.EditorGUI;

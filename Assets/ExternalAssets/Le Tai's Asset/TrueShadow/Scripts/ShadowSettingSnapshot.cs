@@ -1,4 +1,6 @@
-using System;
+// Copyright (c) Le Loc Tai <leloctai.com> . All rights reserved. Do not redistribute.
+
+using LeTai.Effects;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,13 +8,14 @@ namespace LeTai.TrueShadow
 {
 class ShadowSettingSnapshot
 {
-    public readonly TrueShadow    shadow;
-    public readonly Canvas        canvas;
-    public readonly RectTransform canvasRt;
-    public readonly float         canvasScale;
-    public readonly float         size;
-    public readonly Vector2       canvasRelativeOffset;
-    public readonly Vector2       dimensions;
+    public readonly TrueShadow             shadow;
+    public readonly Canvas                 canvas;
+    public readonly RectTransform          canvasRt;
+    public readonly float                  canvasScale;
+    public readonly BlurAlgorithmSelection algorithm;
+    public readonly float                  size;
+    public readonly Vector2                canvasRelativeOffset;
+    public readonly Vector2                dimensions;
 
     internal ShadowSettingSnapshot(TrueShadow shadow)
     {
@@ -20,9 +23,17 @@ class ShadowSettingSnapshot
         canvas      = shadow.Graphic.canvas;
         canvasRt    = (RectTransform)canvas.transform;
 
+        var    spriteMesh = shadow.SpriteMeshHandle.obj;
         Bounds meshBound;
-        if (shadow.SpriteMesh)
-            meshBound = shadow.SpriteMesh.bounds;
+        if (spriteMesh)
+        {
+            meshBound = spriteMesh.bounds;
+            if (meshBound.extents == Vector3.zero)
+            {
+                spriteMesh.RecalculateBounds();
+                meshBound = spriteMesh.bounds;
+            }
+        }
         else
             meshBound = new Bounds(Vector3.zero, Vector3.zero);
 
@@ -33,6 +44,8 @@ class ShadowSettingSnapshot
 
         dimensions = (Vector2)meshBound.size * canvasScale;
         size       = shadow.Size * canvasScale;
+
+        algorithm = shadow.Algorithm;
 
         CalcHash();
     }
@@ -53,7 +66,6 @@ class ShadowSettingSnapshot
 
         int colorHash = HashUtils.CombineHashCodes(
             shadow.IgnoreCasterColor ? 1 : 0,
-            (int)shadow.ColorBleedMode,
             (int)(imageColor.r * 255),
             (int)(imageColor.g * 255),
             (int)(imageColor.b * 255),
@@ -73,23 +85,25 @@ class ShadowSettingSnapshot
 
         // Tiled type cannot be batched by similar size
         int dimensionHash = graphic is Image im && im.type == Image.Type.Tiled
-                                ? dimensions.GetHashCode()
-                                : HashUtils.CombineHashCodes(
-                                    Mathf.CeilToInt(dimensions.x / DIMENSIONS_HASH_STEP) * DIMENSIONS_HASH_STEP,
-                                    Mathf.CeilToInt(dimensions.y / DIMENSIONS_HASH_STEP) * DIMENSIONS_HASH_STEP
-                                );
+            ? dimensions.GetHashCode()
+            : HashUtils.CombineHashCodes(
+                Mathf.CeilToInt(dimensions.x / DIMENSIONS_HASH_STEP) * DIMENSIONS_HASH_STEP,
+                Mathf.CeilToInt(dimensions.y / DIMENSIONS_HASH_STEP) * DIMENSIONS_HASH_STEP
+            );
 
+        var algoHash   = (int)algorithm;
         var sizeHash   = Mathf.CeilToInt(size * 100);
         var spreadHash = Mathf.CeilToInt(shadow.Spread * 100);
 
+        var graphicMat = graphic.materialForRendering;
         var commonHash = HashUtils.CombineHashCodes(
-            shadow.TextureRevision,
-            graphic.materialForRendering.ComputeCRC(),
+            graphicMat ? graphicMat.ComputeCRC() : 0,
             canvasScaleHash,
             insetHash,
             colorHash,
             offsetHash,
             dimensionHash,
+            algoHash,
             sizeHash,
             spreadHash,
             shadow.CustomHash
@@ -104,6 +118,7 @@ class ShadowSettingSnapshot
 
             int imageHash = HashUtils.CombineHashCodes(
                 (int)image.type,
+                (int)(image.pixelsPerUnitMultiplier * 1000),
                 (int)(image.fillAmount * 360 * 20),
                 (int)image.fillMethod,
                 image.fillOrigin,
@@ -138,28 +153,15 @@ class ShadowSettingSnapshot
 
 #if TMP_PRESENT
         case TMPro.TextMeshProUGUI tmp:
-            // Other properties should all cause dimensions changes, so they do not need to be explicitly hashed
-            int tmpColorHash = 0;
-            if (!shadow.IgnoreCasterColor)
-            {
-                tmpColorHash = HashUtils.CombineHashCodes(
-                    tmp.enableVertexGradient.GetHashCode(),
-                    tmp.colorGradient.GetHashCode(),
-                    tmp.overrideColorTags.GetHashCode()
-                );
-            }
-
             hash = HashUtils.CombineHashCodes(
                 commonHash,
-                tmp.text.GetHashCode(),
-                tmp.font.GetHashCode(),
-                tmp.fontSize.GetHashCode(),
-                tmpColorHash,
-                tmp.characterSpacing.GetHashCode(),
-                tmp.wordSpacing.GetHashCode(),
-                tmp.lineSpacing.GetHashCode(),
-                tmp.paragraphSpacing.GetHashCode(),
-                (int)tmp.alignment
+                CalcTMPHash(tmp)
+            );
+            break;
+        case TMPro.TMP_SubMeshUI stmp:
+            hash = HashUtils.CombineHashCodes(
+                commonHash,
+                CalcTMPHash(stmp.textComponent)
             );
             break;
 #endif
@@ -168,6 +170,42 @@ class ShadowSettingSnapshot
             break;
         }
     }
+
+#if TMP_PRESENT
+    int CalcTMPHash(TMPro.TMP_Text tmp)
+    {
+        // Other properties should all cause dimensions changes, so they do not need to be explicitly hashed
+        int tmpColorHash = 0;
+        if (!shadow.IgnoreCasterColor)
+        {
+            tmpColorHash = HashUtils.CombineHashCodes(
+                tmp.enableVertexGradient.GetHashCode(),
+                tmp.colorGradient.GetHashCode(),
+                tmp.overrideColorTags.GetHashCode()
+            );
+        }
+
+        var textHash = HashUtils.CombineHashCodes(
+            shadow.SkipTextHashing.GetHashCode(),
+            shadow.SkipTextHashing ? tmp.textInfo.characterCount : tmp.text?.GetHashCode() ?? 0
+        );
+        return HashUtils.CombineHashCodes(
+            textHash,
+            tmp.maxVisibleCharacters,
+            tmp.maxVisibleWords,
+            tmp.maxVisibleLines,
+            Mathf.CeilToInt(tmp.transform.lossyScale.y * 100),
+            tmp.font.GetHashCode(),
+            tmp.fontSize.GetHashCode(),
+            tmpColorHash,
+            tmp.characterSpacing.GetHashCode(),
+            tmp.wordSpacing.GetHashCode(),
+            tmp.lineSpacing.GetHashCode(),
+            tmp.paragraphSpacing.GetHashCode(),
+            (int)tmp.alignment
+        );
+    }
+#endif
 
     int hash;
 
