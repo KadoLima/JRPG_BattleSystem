@@ -19,8 +19,6 @@ public class ConsumableItem : MonoBehaviour
         amountText.text = item.amount.ToString();
 
         player = GetComponentInParent<CharacterBehaviour>();
-
-        Debug.LogWarning(playerUI == null);
         playerUI = player.CharacterUIController;
     }
 
