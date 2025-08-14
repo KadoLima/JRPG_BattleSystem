@@ -1,9 +1,10 @@
-using System.Collections;
-using UnityEngine;
 using DG.Tweening;
 using System;
+using System.Collections;
+using Unity.Netcode;
+using UnityEngine;
 
-public class CharacterBehaviour : MonoBehaviour
+public class CharacterBehaviour : NetworkBehaviour
 {
     [field: SerializeField] public Transform GetAttackedPos { get; private set; }
     [SerializeField] protected SpriteEffects combatEffects;
@@ -50,6 +51,7 @@ public class CharacterBehaviour : MonoBehaviour
     public int CurrentMP => currentMP;
     public CombatActionSO CurrentPreAction => currentPreAction;
     public bool IsBusy() => isBusy;
+    public bool IsDoingCritDamageAction => isDoingCritDamageAction;
 
     public CharacterBehaviour CurrentTarget
     {
@@ -57,7 +59,6 @@ public class CharacterBehaviour : MonoBehaviour
         set => currentTarget = value;
     }
 
-    public bool IsDoingCritDamageAction => isDoingCritDamageAction;
     public static Action<string> OnSkillUsed;
     public static Action OnSkillEnded;
 
@@ -91,7 +92,8 @@ public class CharacterBehaviour : MonoBehaviour
         currentHP = myStats.baseHP;
         currentMP = myStats.baseMP;
 
-        transform.SetParent(CombatManager.instance.PlayersParent);
+        if (!GameManager.IsOnline())
+            transform.SetParent(CombatManager.instance.PlayersParent);
 
         mainBattlePanel = characterUIController.FindMainBattlePanel();
     }
@@ -132,7 +134,15 @@ public class CharacterBehaviour : MonoBehaviour
 
     protected IEnumerator ApplyDamageOrHeal(CharacterBehaviour target)
     {
-        syncedCalculatedValue = CalculatedValue();
+        if (IsServer || !GameManager.IsOnline())
+        {
+            syncedCalculatedValue = CalculatedValue();
+
+            if (IsServer)
+            {
+                SyncCalculatedValueClientRpc(syncedCalculatedValue);
+            }
+        }
 
         yield return new WaitUntil(() => syncedCalculatedValue != 0);
 
@@ -158,7 +168,6 @@ public class CharacterBehaviour : MonoBehaviour
 
     public virtual void TakeDamageOrHeal(int amount, DamageType dmgType, bool isCrit)
     {
-
         if (dmgType == DamageType.HARMFUL)
         {
             currentHP -= amount;
@@ -180,12 +189,8 @@ public class CharacterBehaviour : MonoBehaviour
             IncreaseMP(amount);
         }
 
-        if (characterUIController)
-        {
-            characterUIController.ShowFloatingDamageText(amount, dmgType, isCrit);
-            characterUIController.RefreshHPMP();
-        }
-        else Debug.LogError("No characterUIController reference!");
+        characterUIController.ShowFloatingDamageText(amount, dmgType, isCrit);
+        characterUIController.RefreshHPMP();
     }
 
     private int CalculatedValue()
@@ -292,16 +297,43 @@ public class CharacterBehaviour : MonoBehaviour
         currentPreAction.damageType = dmgType;
         currentConsumableItemIndex = itemIndex;
 
+        if (GameManager.IsOnline() && IsOwner)
+        {
+            SyncUseConsumableItemServerRpc(itemIndex, dmgType);
+        }
+
         ChangeBattleState(BattleState.PICKING_TARGET);
     }
 
     public virtual void ExecuteActionOn(CharacterBehaviour target)
     {
-        CombatManager.instance.AddToCombatQueue(this);
-        currentTarget = target;
-        characterUIController.HideChatBubble();
+        if (!GameManager.IsOnline() || IsOwner)
+        {
+            currentTarget = target;
+            characterUIController.HideChatBubble();
 
-        StartCoroutine(ExecuteActionCoroutine(currentTarget));
+            if (GameManager.IsOnline())
+            {
+                var _targetNetId = currentTarget.GetComponent<NetworkObject>().NetworkObjectId;
+
+                int _actionIndex = -1;
+                for (int i = 0; i < characterActions.Length; i++)
+                {
+                    if (currentPreAction == characterActions[i])
+                    {
+                        _actionIndex = i;
+                        break;
+                    }
+                }
+
+                SyncExecuteActionServerRpc(_targetNetId, _actionIndex);
+            }
+            else
+            {
+                CombatManager.instance.AddToCombatQueue(this);
+                StartCoroutine(ExecuteActionCoroutine(currentTarget));
+            }
+        }
     }
 
     IEnumerator ExecuteActionCoroutine(CharacterBehaviour target)
@@ -336,10 +368,19 @@ public class CharacterBehaviour : MonoBehaviour
             OnSkillUsed?.Invoke(currentExecutingAction.actionName);
             DecreaseMP(currentExecutingAction.mpCost);
         }
+
         else if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
         {
+
             var _rndValue = UnityEngine.Random.value;
-            isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
+
+            if (!GameManager.IsOnline() || IsOwner)
+            {
+                isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
+
+                if (GameManager.IsOnline())
+                    SyncIsDoingCritDamageServerRpc(isDoingCritDamageAction);
+            }
         }
 
         if (currentExecutingAction.goToTarget)
@@ -399,7 +440,7 @@ public class CharacterBehaviour : MonoBehaviour
         isDoingCritDamageAction = false;
         ChangeBattleState(BattleState.RECHARGING);
     }
-
+    
     public void ChangeBattleState(BattleState phase)
     {
         StartCoroutine(ChangeBattleStateCoroutine(phase));
@@ -423,11 +464,24 @@ public class CharacterBehaviour : MonoBehaviour
 
                 if (characterUIController.FindMainBattlePanel())
                 {
-                    if (CombatManager.instance.CurrentActivePlayer == null)
-                        CombatManager.instance.SetCurrentActivePlayer(this);
-                    else if (CombatManager.instance.CurrentActivePlayer == this)
-                        CharacterUIController.ShowMainBattlePanel();
-                    else CombatManager.instance.LookForReadyPlayer();
+                    if (!GameManager.IsOnline())
+                    {
+                        if (CombatManager.instance.CurrentActivePlayer == null)
+                            CombatManager.instance.SetCurrentActivePlayer(this);
+                        else if (CombatManager.instance.CurrentActivePlayer == this)
+                            CharacterUIController.ShowMainBattlePanel();
+                        else CombatManager.instance.LookForReadyPlayer();
+                    }
+                    else
+                    {
+                        if (!IsOwner)
+                            characterUIController.ShowChatBubble();
+                        else
+                        {
+                            CombatManager.instance.SetCurrentActivePlayer(this);
+                            characterUIController.HideChatBubble();
+                        }
+                    }
                 }
 
                 break;
@@ -541,4 +595,71 @@ public class CharacterBehaviour : MonoBehaviour
     {
         ChangeBattleState(BattleState.GAMEWIN);
     }
+
+    #region ONLINE
+
+    [ClientRpc]
+    private void SyncCalculatedValueClientRpc(int amount)
+    {
+        syncedCalculatedValue = amount;
+    }
+
+    [ServerRpc]
+    private void SyncUseConsumableItemServerRpc(int itemIndex, DamageType dmgType)
+    {
+        currentPreAction = characterActions[characterActions.Length - 1];
+        currentConsumableItemIndex = itemIndex;
+        currentPreAction.damageType = dmgType;
+
+        SyncUseConsumableItemClientRpc(itemIndex, dmgType);
+    }
+
+    [ClientRpc]
+    private void SyncUseConsumableItemClientRpc(int itemIndex, DamageType dmgType)
+    {
+        currentPreAction = characterActions[characterActions.Length - 1];
+        currentConsumableItemIndex = itemIndex;
+        currentPreAction.damageType = dmgType;
+    }
+
+    [ServerRpc]
+    private void SyncExecuteActionServerRpc(ulong targetNetId, int actionIndex)
+    {
+        SyncExecuteActionClientRpc(targetNetId, actionIndex);
+    }
+
+    [ClientRpc]
+    private void SyncExecuteActionClientRpc(ulong targetNetId, int actionIndex)
+    {
+        currentPreAction = characterActions[actionIndex];
+
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetNetId, out var networkObject))
+        {
+            currentTarget = networkObject.GetComponent<CharacterBehaviour>();
+        }
+        else
+        {
+            Debug.LogError($"Target with NetworkObjectId {targetNetId} not found!");
+            return;
+        }
+
+        CombatManager.instance.AddToCombatQueue(this);
+        characterUIController.HideChatBubble();
+
+        StartCoroutine(ExecuteActionCoroutine(currentTarget));
+    }
+
+    [ServerRpc]
+    private void SyncIsDoingCritDamageServerRpc(bool isDoingCritDamageAction)
+    {
+        SyncIsDoingCritDamageClientRpc(isDoingCritDamageAction);
+    }
+
+    [ClientRpc]
+    private void SyncIsDoingCritDamageClientRpc(bool result)
+    {
+        isDoingCritDamageAction = result;
+    }
+
+    #endregion
 }

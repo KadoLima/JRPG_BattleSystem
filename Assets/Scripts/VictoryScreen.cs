@@ -4,6 +4,7 @@ using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using Unity.Netcode;
 
 public class VictoryScreen : MonoBehaviour
 {
@@ -84,6 +85,9 @@ public class VictoryScreen : MonoBehaviour
         }
 
         yield return new WaitForSeconds(0.5f);
+
+        if (GameManager.IsOnline() && !NetworkManager.Singleton.IsServer)
+            yield break;
 
         restartButtonCanvasGroup.alpha = 0;
         restartButton.SetActive(true);

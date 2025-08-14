@@ -55,6 +55,12 @@ public class MainBattlePanel : MonoBehaviour
 
     public void ShowHideSwapCharsIndicator(bool state)
     {
+        if (GameManager.IsOnline())
+        {
+            swapCharacterIndicator.SetActive(false);
+            return;
+        }
+
         swapCharacterIndicator.SetActive(state);
     }
 }

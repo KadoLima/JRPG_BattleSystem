@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -46,6 +47,9 @@ public class InputManager : MonoBehaviour
 
     public void OnSwapActiveCharacter(InputValue value)
     {
+        if (GameManager.IsOnline())
+            return;
+
         CharacterBehaviour _activePlayer = CombatManager.instance.CurrentActivePlayer;
 
         if (_activePlayer == null)
@@ -96,8 +100,14 @@ public class InputManager : MonoBehaviour
 
     public void OnPauseGame(InputValue value)
     {
-        if (!GameManager.instance.IsPaused)
-            GameManager.instance.PauseGame();
-        else GameManager.instance.ResumeGame();
+        if (GameManager.IsOnline() && NetworkManager.Singleton.ConnectedClients.Count < 2)
+            return;
+
+        if (!GameManager.IsOnline() || NetworkManager.Singleton.IsServer)
+        {
+            if (!GameManager.instance.IsPaused)
+                GameManager.instance.PauseGame();
+            else GameManager.instance.ResumeGame();
+        }
     }
 }

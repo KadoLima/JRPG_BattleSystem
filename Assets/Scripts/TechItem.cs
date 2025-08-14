@@ -17,13 +17,11 @@ public class TechItem : MonoBehaviour
 
     public void ShowDescription()
     {
-        //CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
         characterBehaviour.ShowDescription(techIndex);
     }
 
     public void SelectTech()
     {
-        //CharacterBehaviour _player = GetComponentInParent<CharacterBehaviour>();
         characterBehaviour.SelectTech(techIndex);
     }
 

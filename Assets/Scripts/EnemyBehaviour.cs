@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 public class EnemyBehaviour : CharacterBehaviour
@@ -67,6 +68,11 @@ public class EnemyBehaviour : CharacterBehaviour
     public void SetTarget(CharacterBehaviour target)
     {
         currentPlayerTarget = target;
+
+        if (GameManager.IsOnline() && IsServer)
+        {
+            SyncTargetClientRpc(currentPlayerTarget.NetworkObjectId);
+        }
     }
 
     public override void ExecuteActionOn(CharacterBehaviour target=null)
@@ -78,28 +84,39 @@ public class EnemyBehaviour : CharacterBehaviour
     {
         yield return new WaitUntil(() => GameManager.instance.GameStarted);
 
-        randomizedInitialDelay = UnityEngine.Random.Range(4 - .1f, 4 + .1f);
+        if (GameManager.IsOnline())
+        {
+            yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClients.Count == 2);
+            Debug.LogWarning("Ok, there's at least one player connected!");
+        }
+
+        if (!GameManager.IsOnline() || IsServer)
+        {
+            randomizedInitialDelay = UnityEngine.Random.Range(4 - .1f, 4 + .1f);
+            if (IsServer)
+                SyncInitialDelayClientRpc(randomizedInitialDelay);
+        }
 
         yield return new WaitForSeconds(.1f);
         yield return new WaitForSeconds(randomizedInitialDelay);
 
         while (CurrentBattlePhase != BattleState.DEAD)
         {
+            if (!GameManager.IsOnline() || IsServer)
+            {
+                if (currentPlayerTarget == null)
+                    SetRandomTarget();
+                else SetTarget(target);
+            }
 
-            if (currentPlayerTarget == null)
-                SetRandomTarget();
-            else SetTarget(target);
-
-            yield return new WaitForSeconds(.1f); //syncing
+            yield return new WaitForSeconds(.1f); // syncing
 
             CombatManager.instance.AddToCombatQueue(this);
-
             ChangeBattleState(BattleState.WAITING);
 
             yield return new WaitUntil(() => CombatManager.instance.IsFieldClear() &&
                                              CombatManager.instance.IsMyTurn(this) &&
                                              currentPlayerTarget != null);
-
 
             if (CombatManager.instance.AllPlayersDead())
             {
@@ -110,12 +127,13 @@ public class EnemyBehaviour : CharacterBehaviour
             ChangeBattleState(BattleState.EXECUTING_ACTION);
 
             SetRandomAction();
-
             yield return new WaitUntil(() => currentExecutingAction.actionType != ActionType.RECHARGING);
 
-            if (currentPlayerTarget.CurrentBattlePhase == BattleState.DEAD)
-                SetRandomTarget();
-
+            if (!GameManager.IsOnline() || IsServer)
+            {
+                if (currentPlayerTarget.CurrentBattlePhase == BattleState.DEAD)
+                    SetRandomTarget();
+            }
 
             if (currentExecutingAction.goToTarget)
             {
@@ -125,11 +143,16 @@ public class EnemyBehaviour : CharacterBehaviour
                 {
                     OnEnemyUsedSkill?.Invoke(currentExecutingAction.actionName);
                 }
-
                 else if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
                 {
-                    var _rndValue = UnityEngine.Random.value;
-                    isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
+                    if (!GameManager.IsOnline() || IsServer)
+                    {
+                        var _rndValue = UnityEngine.Random.value;
+                        isDoingCritDamageAction = _rndValue > myStats.critChance ? false : true;
+
+                        if (IsServer)
+                            SyncIsDoingCritDamageActionClientRpc(isDoingCritDamageAction);
+                    }
                 }
 
                 yield return new WaitForSeconds(myAnimController.SecondsToReachTarget);
@@ -149,7 +172,6 @@ public class EnemyBehaviour : CharacterBehaviour
                 }
 
                 OnSkillEnded?.Invoke();
-
                 yield return new WaitForSeconds(.2f);
                 myAnimController.PlayAnimation(myAnimController.IdleAnimationName);
 
@@ -159,10 +181,14 @@ public class EnemyBehaviour : CharacterBehaviour
                 currentPlayerTarget = null;
             }
 
-            waitTime = UnityEngine.Random.Range(minAttackRate, maxattackRate);
+            if (!GameManager.IsOnline() || IsServer)
+            {
+                waitTime = UnityEngine.Random.Range(minAttackRate, maxattackRate);
+                if (IsServer)
+                    SyncWaitTimeClientRpc(waitTime);
+            }
 
-            yield return new WaitForSeconds(.1f); //sync
-
+            yield return new WaitForSeconds(.1f); // sync
             yield return new WaitForSeconds(waitTime);
         }
     }
@@ -186,11 +212,70 @@ public class EnemyBehaviour : CharacterBehaviour
 
     private void SetRandomAction(string s = null)
     {
-        float _randomValue = UnityEngine.Random.value;
+        if (!GameManager.IsOnline() || IsServer)
+        {
+            float _randomValue = UnityEngine.Random.value;
 
-        if (_randomValue > chanceToUseSkill)
-            currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
-        else
-            currentExecutingAction = SelectAction(ActionType.SKILL);
+            if (_randomValue > chanceToUseSkill)
+                currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
+            else
+                currentExecutingAction = SelectAction(ActionType.SKILL);
+
+            if (IsServer)
+            {
+                int _actionIndex = -1;
+
+                if (currentExecutingAction.actionType == ActionType.NORMAL_ATTACK)
+                    _actionIndex = 0;
+                else _actionIndex = 1;
+
+                SyncCurrentActionClientRpc(_actionIndex);
+            }
+
+        }
     }
+
+    #region ONLINE
+
+    [ClientRpc]
+    private void SyncTargetClientRpc(ulong networkObjectId)
+    {
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out var networkObject))
+        {
+            currentPlayerTarget = networkObject.GetComponent<CharacterBehaviour>();
+        }
+        else
+        {
+            Debug.LogError($"Target with NetworkObjectId {networkObjectId} not found!");
+            return;
+        }
+    }
+
+    [ClientRpc]
+    private void SyncInitialDelayClientRpc(float value)
+    {
+        randomizedInitialDelay = value;
+    }
+
+    [ClientRpc]
+    private void SyncIsDoingCritDamageActionClientRpc(bool value)
+    {
+        isDoingCritDamageAction = value;
+    }
+
+    [ClientRpc]
+    private void SyncWaitTimeClientRpc(float t)
+    {
+        waitTime = t;
+    }
+
+    [ClientRpc]
+    private void SyncCurrentActionClientRpc(int actionIndex)
+    {
+        if (actionIndex == 0)
+            currentExecutingAction = SelectAction(ActionType.NORMAL_ATTACK);
+        else currentExecutingAction = SelectAction(ActionType.SKILL);
+    }
+
+    #endregion
 }

@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 
 public enum BattleState
@@ -16,7 +18,7 @@ public enum BattleState
     NULL
 }
 
-public class CombatManager : MonoBehaviour
+public class CombatManager : NetworkBehaviour
 {
     [SerializeField] Transform playersParent;
     [SerializeField] Transform enemiesParent;
@@ -56,15 +58,6 @@ public class CombatManager : MonoBehaviour
     private void Awake()
     {
         instance = this;
-    }
-
-    private void Update()
-    {
-        if (enemiesOnField.Count == 0)
-            return;
-
-        if (!GameManager.instance.GameStarted)
-            return;
     }
 
     public void AddPlayerOnField(CharacterBehaviour playerToAdd)
@@ -144,7 +137,34 @@ public class CombatManager : MonoBehaviour
 
     public void AddToCombatQueue(CharacterBehaviour characterToAdd)
     {
-        combatQueue.Add(characterToAdd);
+        if (!GameManager.IsOnline())
+        {
+            combatQueue.Add(characterToAdd);
+            return;
+        }
+
+        if (IsServer)
+        {
+            combatQueue.Add(characterToAdd);
+
+            ulong[] _combatQueueIds = UpdateCombatQueue();
+
+            SyncCombatQueueClientRpc(_combatQueueIds);
+        }
+    }
+
+    private ulong[] UpdateCombatQueue()
+    {
+        CharacterBehaviour[] _combatQueueArray = CombatQueue.ToArray();
+
+        ulong[] combatQueueIDs = new ulong[_combatQueueArray.Length];
+
+        for (int i = 0; i < _combatQueueArray.Length; i++)
+        {
+            combatQueueIDs[i] = _combatQueueArray[i].GetComponent<NetworkBehaviour>().NetworkObjectId;
+        }
+
+        return combatQueueIDs;
     }
 
     public void RemoveFromCombatQueue(CharacterBehaviour characterToRemove)
@@ -156,7 +176,18 @@ public class CombatManager : MonoBehaviour
     {
         yield return new WaitForSeconds(queueDelay);
 
-        combatQueue.Remove(characterToRemove);
+        if (!GameManager.IsOnline())
+        {
+            combatQueue.Remove(characterToRemove);
+            yield break;
+        }
+
+        if (IsServer)
+        {
+            combatQueue.Remove(characterToRemove);
+            ulong[] _combatQueueIDs = UpdateCombatQueue();
+            SyncCombatQueueClientRpc(_combatQueueIDs);
+        }
     }
 
     public void AddToTotalXP(int amount)
@@ -215,7 +246,7 @@ public class CombatManager : MonoBehaviour
     {
         currentActivePlayer = c;
 
-        if (c != null)
+        if (c != null && (!GameManager.IsOnline() || c.IsOwner))
         {
             c.CharacterUIController.ShowMainBattlePanel();
         }
@@ -403,4 +434,28 @@ public class CombatManager : MonoBehaviour
         foreach (CharacterBehaviour character in playersOnField)
             character.CharacterUIController.HidePointer();
     }
+
+    #region ONLINE
+
+    [ClientRpc]
+    private void SyncCombatQueueClientRpc(ulong[] combatQueueIds)
+    {
+        CharacterBehaviour[] _combatQueueArray = new CharacterBehaviour[combatQueueIds.Length];
+
+        for (int i = 0; i < combatQueueIds.Length; i++)
+        {
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(combatQueueIds[i], out var networkObject))
+            {
+                _combatQueueArray[i] = networkObject.GetComponent<CharacterBehaviour>();
+            }
+            else
+            {
+                Debug.LogWarning($"[SyncCombatQueue] NetworkObjectId {combatQueueIds[i]} not found!");
+            }
+        }
+
+        CombatQueue = _combatQueueArray.ToList();
+    }
+
+    #endregion
 }

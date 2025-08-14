@@ -54,6 +54,9 @@ public class CharacterUIController : MonoBehaviour
         Invoke(nameof(RefreshHPMP), .1f);
 
         ResetFloatingText();
+
+        if (playerIndicator)
+            playerIndicator.SetActive(GameManager.IsOnline() && characterBehaviour.IsOwner);
     }
 
     public void RefreshHPMP()
@@ -206,7 +209,6 @@ public class CharacterUIController : MonoBehaviour
 
     public void ShowDescriptionTooltip(string t)
     {
-        //descriptionTooltipText.transform.parent.parent.gameObject.SetActive(true);
         descriptionTooltipContainer.gameObject.SetActive(true);
         descriptionTooltipText.text = t;
     }
@@ -216,7 +218,6 @@ public class CharacterUIController : MonoBehaviour
         if (!descriptionTooltipText)
             return;
 
-        //descriptionTooltipText.transform.parent.parent.gameObject.SetActive(false);
         descriptionTooltipContainer.gameObject.SetActive(false);
     }
 

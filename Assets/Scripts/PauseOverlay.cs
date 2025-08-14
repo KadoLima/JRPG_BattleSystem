@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG.Tweening;
+using Unity.Netcode;
 
 public class PauseOverlay : MonoBehaviour
 {
@@ -60,8 +61,13 @@ public class PauseOverlay : MonoBehaviour
 
         screenCanvasGroup.DOFade(1, .15f).SetEase(Ease.Linear).SetUpdate(true);
 
-        SetFirstSelected();
-        buttonsParent.SetActive(true);
+        if (!GameManager.IsOnline() || NetworkManager.Singleton.IsServer)
+        {
+            SetFirstSelected();
+            buttonsParent.SetActive(true);
+        }
+        else
+            buttonsParent.SetActive(false);
 
         notHostMessage.SetActive(!buttonsParent.activeSelf);
     }

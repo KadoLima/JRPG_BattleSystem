@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     bool gameStarted;
     public bool GameStarted
@@ -71,18 +73,34 @@ public class GameManager : MonoBehaviour
 
     public void PauseGame()
     {
-        lastSelected = eventSystem.currentSelectedGameObject;
-        isPaused = true;
-        OnGamePaused?.Invoke();
-        Time.timeScale = 0;
+        if (!IsOnline() || IsServer)
+        {
+            lastSelected = eventSystem.currentSelectedGameObject;
+            isPaused = true;
+            OnGamePaused?.Invoke();
+            Time.timeScale = 0;
+
+            if (IsServer)
+            {
+                SyncPauseClientRpc(isPaused);
+            }
+        }
     }
 
     public void ResumeGame()
     {
-        eventSystem.SetSelectedGameObject(lastSelected);
-        isPaused = false;
-        Time.timeScale = 1;
-        OnGameResumed?.Invoke();
+        if (!IsOnline() || IsServer)
+        {
+            eventSystem.SetSelectedGameObject(lastSelected);
+            isPaused = false;
+            Time.timeScale = 1;
+            OnGameResumed?.Invoke();
+
+            if (IsServer)
+            {
+                SyncResumeClientRpc(isPaused);
+            }
+        }
     }
 
     public void LoadMenuScene()
@@ -93,11 +111,59 @@ public class GameManager : MonoBehaviour
 
     public void RestartCurrentScene()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        if (IsOnline() && IsServer)
+        {
+            foreach (var netObj in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList.ToList())
+            {
+                if (netObj != NetworkManager.Singleton)
+                {
+                    netObj.Despawn(true);
+                }
+            }
+
+            SyncRestartSceneClientRpc();
+
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        else
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 
     public void QuitGame()
     {
         LoadMenuScene();
     }
+
+    public static bool IsOnline() => NetworkManager.Singleton != null;
+
+    #region ONLINE]
+
+
+    [ClientRpc]
+    private void SyncPauseClientRpc(bool isPausedValue)
+    {
+        isPaused = isPausedValue;
+        OnGamePaused?.Invoke();
+        Time.timeScale = 0;
+    }
+
+    [ClientRpc]
+    void SyncResumeClientRpc(bool isPausedValue)
+    {
+        isPaused = isPausedValue;
+        Time.timeScale = 1;
+        OnGameResumed?.Invoke();
+    }
+
+    [ClientRpc]
+    private void SyncRestartSceneClientRpc()
+    {
+        if (IsServer) return;
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    #endregion
 }
