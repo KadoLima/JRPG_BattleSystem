@@ -44,7 +44,7 @@ public class GameManager : NetworkBehaviour
     {
         instance = this;
 
-        Time.timeScale = 1;
+        SetTimeScaleOne();
 
         eventSystem = EventSystem.current;
 
@@ -71,6 +71,16 @@ public class GameManager : NetworkBehaviour
         OnGameWon?.Invoke();
     }
 
+    public void SetTimeScaleOne()
+    {
+        Time.timeScale = 1;
+    }
+
+    public void SetTimeScaleZero()
+    {
+        Time.timeScale = 0;
+    }
+
     public void PauseGame()
     {
         if (!IsOnline() || IsServer)
@@ -78,7 +88,7 @@ public class GameManager : NetworkBehaviour
             lastSelected = eventSystem.currentSelectedGameObject;
             isPaused = true;
             OnGamePaused?.Invoke();
-            Time.timeScale = 0;
+            SetTimeScaleZero();
 
             if (IsServer)
             {
@@ -93,7 +103,7 @@ public class GameManager : NetworkBehaviour
         {
             eventSystem.SetSelectedGameObject(lastSelected);
             isPaused = false;
-            Time.timeScale = 1;
+            SetTimeScaleOne();
             OnGameResumed?.Invoke();
 
             if (IsServer)
@@ -105,7 +115,7 @@ public class GameManager : NetworkBehaviour
 
     public void LoadMenuScene()
     {
-        Time.timeScale = 1;
+        SetTimeScaleOne();
         SceneManager.LoadScene(0);
     }
 
@@ -146,14 +156,14 @@ public class GameManager : NetworkBehaviour
     {
         isPaused = isPausedValue;
         OnGamePaused?.Invoke();
-        Time.timeScale = 0;
+        SetTimeScaleZero();
     }
 
     [ClientRpc]
     void SyncResumeClientRpc(bool isPausedValue)
     {
         isPaused = isPausedValue;
-        Time.timeScale = 1;
+        SetTimeScaleOne();
         OnGameResumed?.Invoke();
     }
 
