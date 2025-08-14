@@ -181,6 +181,7 @@ public class StartMenuUIController : MonoBehaviour
     void AssignButtons()
     {
         contents[0].contentButtons[0].onClick.AddListener(delegate { FadeToDustAndLoadScene(1); });
+        contents[0].contentButtons[1].onClick.AddListener(delegate { FadeToDustAndLoadScene(2); });
     }
 
     public void FadeToDustAndLoadScene(int sceneIndex)
