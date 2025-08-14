@@ -7823,6 +7823,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52c162dc854d2f24fa639ba0623de5ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  algorithm: 0
   size: 49
   spread: 0.699
   useGlobalAngle: 0
@@ -7834,7 +7835,8 @@ MonoBehaviour:
   blendMode: 0
   useCasterAlpha: 1
   ignoreCasterColor: 0
-  colorBleedMode: 2
+  skipTextHashing: 0
+  deallocateOnDisable: 0
   disableFitCompensation: 0
   shadowAsSibling: 0
   cutout: 0
@@ -8160,6 +8162,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52c162dc854d2f24fa639ba0623de5ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  algorithm: 0
   size: 49
   spread: 0.699
   useGlobalAngle: 0
@@ -8171,7 +8174,8 @@ MonoBehaviour:
   blendMode: 0
   useCasterAlpha: 1
   ignoreCasterColor: 0
-  colorBleedMode: 2
+  skipTextHashing: 0
+  deallocateOnDisable: 0
   disableFitCompensation: 0
   shadowAsSibling: 0
   cutout: 0
@@ -8474,6 +8478,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2817347303011870396}
+  - component: {fileID: 7103878114338347120}
   - component: {fileID: 2817347303011870397}
   - component: {fileID: 2817347303011870398}
   m_Layer: 0
@@ -8503,6 +8508,31 @@ Transform:
   - {fileID: 2817347303034744150}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7103878114338347120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2817347303011870387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3545551564
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &2817347303011870397
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8515,6 +8545,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ff5d40bef9d30a4ab99eee71aa63604, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   <GetAttackedPos>k__BackingField: {fileID: 2817347302221556481}
   combatEffects: {fileID: 2817347301963565664}
   <CurrentBattlePhase>k__BackingField: 0
