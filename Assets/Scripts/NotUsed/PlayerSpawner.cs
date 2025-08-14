@@ -1,66 +1,104 @@
 using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerSpawner : NetworkBehaviour
 {
-    [SerializeField] private GameObject player1Prefab; 
-    [SerializeField] private GameObject player2Prefab;
+    [SerializeField] private GameObject player1Prefab; // Estelle - Host
+    [SerializeField] private GameObject player2Prefab; // Vivi - Client
 
-    private void Start()
+    private bool hasSpawnedHost = false;
+    private bool hasSpawnedClient = false;
+
+    private void Update()
     {
-        //NetworkManager.Singleton.StartHost();
+        TestSpawning();
     }
-    //private void Update()
-    //{
 
-    //    if (Input.GetKeyDown(KeyCode.H))
-    //        StartHost();
-
-    //    if (Input.GetKeyDown(KeyCode.C))
-    //        StartClient();
-    //}
-
-    public override void OnNetworkSpawn() //substitui Start ou Awake
+    private void TestSpawning()
     {
-        //base.OnNetworkSpawn();
-        Debug.Log("OnNetworkSpawn was called from " + this.name);
-
-        if (IsServer)
+        if (Input.GetKeyDown(KeyCode.T) && NetworkManager.Singleton != null && !NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsClient)
         {
-            Debug.Log("Im HOST! My ID is: " + NetworkManager.Singleton.LocalClientId);
-            SpawnPlayerServerRpc(NetworkManager.Singleton.LocalClientId, 0);
+            Debug.LogWarning("Starting as Host...");
+            NetworkManager.Singleton.StartHost();
         }
-        else
+
+        if (Input.GetKeyDown(KeyCode.C) && NetworkManager.Singleton != null && !NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsClient)
         {
-            Debug.Log("Im CLIENT! My ID is" + NetworkManager.Singleton.LocalClientId);
-            SpawnPlayerServerRpc(NetworkManager.Singleton.LocalClientId, 1);
+            Debug.LogWarning("Starting as Client...");
+            NetworkManager.Singleton.StartClient();
         }
     }
 
-
-    [ServerRpc(RequireOwnership = false)] //server owns this object but client can request a spawn
-    public void SpawnPlayerServerRpc(ulong clientId, int prefabId)
+    private void Awake()
     {
-        GameObject _newPlayer;
-        if (prefabId == 0)
-            _newPlayer = (GameObject)Instantiate(player1Prefab);
-        else
-            _newPlayer = (GameObject)Instantiate(player2Prefab);
-
-        var _netObj = _newPlayer.GetComponent<NetworkObject>();
-        _newPlayer.SetActive(true);
-        _netObj.SpawnAsPlayerObject(clientId, true);
+        StartCoroutine(WaitForNetworkManagerAndSubscribe());
     }
 
-    public void StartHost()
+    private IEnumerator WaitForNetworkManagerAndSubscribe()
     {
-        NetworkManager.Singleton.StartHost();
+        yield return new WaitUntil(() => NetworkManager.Singleton != null);
+
+        NetworkManager.Singleton.OnServerStarted += HandleServerStarted;
+        NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
     }
 
-    public void StartClient()
+    private void OnDisable()
     {
-        NetworkManager.Singleton.StartClient();
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnServerStarted -= HandleServerStarted;
+            NetworkManager.Singleton.OnClientConnectedCallback -= HandleClientConnected;
+        }
+    }
+
+    private void HandleServerStarted()
+    {
+        if (!hasSpawnedHost && IsServer)
+        {
+            Debug.LogWarning("Server started - Spawning player 1 (Host)");
+            SpawnPlayer(NetworkManager.ServerClientId, player1Prefab);
+            hasSpawnedHost = true;
+        }
+    }
+
+    private void HandleClientConnected(ulong clientId)
+    {
+        if (IsServer && clientId != NetworkManager.ServerClientId && !hasSpawnedClient)
+        {
+            Debug.LogWarning($"Client connected: {clientId} - Spawning player 2 (Client)");
+            SpawnPlayer(clientId, player2Prefab);
+            hasSpawnedClient = true;
+        }
+    }
+
+    private void SpawnPlayer(ulong clientId, GameObject prefab)
+    {
+        if (!IsServer)
+        {
+            Debug.LogWarning("Only server can spawn players!");
+            return;
+        }
+
+        if (prefab == null)
+        {
+            Debug.LogError("Player prefab is null! Assign it in the inspector.");
+            return;
+        }
+
+        GameObject playerInstance = Instantiate(prefab);
+        NetworkObject netObj = playerInstance.GetComponent<NetworkObject>();
+
+        if (netObj == null)
+        {
+            Debug.LogError("Player prefab must have a NetworkObject.");
+            Destroy(playerInstance);
+            return;
+        }
+
+        playerInstance.SetActive(true);
+        netObj.SpawnAsPlayerObject(clientId, true);
+
+        Debug.LogWarning($"Spawned {prefab.name} for clientId {clientId}");
     }
 }
